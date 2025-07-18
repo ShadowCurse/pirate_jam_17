@@ -50,12 +50,6 @@ pub fn init() void {
     _ = cimgui.igCreateContext(null);
     _ = cimgui.ImGui_ImplSDL3_InitForOpenGL(@ptrCast(window), context);
     const cimgli_opengl_version = "#version 300 es";
-    // const cimgli_opengl_version = if (builtin.target.os.tag == .emscripten)
-    //     // "#version 100"
-    //     "#version 300 es"
-    // else
-    //     // "#version 450";
-    //     "#version 300 es";
     _ = cimgui.ImGui_ImplOpenGL3_Init(cimgli_opengl_version);
     imgui_io = @ptrCast(cimgui.igGetIO_Nil());
 
@@ -112,3 +106,31 @@ pub fn mouse_clip() math.Vec3 {
         .z = 1.0,
     };
 }
+
+pub const FileMem = struct {
+    mem: []align(std.heap.page_size_min) u8,
+
+    const Self = @This();
+
+    pub fn init(path: []const u8) !Self {
+        const fd = try std.posix.open(path, .{ .ACCMODE = .RDONLY }, 0);
+        defer std.posix.close(fd);
+
+        const stat = try std.posix.fstat(fd);
+        const mem = try std.posix.mmap(
+            null,
+            @intCast(stat.size),
+            std.posix.PROT.READ,
+            .{ .TYPE = .PRIVATE },
+            fd,
+            0,
+        );
+        return .{
+            .mem = mem,
+        };
+    }
+
+    pub fn deinit(self: Self) void {
+        std.posix.munmap(self.mem);
+    }
+};

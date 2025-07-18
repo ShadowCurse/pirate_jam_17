@@ -6,9 +6,12 @@ const sdl = @import("bindings/sdl.zig");
 const cimgui = @import("bindings/cimgui.zig");
 
 const log = @import("log.zig");
+const gpu = @import("gpu.zig");
+const mesh = @import("mesh.zig");
 const math = @import("math.zig");
 
 const Platform = @import("platform.zig");
+const Renderer = @import("renderer.zig");
 
 pub const log_options = log.Options{
     .level = .Info,
@@ -17,8 +20,9 @@ pub const log_options = log.Options{
 
 pub fn main() void {
     Platform.init();
+    Renderer.init();
 
-    var game: Game = .{};
+    var game: Game = .init();
 
     var t = std.time.nanoTimestamp();
     while (!Platform.stop) {
@@ -36,7 +40,7 @@ pub fn main() void {
     }
 }
 
-const Camera = struct {
+pub const Camera = struct {
     position: math.Vec3 = .{},
     yaw: f32 = 0.0,
     pitch: f32 = 0.0,
@@ -49,6 +53,7 @@ const Camera = struct {
     speed: f32 = 5.0,
     sensitivity: f32 = 1.0,
 
+    const ORIENTATION = math.Quat.from_rotation_axis(.X, .NEG_Z, .Y);
     const Self = @This();
 
     fn process_events(self: *Camera, dt: f32) void {
@@ -58,8 +63,8 @@ const Camera = struct {
                     switch (e.key.scancode) {
                         sdl.SDL_SCANCODE_A => self.velocity.x = -1.0,
                         sdl.SDL_SCANCODE_D => self.velocity.x = 1.0,
-                        sdl.SDL_SCANCODE_W => self.velocity.z = -1.0,
-                        sdl.SDL_SCANCODE_S => self.velocity.z = 1.0,
+                        sdl.SDL_SCANCODE_W => self.velocity.z = 1.0,
+                        sdl.SDL_SCANCODE_S => self.velocity.z = -1.0,
                         sdl.SDL_SCANCODE_LCTRL => self.velocity.y = 1.0,
                         sdl.SDL_SCANCODE_SPACE => self.velocity.y = -1.0,
                         else => {},
@@ -105,11 +110,11 @@ const Camera = struct {
     pub fn rotation_matrix(self: *const Self) math.Mat4 {
         const r_yaw = math.Quat.from_axis_angle(.Z, self.yaw);
         const r_pitch = math.Quat.from_axis_angle(.X, self.pitch);
-        return r_yaw.mul(r_pitch).to_mat4();
+        return r_yaw.mul(r_pitch).mul(Self.ORIENTATION).to_mat4();
     }
 
     pub fn perspective(self: *const Self) math.Mat4 {
-        const m = math.Mat4.perspective(
+        var m = math.Mat4.perspective(
             self.fovy,
             @as(f32, @floatFromInt(Platform.WINDOW_WIDTH)) /
                 @as(f32, @floatFromInt(Platform.WINDOW_HEIGHT)),
@@ -124,16 +129,51 @@ const Camera = struct {
 
 const Game = struct {
     free_camera: Camera = .{},
+    cube_mesh: gpu.Mesh = undefined,
+    environment: Renderer.Environment = undefined,
 
     const Self = @This();
+
+    pub fn init() Self {
+        const camera: Camera = .{
+            .position = .{ .y = -5.0, .z = 5.0 },
+        };
+        const cube_mesh = gpu.Mesh.from_mesh(&mesh.Cube);
+        const environment: Renderer.Environment = .{
+            .lights_position = .{
+                .{ .x = 1.0, .y = 1.0, .z = 1.0 },
+                .{ .x = -1.0, .y = 1.0, .z = 1.0 },
+                .{ .x = 1.0, .y = -1.0, .z = 1.0 },
+                .{ .x = -1.0, .y = -1.0, .z = 1.0 },
+            },
+            .lights_color = .{
+                .{ .r = 1.0 },
+                .{ .g = 1.0 },
+                .{ .b = 1.0 },
+                .{ .r = 1.0, .g = 1.0, .b = 1.0 },
+            },
+            .direct_light_direction = .{ .x = 1.0, .y = 1.0, .z = -2.0 },
+            .direct_light_color = .{ .r = 1.0, .g = 1.0, .b = 1.0 },
+        };
+
+        return .{
+            .free_camera = camera,
+            .cube_mesh = cube_mesh,
+            .environment = environment,
+        };
+    }
 
     pub fn update(self: *Self, dt: f32) void {
         self.free_camera.process_events(dt);
         self.free_camera.move(dt);
 
-        gl.glClearDepth(0.0);
-        gl.glClearColor(0.0, 0.0, 0.0, 1.0);
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT);
+        Renderer.reset();
+        Renderer.draw_mesh(
+            &self.cube_mesh,
+            .IDENDITY,
+            .{ .albedo = .RED, .metallic = 0.5, .roughness = 0.5 },
+        );
+        Renderer.render(&self.free_camera, &self.environment);
 
         {
             cimgui.prepare_frame();
