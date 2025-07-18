@@ -53,6 +53,8 @@ pub const Camera = struct {
     speed: f32 = 5.0,
     sensitivity: f32 = 1.0,
 
+    active: bool = false,
+
     const ORIENTATION = math.Quat.from_rotation_axis(.X, .NEG_Z, .Y);
     const Self = @This();
 
@@ -82,6 +84,8 @@ pub const Camera = struct {
                     }
                 },
                 sdl.SDL_EVENT_MOUSE_MOTION => {
+                    if (!self.active) continue;
+
                     self.yaw -= e.motion.xrel * self.sensitivity * dt;
                     self.pitch -= e.motion.yrel * self.sensitivity * dt;
                     if (math.PI / 2.0 < self.pitch) {
@@ -91,12 +95,28 @@ pub const Camera = struct {
                         self.pitch = -math.PI / 2.0;
                     }
                 },
+                sdl.SDL_EVENT_MOUSE_BUTTON_DOWN => {
+                    switch (e.button.button) {
+                        // LMB
+                        1 => self.active = true,
+                        else => {},
+                    }
+                },
+                sdl.SDL_EVENT_MOUSE_BUTTON_UP => {
+                    switch (e.button.button) {
+                        // LMB
+                        1 => self.active = false,
+                        else => {},
+                    }
+                },
                 else => {},
             }
         }
     }
 
     pub fn move(self: *Self, dt: f32) void {
+        if (!self.active) return;
+
         const rotation = self.rotation_matrix();
         const velocity = self.velocity.mul_f32(self.speed * dt).extend(1.0);
         const delta = rotation.mul_vec4(velocity);
@@ -165,6 +185,10 @@ const Game = struct {
 
     pub fn update(self: *Self, dt: f32) void {
         self.free_camera.process_events(dt);
+
+        if (Platform.imgui_wants_to_handle_events())
+            self.free_camera.active = false;
+
         self.free_camera.move(dt);
 
         Renderer.reset();
