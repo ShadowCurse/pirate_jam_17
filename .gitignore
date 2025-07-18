@@ -8,3 +8,4 @@ zig-out/
 .envrc
 .direnv
 *.spv
+imgui.ini
