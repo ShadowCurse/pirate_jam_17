@@ -25,15 +25,12 @@ pub fn main() void {
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT);
 
         {
-            cimgui.ImGui_ImplOpenGL3_NewFrame();
-            cimgui.ImGui_ImplSDL3_NewFrame();
-            cimgui.igNewFrame();
-            defer cimgui.igRender();
+            cimgui.prepare_frame();
+            defer cimgui.render_frame();
+
             var a: bool = true;
             _ = cimgui.igShowDemoWindow(&a);
         }
-        const imgui_data = cimgui.igGetDrawData();
-        cimgui.ImGui_ImplOpenGL3_RenderDrawData(imgui_data);
 
         Platform.present();
     }

@@ -11,6 +11,18 @@ const cimgui = @cImport({
 });
 pub usingnamespace cimgui;
 
+pub fn prepare_frame() void {
+    cimgui.ImGui_ImplOpenGL3_NewFrame();
+    cimgui.ImGui_ImplSDL3_NewFrame();
+    cimgui.igNewFrame();
+}
+
+pub fn render_frame() void {
+    cimgui.igRender();
+    const imgui_data = cimgui.igGetDrawData();
+    cimgui.ImGui_ImplOpenGL3_RenderDrawData(imgui_data);
+}
+
 pub fn format(name: ?[*c]const u8, v: anytype) void {
     const t = @TypeOf(v);
     const type_info = @typeInfo(t);
