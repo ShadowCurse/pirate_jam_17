@@ -53,6 +53,14 @@ pub fn build(b: *std.Build) !void {
     artifact.linkLibrary(cimgui);
     artifact.linkLibC();
     b.installArtifact(artifact);
+
+    if (target.result.os.tag != .emscripten) {
+        const run_cmd = b.addRunArtifact(artifact);
+        run_cmd.step.dependOn(b.getInstallStep());
+
+        const run_step = b.step("run", "Run the app");
+        run_step.dependOn(&run_cmd.step);
+    }
 }
 
 fn build_cimgui(
