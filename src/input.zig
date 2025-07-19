@@ -153,5 +153,12 @@ pub fn update() void {
 }
 
 pub fn imgui_ui() void {
-    cimgui.format("Input", &keys);
+    var open: bool = true;
+    if (cimgui.igCollapsingHeader_BoolPtr(
+        "Input",
+        &open,
+        0,
+    )) {
+        cimgui.format("Input", &keys);
+    }
 }
