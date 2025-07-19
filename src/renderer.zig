@@ -8,8 +8,11 @@ const shaders = @import("shaders.zig");
 const Camera = @import("root").Camera;
 const Mesh = @import("mesh.zig");
 
-pub var mesh_shader: shaders.MeshShader = undefined;
-pub var mesh_infos: std.BoundedArray(RenderMeshInfo, 128) = .{};
+var mesh_shader: shaders.MeshShader = undefined;
+var mesh_infos: std.BoundedArray(RenderMeshInfo, 128) = .{};
+
+var shadow_map_shader: shaders.ShadowMapShader = undefined;
+var shadow_map: gpu.ShadowMap = undefined;
 
 const RenderMeshInfo = struct {
     mesh: *const gpu.Mesh,
@@ -23,12 +26,39 @@ pub const Environment = struct {
     lights_color: [NUM_LIGHTS]math.Color3,
     direct_light_direction: math.Vec3,
     direct_light_color: math.Color3,
+    use_shadow_map: bool = true,
+    shadow_map_width: f32 = 10.0,
+    shadow_map_height: f32 = 10.0,
+    shadow_map_depth: f32 = 50.0,
+
+    pub fn shadow_map_view(e: *const Environment) math.Mat4 {
+        return math.Mat4.look_at(
+            .{},
+            e.direct_light_direction,
+            math.Vec3.Z,
+        )
+            .mul(Camera.ORIENTATION.to_mat4())
+            .translate(e.direct_light_direction.normalize().mul_f32(-10.0))
+            .inverse();
+    }
+
+    pub fn shadow_map_projection(e: *const Environment) math.Mat4 {
+        var projection = math.Mat4.orthogonal(
+            e.shadow_map_width,
+            e.shadow_map_height,
+            e.shadow_map_depth,
+        );
+        projection.j.y *= -1.0;
+        return projection;
+    }
 };
 
 const Self = @This();
 
 pub fn init() void {
     Self.mesh_shader = .init();
+    Self.shadow_map_shader = .init();
+    Self.shadow_map = .init();
 }
 
 pub fn reset() void {
@@ -56,12 +86,34 @@ pub fn draw_mesh(
     };
 }
 
+fn prepare_shadow_map_context() void {
+    gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, Self.shadow_map.framebuffer);
+    gl.glClearDepth(1.0);
+    gl.glClear(gl.GL_DEPTH_BUFFER_BIT);
+    gl.glDepthFunc(gl.GL_LEQUAL);
+}
+
+fn prepare_mesh_context() void {
+    gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0);
+    gl.glClearDepth(0.0);
+    gl.glClearColor(0.0, 0.0, 0.0, 1.0);
+    gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT);
+    gl.glDepthFunc(gl.GL_GEQUAL);
+}
+
 pub fn render(
     camera: *const Camera,
     environment: *const Environment,
 ) void {
-    Self.clear_current_buffers();
+    prepare_shadow_map_context();
+    Self.shadow_map_shader.use();
+    Self.shadow_map_shader.set_params(environment);
+    for (Self.mesh_infos.slice()) |*mi| {
+        Self.shadow_map_shader.set_mesh_params(&mi.model);
+        mi.mesh.draw();
+    }
 
+    prepare_mesh_context();
     Self.mesh_shader.use();
     const view = camera.transform().inverse();
     const projection = camera.perspective();
@@ -70,6 +122,7 @@ pub fn render(
         &camera.position,
         &projection,
         environment,
+        &Self.shadow_map,
     );
     for (Self.mesh_infos.slice()) |*mi| {
         Self.mesh_shader.set_mesh_params(&mi.model, &mi.material);

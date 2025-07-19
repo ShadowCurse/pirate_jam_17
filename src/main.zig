@@ -66,13 +66,16 @@ pub const Camera = struct {
 
     active: bool = false,
 
-    const ORIENTATION = math.Quat.from_rotation_axis(.X, .NEG_Z, .Y);
+    // make Z point up and X/Y to be a ground plane
+    pub const ORIENTATION = math.Quat.from_rotation_axis(.X, .NEG_Z, .Y);
     const Self = @This();
 
     fn process_events(self: *Camera, dt: f32) void {
         for (Platform.sdl_events) |*e| {
             switch (e.type) {
                 sdl.SDL_EVENT_KEY_DOWN => {
+                    if (!self.active) continue;
+
                     switch (e.key.scancode) {
                         sdl.SDL_SCANCODE_A => self.velocity.x = -1.0,
                         sdl.SDL_SCANCODE_D => self.velocity.x = 1.0,
@@ -84,6 +87,8 @@ pub const Camera = struct {
                     }
                 },
                 sdl.SDL_EVENT_KEY_UP => {
+                    if (!self.active) continue;
+
                     switch (e.key.scancode) {
                         sdl.SDL_SCANCODE_A => self.velocity.x = 0.0,
                         sdl.SDL_SCANCODE_D => self.velocity.x = 0.0,
@@ -163,6 +168,9 @@ const Game = struct {
     cube_mesh: gpu.Mesh = undefined,
     environment: Renderer.Environment = undefined,
 
+    cube_transform: math.Mat4 = .IDENDITY,
+    floor_transform: math.Mat4 = .IDENDITY,
+
     const Self = @This();
 
     pub fn init() Self {
@@ -187,25 +195,35 @@ const Game = struct {
             .direct_light_color = .{ .r = 1.0, .g = 1.0, .b = 1.0 },
         };
 
+        const floor_transform = math.Mat4.IDENDITY
+            .translate(.{ .z = -0.5 })
+            .scale(.{ .x = 20.0, .y = 20.0, .z = 0.1 });
+
         return .{
             .free_camera = camera,
             .cube_mesh = cube_mesh,
             .environment = environment,
+            .floor_transform = floor_transform,
         };
     }
 
     pub fn update(self: *Self, dt: f32) void {
-        self.free_camera.process_events(dt);
-
         if (Platform.imgui_wants_to_handle_events())
-            self.free_camera.active = false;
+            self.free_camera.active = false
+        else
+            self.free_camera.process_events(dt);
 
         self.free_camera.move(dt);
 
         Renderer.reset();
         Renderer.draw_mesh(
             &self.cube_mesh,
-            .IDENDITY,
+            self.cube_transform,
+            .{ .albedo = .WHITE, .metallic = 0.5, .roughness = 0.5 },
+        );
+        Renderer.draw_mesh(
+            &self.cube_mesh,
+            self.floor_transform,
             .{ .albedo = .WHITE, .metallic = 0.5, .roughness = 0.5 },
         );
         Renderer.render(&self.free_camera, &self.environment);

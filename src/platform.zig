@@ -61,7 +61,6 @@ pub fn init() void {
     gl.glEnable(gl.GL_DEPTH_TEST);
     gl.glEnable(gl.GL_BLEND);
     gl.glEnable(gl.GL_CULL_FACE);
-    gl.glDepthFunc(gl.GL_GEQUAL);
     gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA);
 }
 
@@ -120,7 +119,7 @@ pub const FileMem = struct {
         const mem = try std.posix.mmap(
             null,
             @intCast(stat.size),
-            std.posix.PROT.READ,
+            std.posix.PROT.READ | std.posix.PROT.WRITE,
             .{ .TYPE = .PRIVATE },
             fd,
             0,

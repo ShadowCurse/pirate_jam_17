@@ -1,8 +1,13 @@
 #version 300 es
 precision mediump float;
 
+#define WEBGL 0
+
 in vec3 vert_position;
 in vec3 vert_normal;
+in vec2 vert_uv;
+in vec4 vert_color;
+in vec4 vert_light_space_position;
 
 out vec4 frag_color;
 
@@ -16,6 +21,9 @@ uniform vec3 albedo;
 uniform float metallic;
 uniform float roughness;
 uniform float ao;
+
+uniform int use_shadow_map;
+uniform sampler2D shadow_map_texture;
 
 const float PI = 3.14159265359;
 
@@ -49,6 +57,39 @@ float geometry_smith(float ndl, float ndc, float roughness) {
     float ggx1 = geometry_schlick_ggx(ndl, roughness);
     float ggx2 = geometry_schlick_ggx(ndc, roughness);
     return ggx1 * ggx2;
+}
+
+float shadow(vec4 light_space_position, vec3 normal, vec3 to_light) {
+  vec3 projection = light_space_position.xyz / light_space_position.w;
+  if (1.0 < projection.z)
+    return 0.0;
+
+  vec3 uv = projection * 0.5 + 0.5;
+#if WEBGL
+  if (uv.x < -1.0 || 1.0 < uv.x ||
+      uv.y < -1.0 || 1.0 < uv.y)
+    return 0.0;
+#endif
+
+  float curr_depth = projection.z;
+  float bias = max(0.005 * (1.0 - dot(normal, to_light)), 0.001);
+
+  // return texture(shadow_map_texture, uv.xy).r;
+
+  float shadow = 0.0;
+  vec2 texel_size = vec2(1.0) / vec2(textureSize(shadow_map_texture, 0));
+  for(int x = -1; x <= 1; ++x) {
+      for(int y = -1; y <= 1; ++y) {
+          float pcf_depth = texture(shadow_map_texture, uv.xy + vec2(x, y) * texel_size).r;
+#if WEBGL
+          // for some reason on web the depth is from 0.5 to 1.0
+          pcf_depth = (pcf_depth - 0.5) * 2.0;
+#endif
+          shadow += pcf_depth < curr_depth - bias ? 1.0 : 0.0;
+      }
+  }
+  shadow /= 9.0;
+  return shadow;
 }
 
 void main() {
@@ -116,8 +157,8 @@ void main() {
             
         // add to outgoing radiance
         radiance_out += (kD * albedo / PI + specular) *
-                        radiance * ndl;
-
+                        radiance * ndl *
+                        (1.0 - shadow(vert_light_space_position, normal, to_light));
     }
 
     vec3 ambient = albedo * ao;

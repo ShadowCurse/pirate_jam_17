@@ -3,8 +3,9 @@ const builtin = @import("builtin");
 const gl = @import("bindings/gl.zig");
 const log = @import("log.zig");
 const math = @import("math.zig");
-const Mesh = @import("mesh.zig");
+const gpu = @import("gpu.zig");
 
+const Mesh = @import("mesh.zig");
 const Renderer = @import("renderer.zig");
 const Platform = @import("platform.zig");
 const FileMem = Platform.FileMem;
@@ -14,6 +15,7 @@ pub const Shader = struct {
     fragment_shader: u32,
     shader: u32,
 
+    const WEBGL_DEFINE = "#define WEBGL 0";
     const Self = @This();
 
     pub fn init(vertex_shader_path: []const u8, fragment_shader_path: []const u8) Self {
@@ -21,9 +23,19 @@ pub const Shader = struct {
             FileMem.init(vertex_shader_path) catch @panic("cannot read vertex shader");
         defer vertex_shader_src.deinit();
 
+        if (builtin.os.tag == .emscripten) {
+            if (std.mem.indexOf(u8, vertex_shader_src.mem, WEBGL_DEFINE)) |index|
+                vertex_shader_src.mem[index + WEBGL_DEFINE.len] = '1';
+        }
+
         const fragment_shader_src =
             FileMem.init(fragment_shader_path) catch @panic("cannot read fragment shader");
         defer fragment_shader_src.deinit();
+
+        if (builtin.os.tag == .emscripten) {
+            if (std.mem.indexOf(u8, fragment_shader_src.mem, WEBGL_DEFINE)) |index|
+                fragment_shader_src.mem[index + WEBGL_DEFINE.len] = '1';
+        }
 
         const vertex_shader = gl.glCreateShader(gl.GL_VERTEX_SHADER);
         const v_ptr = [_]*const u8{@ptrCast(vertex_shader_src.mem.ptr)};
@@ -118,6 +130,8 @@ pub const MeshShader = struct {
     view_loc: i32,
     projection_loc: i32,
     model_loc: i32,
+    shadow_map_view_loc: i32,
+    shadow_map_projection_loc: i32,
 
     camera_pos_loc: i32,
     lights_pos_loc: i32,
@@ -128,6 +142,7 @@ pub const MeshShader = struct {
     metallic_loc: i32,
     roughness_loc: i32,
     ao_loc: i32,
+    use_shadow_map_loc: i32,
 
     const Self = @This();
 
@@ -137,6 +152,8 @@ pub const MeshShader = struct {
         const view_loc = shader.get_uniform_location("view");
         const projection_loc = shader.get_uniform_location("projection");
         const model_loc = shader.get_uniform_location("model");
+        const shadow_map_view_loc = shader.get_uniform_location("shadow_map_view");
+        const shadow_map_projection_loc = shader.get_uniform_location("shadow_map_projection");
 
         const camera_pos_loc = shader.get_uniform_location("camera_position");
         const lights_pos_loc = shader.get_uniform_location("light_positions");
@@ -147,12 +164,15 @@ pub const MeshShader = struct {
         const metallic_loc = shader.get_uniform_location("metallic");
         const roughness_loc = shader.get_uniform_location("roughness");
         const ao_loc = shader.get_uniform_location("ao");
+        const use_shadow_map_loc = shader.get_uniform_location("use_shadow_map");
 
         return .{
             .shader = shader,
             .view_loc = view_loc,
             .projection_loc = projection_loc,
             .model_loc = model_loc,
+            .shadow_map_view_loc = shadow_map_view_loc,
+            .shadow_map_projection_loc = shadow_map_projection_loc,
             .camera_pos_loc = camera_pos_loc,
             .lights_pos_loc = lights_pos_loc,
             .lights_color_loc = lights_color_loc,
@@ -162,6 +182,7 @@ pub const MeshShader = struct {
             .metallic_loc = metallic_loc,
             .roughness_loc = roughness_loc,
             .ao_loc = ao_loc,
+            .use_shadow_map_loc = use_shadow_map_loc,
         };
     }
 
@@ -175,9 +196,25 @@ pub const MeshShader = struct {
         camera_position: *const math.Vec3,
         camera_projection: *const math.Mat4,
         environment: *const Renderer.Environment,
+        shadow_map: *const gpu.ShadowMap,
     ) void {
         gl.glUniformMatrix4fv(self.view_loc, 1, gl.GL_FALSE, @ptrCast(camera_view));
         gl.glUniformMatrix4fv(self.projection_loc, 1, gl.GL_FALSE, @ptrCast(camera_projection));
+
+        const shadow_map_view = environment.shadow_map_view();
+        const shadow_map_projection = environment.shadow_map_projection();
+        gl.glUniformMatrix4fv(
+            self.shadow_map_view_loc,
+            1,
+            gl.GL_FALSE,
+            @ptrCast(&shadow_map_view),
+        );
+        gl.glUniformMatrix4fv(
+            self.shadow_map_projection_loc,
+            1,
+            gl.GL_FALSE,
+            @ptrCast(&shadow_map_projection),
+        );
 
         gl.glUniform3f(self.camera_pos_loc, camera_position.x, camera_position.y, camera_position.z);
         gl.glUniform3fv(
@@ -202,6 +239,12 @@ pub const MeshShader = struct {
             environment.direct_light_color.g,
             environment.direct_light_color.b,
         );
+
+        if (environment.use_shadow_map) {
+            gl.glActiveTexture(gl.GL_TEXTURE0);
+            gl.glBindTexture(gl.GL_TEXTURE_2D, shadow_map.depth_texture);
+            gl.glUniform1i(self.use_shadow_map_loc, 1);
+        } else gl.glUniform1i(self.use_shadow_map_loc, 0);
     }
 
     pub fn set_mesh_params(
@@ -214,5 +257,55 @@ pub const MeshShader = struct {
         gl.glUniform1f(self.metallic_loc, material.metallic);
         gl.glUniform1f(self.roughness_loc, material.roughness);
         gl.glUniform1f(self.ao_loc, 0.03);
+    }
+};
+
+pub const ShadowMapShader = struct {
+    shader: Shader,
+
+    view_loc: i32,
+    projection_loc: i32,
+    model_loc: i32,
+
+    const Self = @This();
+
+    pub fn init() Self {
+        const shader = Shader.init(
+            "resources/shaders/shadow_map.vert",
+            "resources/shaders/shadow_map.frag",
+        );
+
+        const view_loc = shader.get_uniform_location("view");
+        const projection_loc = shader.get_uniform_location("projection");
+        const model_loc = shader.get_uniform_location("model");
+
+        return .{
+            .shader = shader,
+            .view_loc = view_loc,
+            .projection_loc = projection_loc,
+            .model_loc = model_loc,
+        };
+    }
+
+    pub fn use(self: *const Self) void {
+        self.shader.use();
+    }
+
+    pub fn set_params(
+        self: *const Self,
+        environment: *const Renderer.Environment,
+    ) void {
+        const view = environment.shadow_map_view();
+        const projection = environment.shadow_map_projection();
+
+        gl.glUniformMatrix4fv(self.view_loc, 1, gl.GL_FALSE, @ptrCast(&view));
+        gl.glUniformMatrix4fv(self.projection_loc, 1, gl.GL_FALSE, @ptrCast(&projection));
+    }
+
+    pub fn set_mesh_params(
+        self: *const Self,
+        model: *const math.Mat4,
+    ) void {
+        gl.glUniformMatrix4fv(self.model_loc, 1, gl.GL_FALSE, @ptrCast(model));
     }
 };
