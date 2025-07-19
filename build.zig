@@ -35,7 +35,7 @@ pub fn build(b: *std.Build) !void {
         break :blk lib;
     } else blk: {
         const exe = b.addExecutable(.{
-            .name = "steel",
+            .name = "pirate_jam_17",
             .root_source_file = b.path("src/main.zig"),
             .target = target,
             .optimize = optimize,
