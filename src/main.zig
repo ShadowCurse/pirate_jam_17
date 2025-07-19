@@ -82,68 +82,27 @@ pub const Camera = struct {
     pub const ORIENTATION = math.Quat.from_rotation_axis(.X, .NEG_Z, .Y);
     const Self = @This();
 
-    fn process_events(self: *Camera, dt: f32) void {
-        for (Platform.sdl_events) |*e| {
-            switch (e.type) {
-                sdl.SDL_EVENT_KEY_DOWN => {
-                    if (!self.active) continue;
-
-                    switch (e.key.scancode) {
-                        sdl.SDL_SCANCODE_A => self.velocity.x = -1.0,
-                        sdl.SDL_SCANCODE_D => self.velocity.x = 1.0,
-                        sdl.SDL_SCANCODE_W => self.velocity.z = 1.0,
-                        sdl.SDL_SCANCODE_S => self.velocity.z = -1.0,
-                        sdl.SDL_SCANCODE_LCTRL => self.velocity.y = 1.0,
-                        sdl.SDL_SCANCODE_SPACE => self.velocity.y = -1.0,
-                        else => {},
-                    }
-                },
-                sdl.SDL_EVENT_KEY_UP => {
-                    if (!self.active) continue;
-
-                    switch (e.key.scancode) {
-                        sdl.SDL_SCANCODE_A => self.velocity.x = 0.0,
-                        sdl.SDL_SCANCODE_D => self.velocity.x = 0.0,
-                        sdl.SDL_SCANCODE_W => self.velocity.z = 0.0,
-                        sdl.SDL_SCANCODE_S => self.velocity.z = 0.0,
-                        sdl.SDL_SCANCODE_LCTRL => self.velocity.y = 0.0,
-                        sdl.SDL_SCANCODE_SPACE => self.velocity.y = 0.0,
-                        else => {},
-                    }
-                },
-                sdl.SDL_EVENT_MOUSE_MOTION => {
-                    if (!self.active) continue;
-
-                    self.yaw -= e.motion.xrel * self.sensitivity * dt;
-                    self.pitch -= e.motion.yrel * self.sensitivity * dt;
-                    if (math.PI / 2.0 < self.pitch) {
-                        self.pitch = math.PI / 2.0;
-                    }
-                    if (self.pitch < -math.PI / 2.0) {
-                        self.pitch = -math.PI / 2.0;
-                    }
-                },
-                sdl.SDL_EVENT_MOUSE_BUTTON_DOWN => {
-                    switch (e.button.button) {
-                        // LMB
-                        1 => self.active = true,
-                        else => {},
-                    }
-                },
-                sdl.SDL_EVENT_MOUSE_BUTTON_UP => {
-                    switch (e.button.button) {
-                        // LMB
-                        1 => self.active = false,
-                        else => {},
-                    }
-                },
-                else => {},
-            }
-        }
-    }
-
-    pub fn move(self: *Self, dt: f32) void {
+    fn move(self: *Camera, dt: f32) void {
+        self.active = Input.is_pressed(.WHEEL);
         if (!self.active) return;
+        self.velocity.x =
+            -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.A)))) +
+            1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.D))));
+        self.velocity.y =
+            -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.SPACE)))) +
+            1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.LCTRL))));
+        self.velocity.z =
+            -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.S)))) +
+            1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.W))));
+
+        self.yaw -= Input.mouse_motion.x * self.sensitivity * dt;
+        self.pitch -= Input.mouse_motion.y * self.sensitivity * dt;
+        if (math.PI / 2.0 < self.pitch) {
+            self.pitch = math.PI / 2.0;
+        }
+        if (self.pitch < -math.PI / 2.0) {
+            self.pitch = -math.PI / 2.0;
+        }
 
         const rotation = self.rotation_matrix();
         const velocity = self.velocity.mul_f32(self.speed * dt).extend(1.0);
@@ -394,17 +353,11 @@ const Game = struct {
     pub fn update(self: *Self, dt: f32) void {
         _ = self.frame_arena.reset(.retain_capacity);
 
-        if (Platform.imgui_wants_to_handle_events())
-            self.free_camera.active = false
-        else
-            self.free_camera.process_events(dt);
-
         self.free_camera.move(dt);
-
         const mouse_clip = Platform.mouse_clip();
         const camera_ray = self.free_camera.mouse_to_ray(mouse_clip);
 
-        if (Input.keys.get(.LMB).was_pressed)
+        if (Input.was_pressed(.LMB))
             self.level.select_object(&camera_ray);
 
         Renderer.reset();

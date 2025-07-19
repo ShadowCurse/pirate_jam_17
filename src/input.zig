@@ -247,8 +247,29 @@ pub const Keys = enum(u32) {
 
 pub const KeyStates = std.EnumArray(Keys, KeyState);
 
-pub var keys: KeyStates = .initFill(.{});
+var keys: KeyStates = .initFill(.{});
 pub var mouse_motion: math.Vec2 = .{};
+
+pub fn was_pressed(key: Keys) bool {
+    if (Platform.imgui_wants_to_handle_events())
+        return false
+    else
+        return keys.get(key).was_pressed;
+}
+
+pub fn war_released(key: Keys) bool {
+    if (Platform.imgui_wants_to_handle_events())
+        return false
+    else
+        return keys.get(key).was_released;
+}
+
+pub fn is_pressed(key: Keys) bool {
+    if (Platform.imgui_wants_to_handle_events())
+        return false
+    else
+        return keys.get(key).is_pressed;
+}
 
 pub fn update() void {
     for (std.enums.values(Keys)) |k| {
