@@ -2,6 +2,8 @@ const std = @import("std");
 const log = @import("../log.zig");
 const math = @import("../math.zig");
 
+const Input = @import("../input.zig");
+
 const cimgui = @cImport({
     @cDefine("CIMGUI_DEFINE_ENUMS_AND_STRUCTS", "");
     @cDefine("CIMGUI_USE_OPENGL3", "");
@@ -98,6 +100,8 @@ fn fmt_simple_type(name: [*c]const u8, v: anytype) bool {
         *math.Color4,
         *math.Mat4,
         => fmt_math(name, v),
+        *Input.KeyState => fmt_key_state(name, v),
+        *Input.KeyStates => fmt_enum_array(name, v),
         else => return false,
     }
     return true;
@@ -176,4 +180,13 @@ fn fmt_enum_array(name: [*c]const u8, v: anytype) void {
         );
         format(mat_name, m);
     }
+}
+
+fn fmt_key_state(name: [*c]const u8, v: *Input.KeyState) void {
+    _ = cimgui.igSeparatorText(name);
+    _ = cimgui.igValue_Bool("was_pressed", @field(v, "was_pressed"));
+    _ = cimgui.igSameLine(0, 10);
+    _ = cimgui.igValue_Bool("was_released", @field(v, "was_released"));
+    _ = cimgui.igSameLine(0, 10);
+    _ = cimgui.igValue_Bool("is_pressed", @field(v, "is_pressed"));
 }

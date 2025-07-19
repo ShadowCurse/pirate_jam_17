@@ -15,6 +15,7 @@ const math = @import("math.zig");
 const Platform = @import("platform.zig");
 const Renderer = @import("renderer.zig");
 const Assets = @import("assets.zig");
+const Input = @import("input.zig");
 
 pub const log_options = log.Options{
     .level = .Info,
@@ -54,6 +55,7 @@ pub fn main() void {
         Platform.get_events();
         Platform.get_mouse_pos();
         Platform.process_events();
+        Input.update();
 
         game.update(dt);
 
@@ -357,6 +359,9 @@ const Game = struct {
 
         self.free_camera.move(dt);
 
+        if (Input.keys.get(.LMB).was_pressed)
+            log.info(@src(), "LMB was pressed", .{});
+
         Renderer.reset();
         self.level.draw();
         Renderer.render(&self.free_camera, &self.level.environment);
@@ -371,6 +376,7 @@ const Game = struct {
             cimgui.format("Free camera", &self.free_camera);
             cimgui.format("Environment", &self.level.environment);
             self.level.imgui_ui(self.frame_arena.allocator());
+            Input.imgui_ui();
         }
     }
 };
