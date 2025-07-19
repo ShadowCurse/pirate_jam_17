@@ -274,7 +274,6 @@ const Level = struct {
         self: *Self,
         scratch_alloc: Allocator,
     ) void {
-        var cimgui_id: i32 = 128;
         var open: bool = true;
         if (cimgui.igCollapsingHeader_BoolPtr(
             "Level",
@@ -299,26 +298,27 @@ const Level = struct {
                 self.load(scratch_alloc, path) catch |e|
                     log.err(@src(), "Cannot load level from {s} due to {}", .{ path, e });
             }
+
+            cimgui.format("Environment", &self.environment);
+
             _ = cimgui.igSeparatorText("Add");
             for (std.enums.values(Assets.ModelType)) |v| {
                 const n = std.fmt.allocPrintZ(scratch_alloc, "Add {}", .{v}) catch unreachable;
                 if (cimgui.igButton(n, .{})) {
-                    self.objects.append(self.arena.allocator(), .{ .model = v }) catch unreachable;
+                    self.objects.append(
+                        self.arena.allocator(),
+                        .{ .model = v },
+                    ) catch unreachable;
                 }
             }
-            if (cimgui.igCollapsingHeader_BoolPtr(
-                "Objects",
-                &open,
-                cimgui.ImGuiTreeNodeFlags_DefaultOpen,
-            )) {
-                for (self.objects.items) |*object| {
-                    cimgui.igPushID_Int(cimgui_id);
-                    cimgui_id += 1;
-                    defer cimgui.igPopID();
+        }
 
-                    cimgui.format(null, object);
-                }
-            }
+        if (self.selected_object) |so| {
+            _ = cimgui.igBegin("Selecte object", &open, 0);
+            defer cimgui.igEnd();
+
+            const object = &self.objects.items[so];
+            cimgui.format(null, object);
         }
     }
 };
@@ -359,6 +359,8 @@ const Game = struct {
 
         if (Input.was_pressed(.LMB))
             self.level.select_object(&camera_ray);
+        if (Input.was_pressed(.RMB))
+            self.level.selected_object = null;
 
         Renderer.reset();
         self.level.draw(dt);
@@ -368,13 +370,24 @@ const Game = struct {
             cimgui.prepare_frame();
             defer cimgui.render_frame();
 
-            var a: bool = true;
-            _ = cimgui.igShowDemoWindow(&a);
+            // _ = cimgui.igShowDemoWindow(&a);
 
-            cimgui.format("Free camera", &self.free_camera);
-            cimgui.format("Environment", &self.level.environment);
-            self.level.imgui_ui(self.frame_arena.allocator());
-            Input.imgui_ui();
+            {
+                var open: bool = true;
+                _ = cimgui.igBegin("Options", &open, 0);
+                defer cimgui.igEnd();
+
+                if (cimgui.igCollapsingHeader_BoolPtr(
+                    "General",
+                    &open,
+                    cimgui.ImGuiTreeNodeFlags_DefaultOpen,
+                )) {
+                    cimgui.format("Free camera", &self.free_camera);
+                }
+
+                self.level.imgui_ui(self.frame_arena.allocator());
+                Input.imgui_ui();
+            }
         }
     }
 };
