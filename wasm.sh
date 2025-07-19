@@ -5,6 +5,7 @@ zig build -Dtarget=wasm32-emscripten --sysroot "emsdk/upstream/emscripten" -Dopt
 rm -r wasm/resources
 mkdir wasm/resources
 cp -r resources/shaders wasm/resources
+cp -r resources/levels wasm/resources
 cd wasm
 
 emcc \

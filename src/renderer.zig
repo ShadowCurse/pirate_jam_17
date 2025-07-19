@@ -22,10 +22,10 @@ const RenderMeshInfo = struct {
 
 pub const NUM_LIGHTS = 4;
 pub const Environment = struct {
-    lights_position: [NUM_LIGHTS]math.Vec3,
-    lights_color: [NUM_LIGHTS]math.Color3,
-    direct_light_direction: math.Vec3,
-    direct_light_color: math.Color3,
+    lights_position: [NUM_LIGHTS]math.Vec3 = .{math.Vec3{}} ** NUM_LIGHTS,
+    lights_color: [NUM_LIGHTS]math.Color3 = .{math.Color3{}} ** NUM_LIGHTS,
+    direct_light_direction: math.Vec3 = .{},
+    direct_light_color: math.Color3 = .{},
     use_shadow_map: bool = true,
     shadow_map_width: f32 = 10.0,
     shadow_map_height: f32 = 10.0,

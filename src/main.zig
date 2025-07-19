@@ -1,6 +1,8 @@
 const std = @import("std");
 const builtin = @import("builtin");
 
+const Allocator = std.mem.Allocator;
+
 const gl = @import("bindings/gl.zig");
 const sdl = @import("bindings/sdl.zig");
 const cimgui = @import("bindings/cimgui.zig");
@@ -16,6 +18,12 @@ const Renderer = @import("renderer.zig");
 pub const log_options = log.Options{
     .level = .Info,
     .colors = builtin.target.os.tag != .emscripten,
+};
+
+pub const os = if (builtin.os.tag != .emscripten) std.os else struct {
+    pub const heap = struct {
+        pub const page_allocator = std.heap.c_allocator;
+    };
 };
 
 /// For some reason emsdk does not have it, so raw dog it.
@@ -163,51 +171,150 @@ pub const Camera = struct {
     }
 };
 
-const Game = struct {
-    free_camera: Camera = .{},
-    cube_mesh: gpu.Mesh = undefined,
-    environment: Renderer.Environment = undefined,
+const Level = struct {
+    arena: std.heap.ArenaAllocator = undefined,
+    save_path: [128:0]u8 = .{0} ** 128,
 
-    cube_transform: math.Mat4 = .IDENDITY,
-    floor_transform: math.Mat4 = .IDENDITY,
+    cube_mesh: gpu.Mesh,
+    transforms: []const math.Mat4 = &.{},
+    materials: []const mesh.Material = &.{},
+    environment: Renderer.Environment = .{},
+
+    const LEVEL_DIR = "resources/levels";
+    const Self = @This();
+
+    pub fn empty() Self {
+        const arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+        const cube_mesh = gpu.Mesh.from_mesh(&mesh.Cube);
+        return .{
+            .arena = arena,
+            .cube_mesh = cube_mesh,
+        };
+    }
+
+    pub fn draw(self: *const Self) void {
+        for (self.transforms, self.materials) |*t, *m|
+            Renderer.draw_mesh(
+                &self.cube_mesh,
+                t.*,
+                m.*,
+            );
+    }
+
+    const SaveState = struct {
+        transforms: []const math.Mat4,
+        materials: []const mesh.Material,
+        environment: *const Renderer.Environment,
+    };
+
+    pub fn save(self: *const Self, scratch_alloc: Allocator, path: []const u8) !void {
+        const actual_path = try std.fmt.allocPrint(
+            scratch_alloc,
+            "{s}/{s}",
+            .{ Self.LEVEL_DIR, path },
+        );
+        var file = try std.fs.cwd().createFile(actual_path, .{});
+        defer file.close();
+
+        const options = std.json.StringifyOptions{
+            .whitespace = .indent_4,
+        };
+        const save_state = SaveState{
+            .transforms = self.transforms,
+            .materials = self.materials,
+            .environment = &self.environment,
+        };
+        try std.json.stringify(save_state, options, file.writer());
+    }
+
+    pub fn load(
+        self: *Self,
+        scratch_alloc: Allocator,
+        path: []const u8,
+    ) !void {
+        _ = self.arena.reset(.retain_capacity);
+
+        const actual_path = try std.fmt.allocPrint(
+            scratch_alloc,
+            "{s}/{s}",
+            .{ Self.LEVEL_DIR, path },
+        );
+        const file_mem = try Platform.FileMem.init(actual_path);
+        defer file_mem.deinit();
+
+        const ss = try std.json.parseFromSlice(
+            SaveState,
+            scratch_alloc,
+            file_mem.mem,
+            .{},
+        );
+
+        const save_state = &ss.value;
+        const arena_alloc = self.arena.allocator();
+        self.transforms = try arena_alloc.dupe(math.Mat4, save_state.transforms);
+        self.materials = try arena_alloc.dupe(mesh.Material, save_state.materials);
+        self.environment = save_state.environment.*;
+    }
+
+    pub fn imgui_ui(
+        self: *Self,
+        scratch_alloc: Allocator,
+    ) void {
+        var open: bool = true;
+        if (cimgui.igCollapsingHeader_BoolPtr(
+            "Level",
+            &open,
+            cimgui.ImGuiTreeNodeFlags_DefaultOpen,
+        )) {
+            _ = cimgui.igSeparatorText("Save/Load");
+            _ = cimgui.igInputText(
+                "File path",
+                &self.save_path,
+                self.save_path.len,
+                0,
+                null,
+                null,
+            );
+            const path = std.mem.sliceTo(&self.save_path, 0);
+            if (cimgui.igButton("Save level", .{})) {
+                self.save(scratch_alloc, path) catch |e|
+                    log.err(@src(), "Cannot save level to {s} due to {}", .{ path, e });
+            }
+            if (cimgui.igButton("Load level", .{})) {
+                self.load(scratch_alloc, path) catch |e|
+                    log.err(@src(), "Cannot load level from {s} due to {}", .{ path, e });
+            }
+        }
+    }
+};
+
+const Game = struct {
+    frame_arena: std.heap.ArenaAllocator = undefined,
+
+    level: Level = undefined,
+
+    free_camera: Camera = .{},
 
     const Self = @This();
 
     pub fn init() Self {
+        const frame_arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+
+        const level: Level = .empty();
         const camera: Camera = .{
             .position = .{ .y = -5.0, .z = 5.0 },
         };
-        const cube_mesh = gpu.Mesh.from_mesh(&mesh.Cube);
-        const environment: Renderer.Environment = .{
-            .lights_position = .{
-                .{ .x = 1.0, .y = 1.0, .z = 1.0 },
-                .{ .x = -1.0, .y = 1.0, .z = 1.0 },
-                .{ .x = 1.0, .y = -1.0, .z = 1.0 },
-                .{ .x = -1.0, .y = -1.0, .z = 1.0 },
-            },
-            .lights_color = .{
-                .{ .r = 1.0 },
-                .{ .g = 1.0 },
-                .{ .b = 1.0 },
-                .{ .r = 1.0, .g = 1.0, .b = 1.0 },
-            },
-            .direct_light_direction = .{ .x = 1.0, .y = 1.0, .z = -2.0 },
-            .direct_light_color = .{ .r = 1.0, .g = 1.0, .b = 1.0 },
-        };
-
-        const floor_transform = math.Mat4.IDENDITY
-            .translate(.{ .z = -0.5 })
-            .scale(.{ .x = 20.0, .y = 20.0, .z = 0.1 });
 
         return .{
+            .frame_arena = frame_arena,
+            .level = level,
             .free_camera = camera,
-            .cube_mesh = cube_mesh,
-            .environment = environment,
-            .floor_transform = floor_transform,
         };
     }
 
     pub fn update(self: *Self, dt: f32) void {
+        _ = self.frame_arena.reset(.retain_capacity);
+
         if (Platform.imgui_wants_to_handle_events())
             self.free_camera.active = false
         else
@@ -216,17 +323,8 @@ const Game = struct {
         self.free_camera.move(dt);
 
         Renderer.reset();
-        Renderer.draw_mesh(
-            &self.cube_mesh,
-            self.cube_transform,
-            .{ .albedo = .WHITE, .metallic = 0.5, .roughness = 0.5 },
-        );
-        Renderer.draw_mesh(
-            &self.cube_mesh,
-            self.floor_transform,
-            .{ .albedo = .WHITE, .metallic = 0.5, .roughness = 0.5 },
-        );
-        Renderer.render(&self.free_camera, &self.environment);
+        self.level.draw();
+        Renderer.render(&self.free_camera, &self.level.environment);
 
         {
             cimgui.prepare_frame();
@@ -236,7 +334,8 @@ const Game = struct {
             _ = cimgui.igShowDemoWindow(&a);
 
             cimgui.format("Free camera", &self.free_camera);
-            cimgui.format("Environment", &self.environment);
+            cimgui.format("Environment", &self.level.environment);
+            self.level.imgui_ui(self.frame_arena.allocator());
         }
     }
 };
