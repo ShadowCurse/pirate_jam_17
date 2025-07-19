@@ -155,10 +155,12 @@ void main() {
         float denominator = 4.0 * ndc * ndl + 0.0001;
         vec3 specular     = numerator / denominator;  
             
+        float shadow_value = 1.0;
+        if (use_shadow_map == 1)
+          shadow_value = (1.0 - shadow(vert_light_space_position, normal, to_light));
         // add to outgoing radiance
         radiance_out += (kD * albedo / PI + specular) *
-                        radiance * ndl *
-                        (1.0 - shadow(vert_light_space_position, normal, to_light));
+                        radiance * ndl * shadow_value;
     }
 
     vec3 ambient = albedo * ao;
