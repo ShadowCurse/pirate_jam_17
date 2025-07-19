@@ -98,11 +98,10 @@ pub fn present() void {
     sdl.assert(@src(), sdl.SDL_GL_SwapWindow(window));
 }
 
-pub fn mouse_clip() math.Vec3 {
-    return math.Vec3{
+pub fn mouse_clip() math.Vec2 {
+    return .{
         .x = (mouse_position.x / WINDOW_WIDTH * 2.0) - 1.0,
         .y = -((mouse_position.y / WINDOW_HEIGHT * 2.0) - 1.0),
-        .z = 1.0,
     };
 }
 

@@ -173,11 +173,28 @@ pub const Camera = struct {
         m.j.y *= -1.0;
         return m;
     }
+
+    pub fn mouse_to_ray(self: *const Self, mouse_pos: math.Vec2) math.Ray {
+        const world_near = self.transform()
+            .mul(self.perspective().inverse())
+            .mul_vec4(.{ .x = mouse_pos.x, .y = mouse_pos.y, .z = 1.0, .w = 1.0 });
+        const world_near_world =
+            world_near.shrink().div_f32(world_near.w);
+        const forward = world_near_world.sub(self.position).normalize();
+        return .{
+            .origin = self.position,
+            .direction = forward,
+        };
+    }
 };
 
 const Level = struct {
     arena: std.heap.ArenaAllocator = undefined,
     save_path: [128:0]u8 = .{0} ** 128,
+
+    selected_object: ?u32 = null,
+    selected_object_t: f32 = 0.0,
+
     objects: std.ArrayListUnmanaged(Object) = .{},
     environment: Renderer.Environment = .{},
 
@@ -208,13 +225,38 @@ const Level = struct {
         };
     }
 
-    pub fn draw(self: *const Self) void {
-        for (self.objects.items) |*object|
+    pub fn select_object(self: *Self, ray: *const math.Ray) void {
+        self.selected_object = null;
+        self.selected_object_t = 0.0;
+        var closest_t: f32 = std.math.floatMax(f32);
+        for (self.objects.items, 0..) |*object, i| {
+            const m = Assets.meshes.getPtrConst(object.model);
+            const t = object.transform();
+            if (m.ray_intersection(&t, ray)) |r| {
+                if (r.t < closest_t) {
+                    closest_t = r.t;
+                    self.selected_object = @intCast(i);
+                }
+            }
+        }
+    }
+
+    pub fn draw(self: *Self, dt: f32) void {
+        self.selected_object_t += dt;
+        for (self.objects.items, 0..) |*object, i| {
+            var material = Assets.materials.get(object.model);
+            if (self.selected_object) |so| {
+                if (so == i) {
+                    material.albedo =
+                        material.albedo.lerp(.TEAL, @abs(@sin(self.selected_object_t)));
+                }
+            }
             Renderer.draw_mesh(
                 Assets.gpu_meshes.getPtr(object.model),
                 object.transform(),
-                Assets.materials.get(object.model),
+                material,
             );
+        }
     }
 
     const SaveState = struct {
@@ -359,11 +401,14 @@ const Game = struct {
 
         self.free_camera.move(dt);
 
+        const mouse_clip = Platform.mouse_clip();
+        const camera_ray = self.free_camera.mouse_to_ray(mouse_clip);
+
         if (Input.keys.get(.LMB).was_pressed)
-            log.info(@src(), "LMB was pressed", .{});
+            self.level.select_object(&camera_ray);
 
         Renderer.reset();
-        self.level.draw();
+        self.level.draw(dt);
         Renderer.render(&self.free_camera, &self.level.environment);
 
         {
