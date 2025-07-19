@@ -9,3 +9,6 @@ zig-out/
 .direnv
 *.spv
 imgui.ini
+wasm/pirate_jam_17.js
+wasm/pirate_jam_17.wasm
+wasm/resources/*

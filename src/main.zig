@@ -18,6 +18,17 @@ pub const log_options = log.Options{
     .colors = builtin.target.os.tag != .emscripten,
 };
 
+/// For some reason emsdk does not have it, so raw dog it.
+export fn _emscripten_memcpy_js(dest: [*]u8, src: [*]u8, len: usize) void {
+    var d: []u8 = undefined;
+    d.ptr = dest;
+    d.len = len;
+    var s: []u8 = undefined;
+    s.ptr = src;
+    s.len = len;
+    @memcpy(d, s);
+}
+
 pub fn main() void {
     Platform.init();
     Renderer.init();
@@ -195,7 +206,7 @@ const Game = struct {
         Renderer.draw_mesh(
             &self.cube_mesh,
             .IDENDITY,
-            .{ .albedo = .RED, .metallic = 0.5, .roughness = 0.5 },
+            .{ .albedo = .WHITE, .metallic = 0.5, .roughness = 0.5 },
         );
         Renderer.render(&self.free_camera, &self.environment);
 
@@ -207,6 +218,7 @@ const Game = struct {
             _ = cimgui.igShowDemoWindow(&a);
 
             cimgui.format("Free camera", &self.free_camera);
+            cimgui.format("Environment", &self.environment);
         }
     }
 };

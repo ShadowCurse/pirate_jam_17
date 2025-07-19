@@ -1,11 +1,10 @@
 #version 300 es
 precision mediump float;
 
-out vec4 frag_color;
-
 in vec3 vert_position;
 in vec3 vert_normal;
-in vec4 vert_light_space_position;
+
+out vec4 frag_color;
 
 #define NUM_LIGHTS 4
 uniform vec3 camera_position;
@@ -58,7 +57,7 @@ void main() {
 
     vec3 base_reflectivity = vec3(0.04); 
     base_reflectivity = mix(base_reflectivity, albedo, metallic);
-	           
+
     vec3 radiance_out = vec3(0.0);
     for(int i = 0; i < NUM_LIGHTS; ++i) {
         // calculate per-light radiance
@@ -123,10 +122,9 @@ void main() {
 
     vec3 ambient = albedo * ao;
     vec3 color = ambient + radiance_out;
-	
+
     color = color / (color + vec3(1.0));
     color = pow(color, vec3(1.0 / 2.2));  
    
     frag_color = vec4(color, 1.0);
 }
-
