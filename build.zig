@@ -47,6 +47,7 @@ pub fn build(b: *std.Build) !void {
     artifact.addIncludePath(.{ .cwd_relative = env_map.get("SDL3_INCLUDE_PATH").? });
     artifact.addIncludePath(.{ .cwd_relative = env_map.get("LIBGL_INCLUDE_PATH").? });
     artifact.addIncludePath(b.path("thirdparty/cimgui"));
+    artifact.addIncludePath(b.path("thirdparty/cgltf/"));
     artifact.addIncludePath(b.path("thirdparty/stb/"));
     artifact.addCSourceFile(.{ .file = b.path("thirdparty/cgltf/cgltf.c") });
     artifact.addCSourceFile(.{ .file = b.path("thirdparty/stb/stb.c") });

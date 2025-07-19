@@ -14,6 +14,7 @@ const math = @import("math.zig");
 
 const Platform = @import("platform.zig");
 const Renderer = @import("renderer.zig");
+const Assets = @import("assets.zig");
 
 pub const log_options = log.Options{
     .level = .Info,
@@ -40,6 +41,7 @@ export fn _emscripten_memcpy_js(dest: [*]u8, src: [*]u8, len: usize) void {
 pub fn main() void {
     Platform.init();
     Renderer.init();
+    Assets.init();
 
     var game: Game = .init();
 
@@ -174,36 +176,47 @@ pub const Camera = struct {
 const Level = struct {
     arena: std.heap.ArenaAllocator = undefined,
     save_path: [128:0]u8 = .{0} ** 128,
-
-    cube_mesh: gpu.Mesh,
-    transforms: []const math.Mat4 = &.{},
-    materials: []const mesh.Material = &.{},
+    objects: std.ArrayListUnmanaged(Object) = .{},
     environment: Renderer.Environment = .{},
+
+    const Object = struct {
+        model: Assets.ModelType,
+        position: math.Vec3 = .{},
+        rotation_x: f32 = 0.0,
+        rotation_y: f32 = 0.0,
+        rotation_z: f32 = 0.0,
+        scale: math.Vec3 = .ONE,
+
+        fn transform(self: *const Object) math.Mat4 {
+            const rotation = math.Quat.from_axis_angle(.X, self.rotation_x)
+                .mul(math.Quat.from_axis_angle(.Y, self.rotation_y))
+                .mul(math.Quat.from_axis_angle(.Z, self.rotation_z))
+                .to_mat4();
+            return math.Mat4.IDENDITY.translate(self.position).scale(self.scale).mul(rotation);
+        }
+    };
 
     const LEVEL_DIR = "resources/levels";
     const Self = @This();
 
     pub fn empty() Self {
         const arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-        const cube_mesh = gpu.Mesh.from_mesh(&mesh.Cube);
         return .{
             .arena = arena,
-            .cube_mesh = cube_mesh,
         };
     }
 
     pub fn draw(self: *const Self) void {
-        for (self.transforms, self.materials) |*t, *m|
+        for (self.objects.items) |*object|
             Renderer.draw_mesh(
-                &self.cube_mesh,
-                t.*,
-                m.*,
+                Assets.gpu_meshes.getPtr(object.model),
+                object.transform(),
+                Assets.materials.get(object.model),
             );
     }
 
     const SaveState = struct {
-        transforms: []const math.Mat4,
-        materials: []const mesh.Material,
+        objects: []const Object,
         environment: *const Renderer.Environment,
     };
 
@@ -220,8 +233,7 @@ const Level = struct {
             .whitespace = .indent_4,
         };
         const save_state = SaveState{
-            .transforms = self.transforms,
-            .materials = self.materials,
+            .objects = self.objects.items,
             .environment = &self.environment,
         };
         try std.json.stringify(save_state, options, file.writer());
@@ -251,8 +263,7 @@ const Level = struct {
 
         const save_state = &ss.value;
         const arena_alloc = self.arena.allocator();
-        self.transforms = try arena_alloc.dupe(math.Mat4, save_state.transforms);
-        self.materials = try arena_alloc.dupe(mesh.Material, save_state.materials);
+        self.objects = .fromOwnedSlice(try arena_alloc.dupe(Object, save_state.objects));
         self.environment = save_state.environment.*;
     }
 
@@ -260,6 +271,7 @@ const Level = struct {
         self: *Self,
         scratch_alloc: Allocator,
     ) void {
+        var cimgui_id: i32 = 128;
         var open: bool = true;
         if (cimgui.igCollapsingHeader_BoolPtr(
             "Level",
@@ -284,6 +296,26 @@ const Level = struct {
                 self.load(scratch_alloc, path) catch |e|
                     log.err(@src(), "Cannot load level from {s} due to {}", .{ path, e });
             }
+            _ = cimgui.igSeparatorText("Add");
+            for (std.enums.values(Assets.ModelType)) |v| {
+                const n = std.fmt.allocPrintZ(scratch_alloc, "Add {}", .{v}) catch unreachable;
+                if (cimgui.igButton(n, .{})) {
+                    self.objects.append(self.arena.allocator(), .{ .model = v }) catch unreachable;
+                }
+            }
+            if (cimgui.igCollapsingHeader_BoolPtr(
+                "Objects",
+                &open,
+                cimgui.ImGuiTreeNodeFlags_DefaultOpen,
+            )) {
+                for (self.objects.items) |*object| {
+                    cimgui.igPushID_Int(cimgui_id);
+                    cimgui_id += 1;
+                    defer cimgui.igPopID();
+
+                    cimgui.format(null, object);
+                }
+            }
         }
     }
 };
@@ -300,7 +332,10 @@ const Game = struct {
     pub fn init() Self {
         const frame_arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
 
-        const level: Level = .empty();
+        var level: Level = .empty();
+        const DEFAULT_LEVEL = "test.json";
+        @memcpy(level.save_path[0..DEFAULT_LEVEL.len], DEFAULT_LEVEL);
+
         const camera: Camera = .{
             .position = .{ .y = -5.0, .z = 5.0 },
         };

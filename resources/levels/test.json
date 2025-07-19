@@ -1,0 +1,128 @@
+{
+    "objects": [
+        {
+            "model": "Floor",
+            "position": {
+                "x": 0e0,
+                "y": 0e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": {
+                "x": 1e1,
+                "y": 1e1,
+                "z": 1e1
+            }
+        },
+        {
+            "model": "Box",
+            "position": {
+                "x": 0e0,
+                "y": 0e0,
+                "z": 5e-1
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": {
+                "x": 1e0,
+                "y": 1e0,
+                "z": 1e0
+            }
+        },
+        {
+            "model": "Wall",
+            "position": {
+                "x": -4.840000152587891e0,
+                "y": 0e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": {
+                "x": 1e0,
+                "y": 1e0,
+                "z": 1e0
+            }
+        },
+        {
+            "model": "Wall",
+            "position": {
+                "x": 0e0,
+                "y": 5e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 1.5700000524520874e0,
+            "scale": {
+                "x": 1e0,
+                "y": 1e0,
+                "z": 1e0
+            }
+        }
+    ],
+    "environment": {
+        "lights_position": [
+            {
+                "x": 1e0,
+                "y": 1e0,
+                "z": 1e0
+            },
+            {
+                "x": -1e0,
+                "y": 1e0,
+                "z": 1e0
+            },
+            {
+                "x": 1e0,
+                "y": -1e0,
+                "z": 1e0
+            },
+            {
+                "x": -1e0,
+                "y": -1e0,
+                "z": 1e0
+            }
+        ],
+        "lights_color": [
+            {
+                "r": 1e0,
+                "g": 0e0,
+                "b": 0e0
+            },
+            {
+                "r": 0e0,
+                "g": 1e0,
+                "b": 0e0
+            },
+            {
+                "r": 0e0,
+                "g": 0e0,
+                "b": 1e0
+            },
+            {
+                "r": 1e0,
+                "g": 1e0,
+                "b": 1e0
+            }
+        ],
+        "direct_light_direction": {
+            "x": -6.99999988079071e-1,
+            "y": 1.059999942779541e0,
+            "z": -2.5999999046325684e0
+        },
+        "direct_light_color": {
+            "r": 1e0,
+            "g": 1e0,
+            "b": 1e0
+        },
+        "use_shadow_map": true,
+        "shadow_map_width": 3e1,
+        "shadow_map_height": 3e1,
+        "shadow_map_depth": 5e1
+    }
+}
