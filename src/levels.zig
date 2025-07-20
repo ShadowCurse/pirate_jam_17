@@ -1,0 +1,273 @@
+const std = @import("std");
+const Allocator = std.mem.Allocator;
+
+const cimgui = @import("bindings/cimgui.zig");
+
+const log = @import("log.zig");
+const math = @import("math.zig");
+
+const Camera = @import("root").Camera;
+const Platform = @import("platform.zig");
+const Renderer = @import("renderer.zig");
+const Assets = @import("assets.zig");
+
+const DEFAULT_LEVEL_DIR_PATH = "resources/levels";
+
+pub const Tag = enum {
+    @"0-1",
+    @"0-2",
+    @"1-1",
+    @"1-2",
+};
+
+pub const Levels = std.EnumArray(Tag, Level);
+
+var scratch: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
+pub var levels: Levels = undefined;
+
+pub fn init() void {
+    _ = scratch.reset(.retain_capacity);
+
+    const scratch_alloc = scratch.allocator();
+    inline for (0..Levels.len) |i| {
+        const tag = Levels.Indexer.keyForIndex(i);
+        const path = std.fmt.allocPrint(
+            scratch_alloc,
+            "{s}/{s}.json",
+            .{ DEFAULT_LEVEL_DIR_PATH, @tagName(tag) },
+        ) catch unreachable;
+
+        const level = levels.getPtr(tag);
+        level.* = .empty();
+        level.reset();
+        level.load(scratch_alloc, path) catch |e| {
+            log.err(@src(), "Error loading level from path: {s}: {}", .{ path, e });
+        };
+    }
+}
+
+pub const Level = struct {
+    arena: std.heap.ArenaAllocator = undefined,
+
+    // Edit
+    selected_object: ?u32 = null,
+    selected_object_t: f32 = 0.0,
+
+    // Player
+    holding_object: ?u32 = null,
+    put_down_object: ?u32 = null,
+
+    objects: std.ArrayListUnmanaged(Object) = .{},
+    environment: Renderer.Environment = .{},
+
+    const Object = struct {
+        model: Assets.ModelType,
+        position: math.Vec3 = .{},
+        rotation_x: f32 = 0.0,
+        rotation_y: f32 = 0.0,
+        rotation_z: f32 = 0.0,
+        scale: math.Vec3 = .ONE,
+
+        fn transform(self: *const Object) math.Mat4 {
+            const rotation = math.Quat.from_axis_angle(.X, self.rotation_x)
+                .mul(math.Quat.from_axis_angle(.Y, self.rotation_y))
+                .mul(math.Quat.from_axis_angle(.Z, self.rotation_z))
+                .to_mat4();
+            return math.Mat4.IDENDITY.translate(self.position).scale(self.scale).mul(rotation);
+        }
+    };
+
+    const PICKUP_DISTANCE: f32 = 1.5;
+    const Self = @This();
+
+    pub fn reset(self: *Self) void {
+        _ = self.arena.reset(.free_all);
+    }
+
+    pub fn empty() Self {
+        const arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+        return .{
+            .arena = arena,
+        };
+    }
+
+    pub fn select_object(self: *Self, ray: *const math.Ray) void {
+        self.selected_object = null;
+        self.selected_object_t = 0.0;
+        var closest_t: f32 = std.math.floatMax(f32);
+        for (self.objects.items, 0..) |*object, i| {
+            const m = Assets.meshes.getPtrConst(object.model);
+            const t = object.transform();
+            if (m.ray_intersection(&t, ray)) |r| {
+                if (r.t < closest_t) {
+                    closest_t = r.t;
+                    self.selected_object = @intCast(i);
+                }
+            }
+        }
+    }
+
+    pub fn player_pick_up_object(self: *Self, ray: *const math.Ray) void {
+        if (self.holding_object != null) return;
+
+        var closest_t: f32 = std.math.floatMax(f32);
+        for (self.objects.items, 0..) |*object, i| {
+            if (object.model != .Box) continue;
+            const m = Assets.meshes.getPtrConst(object.model);
+
+            if (Self.PICKUP_DISTANCE < object.position.sub(ray.origin).len())
+                continue;
+
+            const t = object.transform();
+            if (m.ray_intersection(&t, ray)) |r| {
+                if (r.t < closest_t) {
+                    closest_t = r.t;
+                    self.holding_object = @intCast(i);
+                }
+            }
+        }
+    }
+
+    pub fn player_put_down_object(self: *Self) void {
+        if (self.holding_object) |ho| {
+            if (self.put_down_object) |pdo| {
+                const object = &self.objects.items[pdo];
+                object.position.z = 0.0;
+            }
+            self.put_down_object = ho;
+        }
+        self.holding_object = null;
+    }
+
+    pub fn player_move_object(self: *Self, camera: *const Camera, dt: f32) void {
+        if (self.holding_object) |ho| {
+            const object = &self.objects.items[ho];
+            const new_position =
+                camera.position
+                    .add(camera.forward().mul_f32(1.0))
+                    .add(.{ .z = -0.5 });
+            object.position = object.position.exp_decay(new_position, 14.0, dt);
+            object.rotation_z = math.exp_decay(object.rotation_z, camera.yaw, 14.0, dt);
+        }
+    }
+
+    pub fn settle_put_down_object(self: *Self, dt: f32) void {
+        if (self.put_down_object) |pdo| {
+            const object = &self.objects.items[pdo];
+            object.position.z = math.exp_decay(object.position.z, 0.0, 20, dt);
+            if (object.position.z < 0.01) {
+                object.position.z = 0.0;
+                self.put_down_object = null;
+            }
+        }
+    }
+
+    pub fn draw(self: *Self, dt: f32) void {
+        self.selected_object_t += dt;
+        for (self.objects.items, 0..) |*object, i| {
+            var material = Assets.materials.get(object.model);
+            if (self.selected_object) |so| {
+                if (so == i) {
+                    material.albedo =
+                        material.albedo.lerp(.TEAL, @abs(@sin(self.selected_object_t)));
+                }
+            }
+            Renderer.draw_mesh(
+                Assets.gpu_meshes.getPtr(object.model),
+                object.transform(),
+                material,
+            );
+        }
+    }
+
+    const SaveState = struct {
+        objects: []const Object,
+        environment: *const Renderer.Environment,
+    };
+
+    pub fn save(self: *const Self, path: []const u8) !void {
+        var file = try std.fs.cwd().createFile(path, .{});
+        defer file.close();
+
+        const options = std.json.StringifyOptions{
+            .whitespace = .indent_4,
+        };
+        const save_state = SaveState{
+            .objects = self.objects.items,
+            .environment = &self.environment,
+        };
+        try std.json.stringify(save_state, options, file.writer());
+    }
+
+    pub fn load(
+        self: *Self,
+        scratch_alloc: Allocator,
+        path: []const u8,
+    ) !void {
+        _ = self.arena.reset(.retain_capacity);
+
+        const file_mem = try Platform.FileMem.init(path);
+        defer file_mem.deinit();
+
+        const ss = try std.json.parseFromSlice(
+            SaveState,
+            scratch_alloc,
+            file_mem.mem,
+            .{},
+        );
+
+        const save_state = &ss.value;
+        const arena_alloc = self.arena.allocator();
+        self.objects = .fromOwnedSlice(try arena_alloc.dupe(Object, save_state.objects));
+        self.environment = save_state.environment.*;
+    }
+
+    pub fn imgui_ui(
+        self: *Self,
+        scratch_alloc: Allocator,
+        tag: Tag,
+    ) void {
+        var open: bool = true;
+        if (cimgui.igCollapsingHeader_BoolPtr(
+            "Level",
+            &open,
+            cimgui.ImGuiTreeNodeFlags_DefaultOpen,
+        )) {
+            _ = cimgui.igSeparatorText("Save/Load");
+            const path = std.fmt.allocPrintZ(
+                scratch_alloc,
+                "{s}/{s}.json",
+                .{ DEFAULT_LEVEL_DIR_PATH, @tagName(tag) },
+            ) catch unreachable;
+            if (cimgui.igButton("Save level", .{})) {
+                self.save(path) catch |e|
+                    log.err(@src(), "Cannot save level to {s} due to {}", .{ path, e });
+            }
+            if (cimgui.igButton("Load level", .{})) {
+                self.load(scratch_alloc, path) catch |e|
+                    log.err(@src(), "Cannot load level from {s} due to {}", .{ path, e });
+            }
+
+            cimgui.format("Environment", &self.environment);
+
+            _ = cimgui.igSeparatorText("Add");
+            for (std.enums.values(Assets.ModelType)) |v| {
+                const n = std.fmt.allocPrintZ(scratch_alloc, "Add {}", .{v}) catch unreachable;
+                if (cimgui.igButton(n, .{})) {
+                    self.objects.append(
+                        self.arena.allocator(),
+                        .{ .model = v },
+                    ) catch unreachable;
+                }
+            }
+        }
+
+        if (self.selected_object) |so| {
+            _ = cimgui.igBegin("Selecte object", &open, 0);
+            defer cimgui.igEnd();
+
+            const object = &self.objects.items[so];
+            cimgui.format(null, object);
+        }
+    }
+};

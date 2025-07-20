@@ -15,6 +15,7 @@ const Platform = @import("platform.zig");
 const Renderer = @import("renderer.zig");
 const Assets = @import("assets.zig");
 const Input = @import("input.zig");
+const Levels = @import("levels.zig");
 
 pub const log_options = log.Options{
     .level = .Info,
@@ -42,6 +43,7 @@ pub fn main() void {
     Platform.init();
     Renderer.init();
     Assets.init();
+    Levels.init();
 
     var game: Game = .init();
 
@@ -84,12 +86,12 @@ pub const Camera = struct {
 
     const Self = @This();
 
-    fn forward(self: *const Self) math.Vec3 {
+    pub fn forward(self: *const Self) math.Vec3 {
         const rotation = math.Quat.from_axis_angle(.Z, self.yaw).mul(Camera.ORIENTATION).to_mat4();
         return rotation.mul_vec4(.Z).shrink();
     }
 
-    fn move(self: *Camera, dt: f32) void {
+    pub fn move(self: *Camera, dt: f32) void {
         self.active = Input.is_pressed(.WHEEL);
         if (!self.active) return;
         self.velocity.x =
@@ -211,248 +213,10 @@ fn player_camera_move(self: *Camera, dt: f32) void {
     self.velocity = self.velocity.add(self.acceleration.mul_f32(dt));
 }
 
-const Level = struct {
-    arena: std.heap.ArenaAllocator = undefined,
-    save_path: [128:0]u8 = .{0} ** 128,
-
-    // Edit
-    selected_object: ?u32 = null,
-    selected_object_t: f32 = 0.0,
-
-    // Player
-    holding_object: ?u32 = null,
-    put_down_object: ?u32 = null,
-
-    objects: std.ArrayListUnmanaged(Object) = .{},
-    environment: Renderer.Environment = .{},
-
-    const Object = struct {
-        model: Assets.ModelType,
-        position: math.Vec3 = .{},
-        rotation_x: f32 = 0.0,
-        rotation_y: f32 = 0.0,
-        rotation_z: f32 = 0.0,
-        scale: math.Vec3 = .ONE,
-
-        fn transform(self: *const Object) math.Mat4 {
-            const rotation = math.Quat.from_axis_angle(.X, self.rotation_x)
-                .mul(math.Quat.from_axis_angle(.Y, self.rotation_y))
-                .mul(math.Quat.from_axis_angle(.Z, self.rotation_z))
-                .to_mat4();
-            return math.Mat4.IDENDITY.translate(self.position).scale(self.scale).mul(rotation);
-        }
-    };
-
-    const LEVEL_DIR = "resources/levels";
-    const PICKUP_DISTANCE: f32 = 1.5;
-    const Self = @This();
-
-    pub fn empty() Self {
-        const arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-        return .{
-            .arena = arena,
-        };
-    }
-
-    pub fn select_object(self: *Self, ray: *const math.Ray) void {
-        self.selected_object = null;
-        self.selected_object_t = 0.0;
-        var closest_t: f32 = std.math.floatMax(f32);
-        for (self.objects.items, 0..) |*object, i| {
-            const m = Assets.meshes.getPtrConst(object.model);
-            const t = object.transform();
-            if (m.ray_intersection(&t, ray)) |r| {
-                if (r.t < closest_t) {
-                    closest_t = r.t;
-                    self.selected_object = @intCast(i);
-                }
-            }
-        }
-    }
-
-    pub fn player_pick_up_object(self: *Self, ray: *const math.Ray) void {
-        if (self.holding_object != null) return;
-
-        var closest_t: f32 = std.math.floatMax(f32);
-        for (self.objects.items, 0..) |*object, i| {
-            if (object.model != .Box) continue;
-            const m = Assets.meshes.getPtrConst(object.model);
-
-            if (Self.PICKUP_DISTANCE < object.position.sub(ray.origin).len())
-                continue;
-
-            const t = object.transform();
-            if (m.ray_intersection(&t, ray)) |r| {
-                if (r.t < closest_t) {
-                    closest_t = r.t;
-                    self.holding_object = @intCast(i);
-                }
-            }
-        }
-    }
-
-    pub fn player_put_down_object(self: *Self) void {
-        if (self.holding_object) |ho| {
-            if (self.put_down_object) |pdo| {
-                const object = &self.objects.items[pdo];
-                object.position.z = 0.0;
-            }
-            self.put_down_object = ho;
-        }
-        self.holding_object = null;
-    }
-
-    pub fn player_move_object(self: *Self, camera: *const Camera, dt: f32) void {
-        if (self.holding_object) |ho| {
-            const object = &self.objects.items[ho];
-            const new_position =
-                camera.position
-                    .add(camera.forward().mul_f32(1.0))
-                    .add(.{ .z = -0.5 });
-            object.position = object.position.exp_decay(new_position, 14.0, dt);
-            object.rotation_z = math.exp_decay(object.rotation_z, camera.yaw, 14.0, dt);
-        }
-    }
-
-    pub fn settle_put_down_object(self: *Self, dt: f32) void {
-        if (self.put_down_object) |pdo| {
-            const object = &self.objects.items[pdo];
-            object.position.z = math.exp_decay(object.position.z, 0.0, 20, dt);
-            if (object.position.z < 0.01) {
-                object.position.z = 0.0;
-                self.put_down_object = null;
-            }
-        }
-    }
-
-    pub fn draw(self: *Self, dt: f32) void {
-        self.selected_object_t += dt;
-        for (self.objects.items, 0..) |*object, i| {
-            var material = Assets.materials.get(object.model);
-            if (self.selected_object) |so| {
-                if (so == i) {
-                    material.albedo =
-                        material.albedo.lerp(.TEAL, @abs(@sin(self.selected_object_t)));
-                }
-            }
-            Renderer.draw_mesh(
-                Assets.gpu_meshes.getPtr(object.model),
-                object.transform(),
-                material,
-            );
-        }
-    }
-
-    const SaveState = struct {
-        objects: []const Object,
-        environment: *const Renderer.Environment,
-    };
-
-    pub fn save(self: *const Self, scratch_alloc: Allocator, path: []const u8) !void {
-        const actual_path = try std.fmt.allocPrint(
-            scratch_alloc,
-            "{s}/{s}",
-            .{ Self.LEVEL_DIR, path },
-        );
-        var file = try std.fs.cwd().createFile(actual_path, .{});
-        defer file.close();
-
-        const options = std.json.StringifyOptions{
-            .whitespace = .indent_4,
-        };
-        const save_state = SaveState{
-            .objects = self.objects.items,
-            .environment = &self.environment,
-        };
-        try std.json.stringify(save_state, options, file.writer());
-    }
-
-    pub fn load(
-        self: *Self,
-        scratch_alloc: Allocator,
-        path: []const u8,
-    ) !void {
-        _ = self.arena.reset(.retain_capacity);
-
-        const actual_path = try std.fmt.allocPrint(
-            scratch_alloc,
-            "{s}/{s}",
-            .{ Self.LEVEL_DIR, path },
-        );
-        const file_mem = try Platform.FileMem.init(actual_path);
-        defer file_mem.deinit();
-
-        const ss = try std.json.parseFromSlice(
-            SaveState,
-            scratch_alloc,
-            file_mem.mem,
-            .{},
-        );
-
-        const save_state = &ss.value;
-        const arena_alloc = self.arena.allocator();
-        self.objects = .fromOwnedSlice(try arena_alloc.dupe(Object, save_state.objects));
-        self.environment = save_state.environment.*;
-    }
-
-    pub fn imgui_ui(
-        self: *Self,
-        scratch_alloc: Allocator,
-    ) void {
-        var open: bool = true;
-        if (cimgui.igCollapsingHeader_BoolPtr(
-            "Level",
-            &open,
-            cimgui.ImGuiTreeNodeFlags_DefaultOpen,
-        )) {
-            _ = cimgui.igSeparatorText("Save/Load");
-            _ = cimgui.igInputText(
-                "File path",
-                &self.save_path,
-                self.save_path.len,
-                0,
-                null,
-                null,
-            );
-            const path = std.mem.sliceTo(&self.save_path, 0);
-            if (cimgui.igButton("Save level", .{})) {
-                self.save(scratch_alloc, path) catch |e|
-                    log.err(@src(), "Cannot save level to {s} due to {}", .{ path, e });
-            }
-            if (cimgui.igButton("Load level", .{})) {
-                self.load(scratch_alloc, path) catch |e|
-                    log.err(@src(), "Cannot load level from {s} due to {}", .{ path, e });
-            }
-
-            cimgui.format("Environment", &self.environment);
-
-            _ = cimgui.igSeparatorText("Add");
-            for (std.enums.values(Assets.ModelType)) |v| {
-                const n = std.fmt.allocPrintZ(scratch_alloc, "Add {}", .{v}) catch unreachable;
-                if (cimgui.igButton(n, .{})) {
-                    self.objects.append(
-                        self.arena.allocator(),
-                        .{ .model = v },
-                    ) catch unreachable;
-                }
-            }
-        }
-
-        if (self.selected_object) |so| {
-            _ = cimgui.igBegin("Selecte object", &open, 0);
-            defer cimgui.igEnd();
-
-            const object = &self.objects.items[so];
-            cimgui.format(null, object);
-        }
-    }
-};
-
 const Game = struct {
     frame_arena: std.heap.ArenaAllocator = undefined,
 
-    level: Level = undefined,
-
+    current_level_tag: Levels.Tag = .@"0-1",
     mode: Mode = .Edit,
     free_camera: Camera = .{},
     player_camera: Camera = .{},
@@ -467,10 +231,6 @@ const Game = struct {
     pub fn init() Self {
         const frame_arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
 
-        var level: Level = .empty();
-        const DEFAULT_LEVEL = "test.json";
-        @memcpy(level.save_path[0..DEFAULT_LEVEL.len], DEFAULT_LEVEL);
-
         const free_camera: Camera = .{
             .position = .{ .y = -5.0, .z = 5.0 },
         };
@@ -482,7 +242,6 @@ const Game = struct {
 
         return .{
             .frame_arena = frame_arena,
-            .level = level,
             .free_camera = free_camera,
             .player_camera = player_camera,
         };
@@ -500,20 +259,21 @@ const Game = struct {
             Platform.hide_mouse(false);
         }
 
+        const current_level = Levels.levels.getPtr(self.current_level_tag);
+
         const camera_in_use = switch (self.mode) {
             .Game => blk: {
                 Platform.reset_mouse();
                 player_camera_move(&self.player_camera, dt);
 
-                // const mouse_clip = Platform.mouse_clip();
                 const camera_ray = self.player_camera.mouse_to_ray(.{});
 
                 if (Input.was_pressed(.LMB))
-                    self.level.player_pick_up_object(&camera_ray);
+                    current_level.player_pick_up_object(&camera_ray);
                 if (Input.was_pressed(.RMB))
-                    self.level.player_put_down_object();
-                self.level.player_move_object(&self.player_camera, dt);
-                self.level.settle_put_down_object(dt);
+                    current_level.player_put_down_object();
+                current_level.player_move_object(&self.player_camera, dt);
+                current_level.settle_put_down_object(dt);
 
                 break :blk &self.player_camera;
             },
@@ -524,17 +284,17 @@ const Game = struct {
                 const camera_ray = self.free_camera.mouse_to_ray(mouse_clip);
 
                 if (Input.was_pressed(.LMB))
-                    self.level.select_object(&camera_ray);
+                    current_level.select_object(&camera_ray);
                 if (Input.was_pressed(.RMB))
-                    self.level.selected_object = null;
+                    current_level.selected_object = null;
 
                 break :blk &self.free_camera;
             },
         };
 
         Renderer.reset();
-        self.level.draw(dt);
-        Renderer.render(camera_in_use, &self.level.environment);
+        current_level.draw(dt);
+        Renderer.render(camera_in_use, &current_level.environment);
 
         {
             cimgui.prepare_frame();
@@ -552,11 +312,18 @@ const Game = struct {
                     &open,
                     cimgui.ImGuiTreeNodeFlags_DefaultOpen,
                 )) {
+                    _ = cimgui.igSeparatorText("Cameras");
                     cimgui.format("Player camera", &self.player_camera);
                     cimgui.format("Free camera", &self.free_camera);
+                    _ = cimgui.igSeparatorText("Levels selection");
+                    cimgui.format("Current level", &self.current_level_tag);
+                    
+                    if (cimgui.igButton("Reload levels", .{})) {
+                        Levels.init();
+                    }
                 }
 
-                self.level.imgui_ui(self.frame_arena.allocator());
+                current_level.imgui_ui(self.frame_arena.allocator(), self.current_level_tag);
                 Input.imgui_ui();
             }
         }
