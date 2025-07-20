@@ -31,6 +31,8 @@ pub fn format(name: ?[*c]const u8, v: anytype) void {
     switch (type_info) {
         .pointer => |pointer| {
             const type_name: [*c]const u8 = if (name) |n| n else @typeName(t);
+            cimgui.igPushID_Str(type_name);
+            defer cimgui.igPopID();
             if (!fmt_simple_type(type_name, v)) {
                 const child_type_info = @typeInfo(pointer.child);
                 switch (child_type_info) {
