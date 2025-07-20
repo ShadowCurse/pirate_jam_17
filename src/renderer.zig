@@ -5,6 +5,8 @@ const math = @import("math.zig");
 const gpu = @import("gpu.zig");
 const shaders = @import("shaders.zig");
 
+const Platform = @import("platform.zig");
+
 const Camera = @import("root").Camera;
 const Mesh = @import("mesh.zig");
 
@@ -13,6 +15,8 @@ var mesh_infos: std.BoundedArray(RenderMeshInfo, 128) = .{};
 
 var shadow_map_shader: shaders.ShadowMapShader = undefined;
 var shadow_map: gpu.ShadowMap = undefined;
+
+var cursor_shader: shaders.CursorShader = undefined;
 
 const RenderMeshInfo = struct {
     mesh: *const gpu.Mesh,
@@ -30,6 +34,7 @@ pub const Environment = struct {
     shadow_map_width: f32 = 10.0,
     shadow_map_height: f32 = 10.0,
     shadow_map_depth: f32 = 50.0,
+    cursor_size: f32 = 0.05,
 
     pub fn shadow_map_view(e: *const Environment) math.Mat4 {
         return math.Mat4.look_at(
@@ -59,6 +64,7 @@ pub fn init() void {
     Self.mesh_shader = .init();
     Self.shadow_map_shader = .init();
     Self.shadow_map = .init();
+    Self.cursor_shader = .init();
 }
 
 pub fn reset() void {
@@ -128,4 +134,9 @@ pub fn render(
         Self.mesh_shader.set_mesh_params(&mi.model, &mi.material);
         mi.mesh.draw();
     }
+
+    Self.cursor_shader.draw(.{
+        .x = environment.cursor_size,
+        .y = environment.cursor_size * Platform.WINDOW_WIDTH / Platform.WINDOW_HEIGHT,
+    });
 }
