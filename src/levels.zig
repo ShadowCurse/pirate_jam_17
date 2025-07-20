@@ -58,6 +58,7 @@ pub const Level = struct {
     // Player
     holding_object: ?u32 = null,
     put_down_object: ?u32 = null,
+    box_on_the_platform: bool = false,
 
     objects: std.ArrayListUnmanaged(Object) = .{},
     environment: Renderer.Environment = .{},
@@ -135,6 +136,7 @@ pub const Level = struct {
             if (self.put_down_object) |pdo| {
                 const object = &self.objects.items[pdo];
                 object.position.z = 0.0;
+                self.is_box_on_the_platform();
             }
             self.put_down_object = ho;
         }
@@ -158,6 +160,8 @@ pub const Level = struct {
             const object = &self.objects.items[pdo];
             object.position.z = math.exp_decay(object.position.z, 0.0, 20, dt);
             if (object.position.z < 0.01) {
+                self.is_box_on_the_platform();
+
                 object.position.z = 0.0;
                 self.put_down_object = null;
             }
@@ -191,6 +195,31 @@ pub const Level = struct {
         }
     }
 
+    fn is_box_on_the_platform(self: *Self) void {
+        if (self.put_down_object) |pdo| {
+            const object = &self.objects.items[pdo];
+
+            var r1 = Assets.aabbs.get(object.model);
+            r1.rotation = object.rotation_z;
+            const r1_position = object.position.xy();
+
+            for (self.objects.items) |*o| {
+                if (o.model != .Platform) continue;
+
+                const r2 = Assets.aabbs.get(o.model);
+                const r2_position = o.position.xy();
+                if (physics.rectangle_inside_rectangle(
+                    r1,
+                    r1_position,
+                    r2,
+                    r2_position,
+                )) {
+                    self.box_on_the_platform = true;
+                }
+            }
+        }
+    }
+
     pub fn draw(self: *Self, dt: f32) void {
         self.selected_object_t += dt;
         for (self.objects.items, 0..) |*object, i| {
@@ -201,6 +230,9 @@ pub const Level = struct {
                         material.albedo.lerp(.TEAL, @abs(@sin(self.selected_object_t)));
                 }
             }
+            if (object.model == .Platform and self.box_on_the_platform)
+                material.albedo = .GREEN;
+
             Renderer.draw_mesh(
                 Assets.gpu_meshes.getPtr(object.model),
                 object.transform(),

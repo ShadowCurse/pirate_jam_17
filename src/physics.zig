@@ -1,3 +1,4 @@
+const std = @import("std");
 const math = @import("math.zig");
 
 pub const Body = struct {
@@ -73,8 +74,42 @@ pub fn circle_rectangle_collision(
     }
 }
 
+// Returns true if rectangle 1 is inside rectangle 2.
+// Assume rectangle 2 is never rotated.
+pub fn rectangle_inside_rectangle(
+    r1: Rectangle,
+    r1_position: math.Vec2,
+    r2: Rectangle,
+    r2_position: math.Vec2,
+) bool {
+    const angle = r1.rotation;
+    const r1_x_axis = math.Vec2{ .x = @cos(angle), .y = @sin(angle) };
+    const r1_y_axis = math.Vec2{ .x = -@sin(angle), .y = @cos(angle) };
+    const r1_half_width = r1.size.x / 2.0;
+    const r1_half_height = r1.size.y / 2.0;
+
+    const p0 = r1_x_axis.mul_f32(r1_half_width).add(r1_y_axis.mul_f32(r1_half_height));
+    const p1 = r1_x_axis.mul_f32(-r1_half_width).add(r1_y_axis.mul_f32(r1_half_height));
+    const p2 = r1_x_axis.mul_f32(-r1_half_width).add(r1_y_axis.mul_f32(-r1_half_height));
+    const p3 = r1_x_axis.mul_f32(r1_half_width).add(r1_y_axis.mul_f32(-r1_half_height));
+
+    const r1_min_x: f32 = r1_position.x + @min(@min(p0.x, p1.x), @min(p2.x, p3.x));
+    const r1_max_x: f32 = r1_position.x + @max(@max(p0.x, p1.x), @max(p2.x, p3.x));
+    const r1_min_y: f32 = r1_position.y + @min(@min(p0.y, p1.y), @min(p2.y, p3.y));
+    const r1_max_y: f32 = r1_position.y + @max(@max(p0.y, p1.y), @max(p2.y, p3.y));
+
+    const r2_half_width = r2.size.x / 2.0;
+    const r2_half_height = r2.size.y / 2.0;
+    const r2_min_x = r2_position.x - r2_half_width;
+    const r2_max_x = r2_position.x + r2_half_width;
+    const r2_min_y = r2_position.y - r2_half_height;
+    const r2_max_y = r2_position.y + r2_half_height;
+
+    return r2_min_x <= r1_min_x and r1_max_x <= r2_max_x and
+        r2_min_y <= r1_min_y and r1_max_y <= r2_max_y;
+}
+
 test "test_circle_rectangle_collision" {
-    const std = @import("std");
     const expect = std.testing.expect;
     // no rotation
     // no collision
