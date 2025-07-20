@@ -81,7 +81,13 @@ pub const Camera = struct {
 
     // make Z point up and X/Y to be a ground plane
     pub const ORIENTATION = math.Quat.from_rotation_axis(.X, .NEG_Z, .Y);
+
     const Self = @This();
+
+    fn forward(self: *const Self) math.Vec3 {
+        const rotation = math.Quat.from_axis_angle(.Z, self.yaw).mul(Camera.ORIENTATION).to_mat4();
+        return rotation.mul_vec4(.Z).shrink();
+    }
 
     fn move(self: *Camera, dt: f32) void {
         self.active = Input.is_pressed(.WHEEL);
@@ -140,10 +146,10 @@ pub const Camera = struct {
             .mul_vec4(.{ .x = mouse_pos.x, .y = mouse_pos.y, .z = 1.0, .w = 1.0 });
         const world_near_world =
             world_near.shrink().div_f32(world_near.w);
-        const forward = world_near_world.sub(self.position).normalize();
+        const f = world_near_world.sub(self.position).normalize();
         return .{
             .origin = self.position,
-            .direction = forward,
+            .direction = f,
         };
     }
 };
@@ -209,8 +215,12 @@ const Level = struct {
     arena: std.heap.ArenaAllocator = undefined,
     save_path: [128:0]u8 = .{0} ** 128,
 
+    // Edit
     selected_object: ?u32 = null,
     selected_object_t: f32 = 0.0,
+
+    // Player
+    holding_object: ?u32 = null,
 
     objects: std.ArrayListUnmanaged(Object) = .{},
     environment: Renderer.Environment = .{},
@@ -255,6 +265,40 @@ const Level = struct {
                     self.selected_object = @intCast(i);
                 }
             }
+        }
+    }
+
+    pub fn player_pick_up_object(self: *Self, ray: *const math.Ray) void {
+        if (self.holding_object != null) return;
+
+        var closest_t: f32 = std.math.floatMax(f32);
+        for (self.objects.items, 0..) |*object, i| {
+            if (object.model != .Box) continue;
+            const m = Assets.meshes.getPtrConst(object.model);
+            const t = object.transform();
+            if (m.ray_intersection(&t, ray)) |r| {
+                if (r.t < closest_t) {
+                    closest_t = r.t;
+                    self.holding_object = @intCast(i);
+                }
+            }
+        }
+    }
+
+    pub fn player_put_down_object(self: *Self) void {
+        if (self.holding_object) |ho| {
+            const object = &self.objects.items[ho];
+            object.position.z = 0.0;
+        }
+        self.holding_object = null;
+    }
+
+    pub fn player_move_object(self: *Self, camera: *const Camera) void {
+        if (self.holding_object) |ho| {
+            const object = &self.objects.items[ho];
+            object.position = camera.position
+                .add(camera.forward().mul_f32(1.0))
+                .add(.{ .z = -0.5 });
         }
     }
 
@@ -437,21 +481,32 @@ const Game = struct {
             .Game => blk: {
                 Platform.reset_mouse();
                 player_camera_move(&self.player_camera, dt);
+
+                // const mouse_clip = Platform.mouse_clip();
+                const camera_ray = self.player_camera.mouse_to_ray(.{});
+
+                if (Input.was_pressed(.LMB))
+                    self.level.player_pick_up_object(&camera_ray);
+                if (Input.was_pressed(.RMB))
+                    self.level.player_put_down_object();
+                self.level.player_move_object(&self.player_camera);
+
                 break :blk &self.player_camera;
             },
             .Edit => blk: {
                 free_camera_move(&self.free_camera, dt);
+
+                const mouse_clip = Platform.mouse_clip();
+                const camera_ray = self.free_camera.mouse_to_ray(mouse_clip);
+
+                if (Input.was_pressed(.LMB))
+                    self.level.select_object(&camera_ray);
+                if (Input.was_pressed(.RMB))
+                    self.level.selected_object = null;
+
                 break :blk &self.free_camera;
             },
         };
-
-        const mouse_clip = Platform.mouse_clip();
-        const camera_ray = camera_in_use.mouse_to_ray(mouse_clip);
-
-        if (Input.was_pressed(.LMB))
-            self.level.select_object(&camera_ray);
-        if (Input.was_pressed(.RMB))
-            self.level.selected_object = null;
 
         Renderer.reset();
         self.level.draw(dt);
