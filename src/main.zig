@@ -243,6 +243,7 @@ const Level = struct {
     };
 
     const LEVEL_DIR = "resources/levels";
+    const PICKUP_DISTANCE: f32 = 1.5;
     const Self = @This();
 
     pub fn empty() Self {
@@ -275,6 +276,10 @@ const Level = struct {
         for (self.objects.items, 0..) |*object, i| {
             if (object.model != .Box) continue;
             const m = Assets.meshes.getPtrConst(object.model);
+
+            if (Self.PICKUP_DISTANCE < object.position.sub(ray.origin).len())
+                continue;
+
             const t = object.transform();
             if (m.ray_intersection(&t, ray)) |r| {
                 if (r.t < closest_t) {
