@@ -102,10 +102,11 @@ pub const Vec2 = extern struct {
     x: f32 = 0.0,
     y: f32 = 0.0,
 
-    pub const X: Vec2 = .{ .x = 1.0, .y = 0.0 };
-    pub const NEG_X: Vec2 = .{ .x = -1.0, .y = 0.0 };
-    pub const Y: Vec2 = .{ .x = 0.0, .y = 1.0 };
-    pub const NEG_Y: Vec2 = .{ .x = 0.0, .y = -1.0 };
+    pub const ONE: Vec2 = .{ .x = 1.0, .y = 1.0 };
+    pub const X: Vec2 = .{ .x = 1.0 };
+    pub const NEG_X: Vec2 = .{ .x = -1.0 };
+    pub const Y: Vec2 = .{ .y = 1.0 };
+    pub const NEG_Y: Vec2 = .{ .y = -1.0 };
 
     pub inline fn eq(self: Vec2, other: Vec2) bool {
         return self.x == other.x and
@@ -321,6 +322,14 @@ pub const Vec4 = extern struct {
     y: f32 = 0.0,
     z: f32 = 0.0,
     w: f32 = 0.0,
+
+    pub const ONE: Vec4 = .{ .x = 1.0, .y = 1.0, .z = 1.0, .w = 1.0 };
+    pub const X: Vec4 = .{ .x = 1.0 };
+    pub const NEG_X: Vec4 = .{ .x = -1.0 };
+    pub const Y: Vec4 = .{ .y = 1.0 };
+    pub const NEG_Y: Vec4 = .{ .y = -1.0 };
+    pub const Z: Vec4 = .{ .z = 1.0 };
+    pub const NEG_Z: Vec4 = .{ .z = -1.0 };
 
     pub inline fn eq(self: Vec4, other: Vec4) bool {
         return self.x == other.x and
