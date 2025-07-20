@@ -39,6 +39,7 @@ pub fn build(b: *std.Build) !void {
             .root_source_file = b.path("src/main.zig"),
             .target = target,
             .optimize = optimize,
+            .use_llvm = false,
         });
         exe.linkSystemLibrary("SDL3");
         exe.linkSystemLibrary("GL");
@@ -58,6 +59,10 @@ pub fn build(b: *std.Build) !void {
     if (target.result.os.tag != .emscripten) {
         const run_cmd = b.addRunArtifact(artifact);
         run_cmd.step.dependOn(b.getInstallStep());
+
+        if (b.option(bool, "X11", "Use X11 backend") == null) {
+            run_cmd.setEnvironmentVariable("SDL_VIDEODRIVER", "wayland");
+        }
 
         const run_step = b.step("run", "Run the app");
         run_step.dependOn(&run_cmd.step);
