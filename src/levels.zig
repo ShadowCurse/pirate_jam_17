@@ -5,8 +5,10 @@ const cimgui = @import("bindings/cimgui.zig");
 
 const log = @import("log.zig");
 const math = @import("math.zig");
+const physics = @import("physics.zig");
 
 const Camera = @import("root").Camera;
+const PLAYER_CIRCLE = @import("root").PLAYER_CIRCLE;
 const Platform = @import("platform.zig");
 const Renderer = @import("renderer.zig");
 const Assets = @import("assets.zig");
@@ -158,6 +160,33 @@ pub const Level = struct {
             if (object.position.z < 0.01) {
                 object.position.z = 0.0;
                 self.put_down_object = null;
+            }
+        }
+    }
+
+    pub fn player_collide(self: *const Self, camera: *Camera) void {
+        for (self.objects.items, 0..) |*object, i| {
+            if (object.model == .Box) {
+                if (self.holding_object) |ho| {
+                    if (ho == i)
+                        continue;
+                }
+            }
+            if (object.model != .Wall and object.model != .Box) continue;
+
+            var wall_rectangle = Assets.aabbs.get(object.model);
+            wall_rectangle.rotation = object.rotation_z;
+            const wall_position = object.position.xy();
+
+            if (physics.circle_rectangle_collision(
+                PLAYER_CIRCLE,
+                camera.position.xy(),
+                wall_rectangle,
+                wall_position,
+            )) |collision| {
+                camera.position = collision.position
+                    .add(collision.normal.mul_f32(PLAYER_CIRCLE.radius))
+                    .extend(1.0);
             }
         }
     }

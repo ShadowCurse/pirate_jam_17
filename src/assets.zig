@@ -7,6 +7,7 @@ const cgltf = @import("bindings/cgltf.zig");
 const log = @import("log.zig");
 const gpu = @import("gpu.zig");
 const math = @import("math.zig");
+const physics = @import("physics.zig");
 
 const Mesh = @import("mesh.zig");
 
@@ -30,12 +31,14 @@ const MODEL_PATHS = ModelPathsType.init(.{
 pub const GpuMeshes = std.EnumArray(ModelType, gpu.Mesh);
 pub const Materials = std.EnumArray(ModelType, Mesh.Material);
 pub const Meshes = std.EnumArray(ModelType, Mesh);
+pub const AABBs = std.EnumArray(ModelType, physics.Rectangle);
 
 var arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
 var scratch: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
 pub var gpu_meshes: GpuMeshes = undefined;
 pub var materials: Materials = undefined;
 pub var meshes: Meshes = undefined;
+pub var aabbs: AABBs = undefined;
 
 const Self = @This();
 
@@ -58,6 +61,30 @@ pub fn init() void {
     for (std.enums.values(ModelType)) |v| {
         gpu_meshes.getPtr(v).* = gpu.Mesh.from_mesh(meshes.getPtrConst(v));
     }
+
+    for (std.enums.values(ModelType)) |v| {
+        aabbs.getPtr(v).* = calculate_aabb(meshes.getPtrConst(v));
+    }
+}
+
+pub fn calculate_aabb(mesh: *const Mesh) physics.Rectangle {
+    var min_x: f32 = 0.0;
+    var max_x: f32 = 0.0;
+    var min_y: f32 = 0.0;
+    var max_y: f32 = 0.0;
+
+    for (mesh.vertices) |*v| {
+        min_x = @min(min_x, v.position.x);
+        max_x = @max(max_x, v.position.x);
+        min_y = @min(min_y, v.position.y);
+        max_y = @max(max_y, v.position.y);
+    }
+    const width = max_x - min_x;
+    const height = max_y - min_y;
+    log.info(@src(), "aabb: {d} / {d}", .{ width, height });
+    return .{
+        .size = .{ .x = width, .y = height },
+    };
 }
 
 pub fn load_model(

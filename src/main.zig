@@ -10,6 +10,7 @@ const log = @import("log.zig");
 const gpu = @import("gpu.zig");
 const mesh = @import("mesh.zig");
 const math = @import("math.zig");
+const physics = @import("physics.zig");
 
 const Platform = @import("platform.zig");
 const Renderer = @import("renderer.zig");
@@ -38,6 +39,8 @@ export fn _emscripten_memcpy_js(dest: [*]u8, src: [*]u8, len: usize) void {
     s.len = len;
     @memcpy(d, s);
 }
+
+pub const PLAYER_CIRCLE: physics.Circle = .{ .radius = 0.12 };
 
 pub fn main() void {
     Platform.init();
@@ -218,6 +221,7 @@ const Game = struct {
 
     current_level_tag: Levels.Tag = .@"0-1",
     mode: Mode = .Edit,
+
     free_camera: Camera = .{},
     player_camera: Camera = .{},
 
@@ -274,6 +278,8 @@ const Game = struct {
                     current_level.player_put_down_object();
                 current_level.player_move_object(&self.player_camera, dt);
                 current_level.settle_put_down_object(dt);
+
+                current_level.player_collide(&self.player_camera);
 
                 break :blk &self.player_camera;
             },
