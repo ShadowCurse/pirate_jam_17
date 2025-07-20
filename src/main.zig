@@ -72,6 +72,8 @@ pub const Camera = struct {
     far: f32 = 10000.0,
 
     velocity: math.Vec3 = .{},
+    acceleration: math.Vec3 = .{},
+    friction: f32 = 0.1,
     speed: f32 = 5.0,
     sensitivity: f32 = 1.0,
 
@@ -175,13 +177,6 @@ fn free_camera_move(self: *Camera, dt: f32) void {
 }
 
 fn player_camera_move(self: *Camera, dt: f32) void {
-    self.velocity.x =
-        -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.A)))) +
-        1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.D))));
-    self.velocity.y =
-        -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.S)))) +
-        1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.W))));
-
     self.yaw -= Input.mouse_motion.x * self.sensitivity * dt;
     self.pitch -= Input.mouse_motion.y * self.sensitivity * dt;
     if (math.PI / 2.0 < self.pitch) {
@@ -191,10 +186,23 @@ fn player_camera_move(self: *Camera, dt: f32) void {
         self.pitch = -math.PI / 2.0;
     }
 
-    const rotation = math.Quat.from_axis_angle(.Z, self.yaw).to_mat4();
-    const velocity = self.velocity.mul_f32(self.speed * dt).extend(1.0);
-    const delta = rotation.mul_vec4(velocity);
-    self.position = self.position.add(delta.shrink());
+    const rotation = math.Quat.from_axis_angle(.Z, self.yaw).mul(Camera.ORIENTATION).to_mat4();
+    const forward = rotation.mul_vec4(.Z).shrink();
+    const right = rotation.mul_vec4(.X).shrink();
+
+    const fa =
+        -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.S)))) +
+        1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.W))));
+    const ra =
+        -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.A)))) +
+        1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.D))));
+    self.acceleration = forward.mul_f32(fa).add(right.mul_f32(ra)).mul_f32(self.speed);
+
+    self.acceleration = self.acceleration.sub(self.velocity.mul_f32(self.friction));
+    self.position = self.acceleration.mul_f32(0.5 * dt * dt)
+        .add(self.velocity.mul_f32(dt))
+        .add(self.position);
+    self.velocity = self.velocity.add(self.acceleration.mul_f32(dt));
 }
 
 const Level = struct {
@@ -401,6 +409,8 @@ const Game = struct {
         };
         const player_camera: Camera = .{
             .position = .{ .y = -2.0, .z = 1.0 },
+            .friction = 12.0,
+            .speed = 50.0,
         };
 
         return .{
@@ -465,6 +475,7 @@ const Game = struct {
                     &open,
                     cimgui.ImGuiTreeNodeFlags_DefaultOpen,
                 )) {
+                    cimgui.format("Player camera", &self.player_camera);
                     cimgui.format("Free camera", &self.free_camera);
                 }
 
