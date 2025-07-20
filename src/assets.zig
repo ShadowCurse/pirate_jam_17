@@ -16,6 +16,7 @@ pub const ModelType = enum {
     Floor,
     Wall,
     Box,
+    Platform,
 };
 
 const ModelPathsType = std.EnumArray(ModelType, [:0]const u8);
@@ -23,6 +24,7 @@ const MODEL_PATHS = ModelPathsType.init(.{
     .Floor = DEFAULT_MESHES_DIR_PATH ++ "/floor.glb",
     .Wall = DEFAULT_MESHES_DIR_PATH ++ "/wall.glb",
     .Box = DEFAULT_MESHES_DIR_PATH ++ "/box.glb",
+    .Platform = DEFAULT_MESHES_DIR_PATH ++ "/platform.glb",
 });
 
 pub const GpuMeshes = std.EnumArray(ModelType, gpu.Mesh);

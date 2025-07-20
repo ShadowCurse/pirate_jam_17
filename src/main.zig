@@ -317,7 +317,7 @@ const Game = struct {
                     cimgui.format("Free camera", &self.free_camera);
                     _ = cimgui.igSeparatorText("Levels selection");
                     cimgui.format("Current level", &self.current_level_tag);
-                    
+
                     if (cimgui.igButton("Reload levels", .{})) {
                         Levels.init();
                     }
