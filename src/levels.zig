@@ -133,6 +133,9 @@ pub const Level = struct {
 
     pub fn player_put_down_object(self: *Self) void {
         if (self.holding_object) |ho| {
+            if (self.is_box_on_the_box())
+                return;
+
             if (self.put_down_object) |pdo| {
                 const object = &self.objects.items[pdo];
                 object.position.z = 0.0;
@@ -208,16 +211,42 @@ pub const Level = struct {
 
                 const r2 = Assets.aabbs.get(o.model);
                 const r2_position = o.position.xy();
-                if (physics.rectangle_inside_rectangle(
+                if (physics.rectangle_rectangle_intersection(
                     r1,
                     r1_position,
                     r2,
                     r2_position,
-                )) {
+                ) == .Full) {
                     self.box_on_the_platform = true;
                 }
             }
         }
+    }
+
+    fn is_box_on_the_box(self: *Self) bool {
+        var intersects: bool = false;
+        if (self.holding_object) |ho| {
+            const object = &self.objects.items[ho];
+
+            var r1 = Assets.aabbs.get(object.model);
+            r1.rotation = object.rotation_z;
+            const r1_position = object.position.xy();
+
+            for (self.objects.items, 0..) |*o, i| {
+                if (o.model != .Box or i == ho) continue;
+
+                const r2 = Assets.aabbs.get(o.model);
+                const r2_position = o.position.xy();
+                const result = physics.rectangle_rectangle_intersection(
+                    r1,
+                    r1_position,
+                    r2,
+                    r2_position,
+                );
+                intersects = intersects or result == .Partial;
+            }
+        }
+        return intersects;
     }
 
     pub fn draw(self: *Self, dt: f32) void {

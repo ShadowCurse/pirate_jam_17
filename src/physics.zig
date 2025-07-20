@@ -74,39 +74,61 @@ pub fn circle_rectangle_collision(
     }
 }
 
-// Returns true if rectangle 1 is inside rectangle 2.
-// Assume rectangle 2 is never rotated.
-pub fn rectangle_inside_rectangle(
-    r1: Rectangle,
-    r1_position: math.Vec2,
-    r2: Rectangle,
-    r2_position: math.Vec2,
-) bool {
-    const angle = r1.rotation;
-    const r1_x_axis = math.Vec2{ .x = @cos(angle), .y = @sin(angle) };
-    const r1_y_axis = math.Vec2{ .x = -@sin(angle), .y = @cos(angle) };
-    const r1_half_width = r1.size.x / 2.0;
-    const r1_half_height = r1.size.y / 2.0;
+pub const Intersection = enum {
+    None,
+    Partial,
+    Full,
+};
 
-    const p0 = r1_x_axis.mul_f32(r1_half_width).add(r1_y_axis.mul_f32(r1_half_height));
-    const p1 = r1_x_axis.mul_f32(-r1_half_width).add(r1_y_axis.mul_f32(r1_half_height));
-    const p2 = r1_x_axis.mul_f32(-r1_half_width).add(r1_y_axis.mul_f32(-r1_half_height));
-    const p3 = r1_x_axis.mul_f32(r1_half_width).add(r1_y_axis.mul_f32(-r1_half_height));
+const MinMax = struct {
+    min_x: f32,
+    max_x: f32,
+    min_y: f32,
+    max_y: f32,
+};
+fn rectangle_min_max(
+    rect: Rectangle,
+    position: math.Vec2,
+) MinMax {
+    const angle = rect.rotation;
+    const x_axis = math.Vec2{ .x = @cos(angle), .y = @sin(angle) };
+    const y_axis = math.Vec2{ .x = -@sin(angle), .y = @cos(angle) };
+    const half_width = rect.size.x / 2.0;
+    const half_height = rect.size.y / 2.0;
 
-    const r1_min_x: f32 = r1_position.x + @min(@min(p0.x, p1.x), @min(p2.x, p3.x));
-    const r1_max_x: f32 = r1_position.x + @max(@max(p0.x, p1.x), @max(p2.x, p3.x));
-    const r1_min_y: f32 = r1_position.y + @min(@min(p0.y, p1.y), @min(p2.y, p3.y));
-    const r1_max_y: f32 = r1_position.y + @max(@max(p0.y, p1.y), @max(p2.y, p3.y));
+    const p0 = x_axis.mul_f32(half_width).add(y_axis.mul_f32(half_height));
+    const p1 = x_axis.mul_f32(-half_width).add(y_axis.mul_f32(half_height));
+    const p2 = x_axis.mul_f32(-half_width).add(y_axis.mul_f32(-half_height));
+    const p3 = x_axis.mul_f32(half_width).add(y_axis.mul_f32(-half_height));
 
-    const r2_half_width = r2.size.x / 2.0;
-    const r2_half_height = r2.size.y / 2.0;
-    const r2_min_x = r2_position.x - r2_half_width;
-    const r2_max_x = r2_position.x + r2_half_width;
-    const r2_min_y = r2_position.y - r2_half_height;
-    const r2_max_y = r2_position.y + r2_half_height;
+    return .{
+        .min_x = position.x + @min(@min(p0.x, p1.x), @min(p2.x, p3.x)),
+        .max_x = position.x + @max(@max(p0.x, p1.x), @max(p2.x, p3.x)),
+        .min_y = position.y + @min(@min(p0.y, p1.y), @min(p2.y, p3.y)),
+        .max_y = position.y + @max(@max(p0.y, p1.y), @max(p2.y, p3.y)),
+    };
+}
 
-    return r2_min_x <= r1_min_x and r1_max_x <= r2_max_x and
-        r2_min_y <= r1_min_y and r1_max_y <= r2_max_y;
+// Returns intersection of rectangles AABBs.
+pub fn rectangle_rectangle_intersection(
+    rect1: Rectangle,
+    rect1_position: math.Vec2,
+    rect2: Rectangle,
+    rect2_position: math.Vec2,
+) Intersection {
+    const r1 = rectangle_min_max(rect1, rect1_position);
+    const r2 = rectangle_min_max(rect2, rect2_position);
+
+    if (r2.min_x <= r1.min_x and r1.max_x <= r2.max_x and
+        r2.min_y <= r1.min_y and r1.max_y <= r2.max_y)
+        return .Full
+    else if (!(r1.max_x < r2.min_x or
+        r2.max_x < r1.min_x or
+        r2.max_y < r1.min_y or
+        r1.max_y < r2.min_y))
+        return .Partial
+    else
+        return .None;
 }
 
 test "test_circle_rectangle_collision" {

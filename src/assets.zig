@@ -81,10 +81,7 @@ pub fn calculate_aabb(mesh: *const Mesh) physics.Rectangle {
     }
     const width = max_x - min_x;
     const height = max_y - min_y;
-    log.info(@src(), "aabb: {d} / {d}", .{ width, height });
-    return .{
-        .size = .{ .x = width, .y = height },
-    };
+    return .{ .size = .{ .x = width, .y = height } };
 }
 
 pub fn load_model(
