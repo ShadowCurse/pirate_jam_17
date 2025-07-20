@@ -436,24 +436,22 @@ const Game = struct {
         const camera_in_use = switch (self.mode) {
             .Game => blk: {
                 Platform.reset_mouse();
-
                 player_camera_move(&self.player_camera, dt);
                 break :blk &self.player_camera;
             },
             .Edit => blk: {
                 free_camera_move(&self.free_camera, dt);
-
-                const mouse_clip = Platform.mouse_clip();
-                const camera_ray = self.free_camera.mouse_to_ray(mouse_clip);
-
-                if (Input.was_pressed(.LMB))
-                    self.level.select_object(&camera_ray);
-                if (Input.was_pressed(.RMB))
-                    self.level.selected_object = null;
-
                 break :blk &self.free_camera;
             },
         };
+
+        const mouse_clip = Platform.mouse_clip();
+        const camera_ray = camera_in_use.mouse_to_ray(mouse_clip);
+
+        if (Input.was_pressed(.LMB))
+            self.level.select_object(&camera_ray);
+        if (Input.was_pressed(.RMB))
+            self.level.selected_object = null;
 
         Renderer.reset();
         self.level.draw(dt);
