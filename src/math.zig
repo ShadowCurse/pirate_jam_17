@@ -3,6 +3,10 @@ const log = @import("log.zig");
 
 pub const PI = std.math.pi;
 
+pub inline fn exp_decay(start: f32, end: f32, decay: f32, dt: f32) f32 {
+    return end + (start - end) * std.math.exp(-decay * dt);
+}
+
 pub const Color3 = extern struct {
     r: f32 = 0.0,
     g: f32 = 0.0,
@@ -311,6 +315,11 @@ pub const Vec3 = extern struct {
 
     pub inline fn lerp(start: Vec3, end: Vec3, t: f32) Vec3 {
         return start.add(end.sub(start).mul_f32(t));
+    }
+
+    // lower decay => slower movement
+    pub inline fn exp_decay(start: Vec3, end: Vec3, decay: f32, dt: f32) Vec3 {
+        return end.add(start.sub(end).mul_f32(std.math.exp(-decay * dt)));
     }
 };
 

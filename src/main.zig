@@ -221,6 +221,7 @@ const Level = struct {
 
     // Player
     holding_object: ?u32 = null,
+    put_down_object: ?u32 = null,
 
     objects: std.ArrayListUnmanaged(Object) = .{},
     environment: Renderer.Environment = .{},
@@ -292,18 +293,35 @@ const Level = struct {
 
     pub fn player_put_down_object(self: *Self) void {
         if (self.holding_object) |ho| {
-            const object = &self.objects.items[ho];
-            object.position.z = 0.0;
+            if (self.put_down_object) |pdo| {
+                const object = &self.objects.items[pdo];
+                object.position.z = 0.0;
+            }
+            self.put_down_object = ho;
         }
         self.holding_object = null;
     }
 
-    pub fn player_move_object(self: *Self, camera: *const Camera) void {
+    pub fn player_move_object(self: *Self, camera: *const Camera, dt: f32) void {
         if (self.holding_object) |ho| {
             const object = &self.objects.items[ho];
-            object.position = camera.position
-                .add(camera.forward().mul_f32(1.0))
-                .add(.{ .z = -0.5 });
+            const new_position =
+                camera.position
+                    .add(camera.forward().mul_f32(1.0))
+                    .add(.{ .z = -0.5 });
+            object.position = object.position.exp_decay(new_position, 14.0, dt);
+            object.rotation_z = math.exp_decay(object.rotation_z, camera.yaw, 14.0, dt);
+        }
+    }
+
+    pub fn settle_put_down_object(self: *Self, dt: f32) void {
+        if (self.put_down_object) |pdo| {
+            const object = &self.objects.items[pdo];
+            object.position.z = math.exp_decay(object.position.z, 0.0, 20, dt);
+            if (object.position.z < 0.01) {
+                object.position.z = 0.0;
+                self.put_down_object = null;
+            }
         }
     }
 
@@ -494,7 +512,8 @@ const Game = struct {
                     self.level.player_pick_up_object(&camera_ray);
                 if (Input.was_pressed(.RMB))
                     self.level.player_put_down_object();
-                self.level.player_move_object(&self.player_camera);
+                self.level.player_move_object(&self.player_camera, dt);
+                self.level.settle_put_down_object(dt);
 
                 break :blk &self.player_camera;
             },
