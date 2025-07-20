@@ -52,6 +52,8 @@ pub fn init() void {
     const cimgli_opengl_version = "#version 300 es";
     _ = cimgui.ImGui_ImplOpenGL3_Init(cimgli_opengl_version);
     imgui_io = @ptrCast(cimgui.igGetIO_Nil());
+    // Otherwise imgui will force cursor to be visible
+    imgui_io.ConfigFlags |= cimgui.ImGuiConfigFlags_NoMouseCursorChange;
 
     gl.glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
@@ -96,6 +98,20 @@ pub fn imgui_wants_to_handle_events() bool {
 
 pub fn present() void {
     sdl.assert(@src(), sdl.SDL_GL_SwapWindow(window));
+}
+
+pub fn reset_mouse() void {
+    sdl.SDL_WarpMouseInWindow(window, WINDOW_WIDTH / 2.0, WINDOW_HEIGHT / 2.0);
+}
+
+pub fn hide_mouse(enable: bool) void {
+    if (enable) {
+        if (!sdl.SDL_HideCursor())
+            log.err(@src(), "Cannot hide cursor: {s}", .{sdl.SDL_GetError()});
+    } else {
+        if (!sdl.SDL_ShowCursor())
+            log.err(@src(), "Cannot show cursor: {s}", .{sdl.SDL_GetError()});
+    }
 }
 
 pub fn mouse_clip() math.Vec2 {

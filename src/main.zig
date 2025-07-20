@@ -4,7 +4,6 @@ const builtin = @import("builtin");
 const Allocator = std.mem.Allocator;
 
 const gl = @import("bindings/gl.zig");
-const sdl = @import("bindings/sdl.zig");
 const cimgui = @import("bindings/cimgui.zig");
 
 const log = @import("log.zig");
@@ -146,6 +145,57 @@ pub const Camera = struct {
         };
     }
 };
+
+fn free_camera_move(self: *Camera, dt: f32) void {
+    self.active = Input.is_pressed(.WHEEL);
+    if (!self.active) return;
+    self.velocity.x =
+        -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.A)))) +
+        1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.D))));
+    self.velocity.y =
+        -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.SPACE)))) +
+        1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.LCTRL))));
+    self.velocity.z =
+        -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.S)))) +
+        1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.W))));
+
+    self.yaw -= Input.mouse_motion.x * self.sensitivity * dt;
+    self.pitch -= Input.mouse_motion.y * self.sensitivity * dt;
+    if (math.PI / 2.0 < self.pitch) {
+        self.pitch = math.PI / 2.0;
+    }
+    if (self.pitch < -math.PI / 2.0) {
+        self.pitch = -math.PI / 2.0;
+    }
+
+    const rotation = self.rotation_matrix();
+    const velocity = self.velocity.mul_f32(self.speed * dt).extend(1.0);
+    const delta = rotation.mul_vec4(velocity);
+    self.position = self.position.add(delta.shrink());
+}
+
+fn player_camera_move(self: *Camera, dt: f32) void {
+    self.velocity.x =
+        -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.A)))) +
+        1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.D))));
+    self.velocity.y =
+        -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.S)))) +
+        1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.W))));
+
+    self.yaw -= Input.mouse_motion.x * self.sensitivity * dt;
+    self.pitch -= Input.mouse_motion.y * self.sensitivity * dt;
+    if (math.PI / 2.0 < self.pitch) {
+        self.pitch = math.PI / 2.0;
+    }
+    if (self.pitch < -math.PI / 2.0) {
+        self.pitch = -math.PI / 2.0;
+    }
+
+    const rotation = math.Quat.from_axis_angle(.Z, self.yaw).to_mat4();
+    const velocity = self.velocity.mul_f32(self.speed * dt).extend(1.0);
+    const delta = rotation.mul_vec4(velocity);
+    self.position = self.position.add(delta.shrink());
+}
 
 const Level = struct {
     arena: std.heap.ArenaAllocator = undefined,
@@ -328,7 +378,14 @@ const Game = struct {
 
     level: Level = undefined,
 
+    mode: Mode = .Edit,
     free_camera: Camera = .{},
+    player_camera: Camera = .{},
+
+    const Mode = enum {
+        Game,
+        Edit,
+    };
 
     const Self = @This();
 
@@ -339,32 +396,58 @@ const Game = struct {
         const DEFAULT_LEVEL = "test.json";
         @memcpy(level.save_path[0..DEFAULT_LEVEL.len], DEFAULT_LEVEL);
 
-        const camera: Camera = .{
+        const free_camera: Camera = .{
             .position = .{ .y = -5.0, .z = 5.0 },
+        };
+        const player_camera: Camera = .{
+            .position = .{ .y = -2.0, .z = 1.0 },
         };
 
         return .{
             .frame_arena = frame_arena,
             .level = level,
-            .free_camera = camera,
+            .free_camera = free_camera,
+            .player_camera = player_camera,
         };
     }
 
     pub fn update(self: *Self, dt: f32) void {
         _ = self.frame_arena.reset(.retain_capacity);
 
-        self.free_camera.move(dt);
-        const mouse_clip = Platform.mouse_clip();
-        const camera_ray = self.free_camera.mouse_to_ray(mouse_clip);
+        if (Input.was_pressed(.@"1")) {
+            self.mode = .Game;
+            Platform.hide_mouse(true);
+        }
+        if (Input.was_pressed(.@"2")) {
+            self.mode = .Edit;
+            Platform.hide_mouse(false);
+        }
 
-        if (Input.was_pressed(.LMB))
-            self.level.select_object(&camera_ray);
-        if (Input.was_pressed(.RMB))
-            self.level.selected_object = null;
+        const camera_in_use = switch (self.mode) {
+            .Game => blk: {
+                Platform.reset_mouse();
+
+                player_camera_move(&self.player_camera, dt);
+                break :blk &self.player_camera;
+            },
+            .Edit => blk: {
+                free_camera_move(&self.free_camera, dt);
+
+                const mouse_clip = Platform.mouse_clip();
+                const camera_ray = self.free_camera.mouse_to_ray(mouse_clip);
+
+                if (Input.was_pressed(.LMB))
+                    self.level.select_object(&camera_ray);
+                if (Input.was_pressed(.RMB))
+                    self.level.selected_object = null;
+
+                break :blk &self.free_camera;
+            },
+        };
 
         Renderer.reset();
         self.level.draw(dt);
-        Renderer.render(&self.free_camera, &self.level.environment);
+        Renderer.render(camera_in_use, &self.level.environment);
 
         {
             cimgui.prepare_frame();
