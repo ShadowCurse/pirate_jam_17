@@ -278,9 +278,11 @@ const Game = struct {
                 if (Input.was_pressed(.RMB))
                     current_level.player_put_down_object();
                 current_level.player_move_object(&self.player_camera, dt);
-                current_level.settle_put_down_object(dt);
-
                 current_level.player_collide(&self.player_camera);
+                current_level.player_in_the_door(&self.player_camera);
+
+                current_level.settle_put_down_object(dt);
+                current_level.door_animate(dt);
 
                 break :blk &self.player_camera;
             },

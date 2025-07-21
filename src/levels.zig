@@ -58,6 +58,10 @@ pub const Level = struct {
     holding_object: ?u32 = null,
     put_down_object: ?u32 = null,
     box_on_the_platform: bool = false,
+    in_the_door: bool = false,
+
+    // Door
+    door_animation_progress: f32 = 0.0,
 
     objects: std.ArrayListUnmanaged(Object) = .{},
     environment: Renderer.Environment = .{},
@@ -68,6 +72,8 @@ pub const Level = struct {
         rotation_x: f32 = 0.0,
         rotation_y: f32 = 0.0,
         rotation_z: f32 = 0.0,
+        // used for doors animation
+        target_rotation_z: ?f32 = null,
         scale: math.Vec3 = .ONE,
 
         fn transform(self: *const Object) math.Mat4 {
@@ -79,6 +85,7 @@ pub const Level = struct {
         }
     };
 
+    const DOOR_OPEN_ANIMATION_TIME = 0.5;
     const PICKUP_DISTANCE: f32 = 1.5;
     const Self = @This();
 
@@ -108,6 +115,39 @@ pub const Level = struct {
                     closest_t = r.t;
                     self.selected_object = @intCast(i);
                 }
+            }
+        }
+    }
+
+    pub fn door_animate(self: *Self, dt: f32) void {
+        if (DOOR_OPEN_ANIMATION_TIME < self.door_animation_progress) return;
+        if (!self.box_on_the_platform and !self.in_the_door) return;
+
+        self.door_animation_progress += dt;
+        for (self.objects.items) |*object| {
+            if (object.model != .DoorDoor) continue;
+            if (object.target_rotation_z) |rtz| {
+                object.rotation_z = math.exp_decay(object.rotation_z, rtz, 16.0, dt);
+                if (DOOR_OPEN_ANIMATION_TIME < self.door_animation_progress) {
+                    object.target_rotation_z = null;
+                }
+            } else {
+                if (self.box_on_the_platform)
+                    object.target_rotation_z = object.rotation_z + std.math.pi / 2.0;
+                if (self.in_the_door)
+                    object.target_rotation_z = object.rotation_z - std.math.pi / 2.0;
+            }
+        }
+    }
+
+    pub fn player_in_the_door(self: *Self, camera: *const Camera) void {
+        for (self.objects.items) |*object| {
+            if (object.model != .DoorFrame) continue;
+            const distance_to_object = camera.position.xy()
+                .sub(object.position.xy()).len();
+            if (distance_to_object < 0.26) {
+                self.in_the_door = true;
+                self.door_animation_progress = 0.0;
             }
         }
     }
@@ -173,12 +213,13 @@ pub const Level = struct {
         }
     }
 
-    pub fn player_collide(self: *const Self, camera: *Camera) void {
+    pub fn player_collide(self: *Self, camera: *Camera) void {
         // Constants for the door cirlec ring collision.
         const DELTA_DEGREES: f32 = 40.0;
         const DELTA_RADIANS: f32 = std.math.degreesToRadians(DELTA_DEGREES);
         const DELTA_RADIANS_HALF: f32 = std.math.degreesToRadians(DELTA_DEGREES / 2);
         const RING_RADIUS = 0.37;
+        const RING_PROBE_RADIUS: f32 = 0.01;
 
         for (self.objects.items, 0..) |*object, i| {
             if (object.model == .Box) {
@@ -259,12 +300,15 @@ pub const Level = struct {
                         );
                         const forward = rotation.rotate_vec3(.NEG_X);
                         const circle_position = position.add(forward.mul_f32(RING_RADIUS));
-                        const R: f32 = 0.01;
-                        const circle: physics.Circle = .{ .radius = R };
+                        const circle: physics.Circle = .{ .radius = RING_PROBE_RADIUS };
 
                         // const t = math.Mat4.IDENDITY
                         //     .translate(circle_position.add(.{ .z = 1.0 }))
-                        //     .scale(.{ .x = R, .y = R, .z = R });
+                        //     .scale(.{
+                        //     .x = RING_PROBE_RADIUS,
+                        //     .y = RING_PROBE_RADIUS,
+                        //     .z = RING_PROBE_RADIUS,
+                        // });
                         // Renderer.draw_mesh(
                         //     Assets.gpu_meshes.getPtr(.Sphere),
                         //     t,
@@ -291,17 +335,20 @@ pub const Level = struct {
                         );
                         const forward = rotation.rotate_vec3(.NEG_X);
                         const circle_position = position.add(forward.mul_f32(RING_RADIUS));
-                        const R: f32 = 0.01;
-                        const circle: physics.Circle = .{ .radius = R };
+                        const circle: physics.Circle = .{ .radius = RING_PROBE_RADIUS };
 
-                        const t = math.Mat4.IDENDITY
-                            .translate(circle_position.add(.{ .z = 1.0 }))
-                            .scale(.{ .x = R, .y = R, .z = R });
-                        Renderer.draw_mesh(
-                            Assets.gpu_meshes.getPtr(.Sphere),
-                            t,
-                            Assets.materials.get(.Sphere),
-                        );
+                        // const t = math.Mat4.IDENDITY
+                        //     .translate(circle_position.add(.{ .z = 1.0 }))
+                        //     .scale(.{
+                        //     .x = RING_PROBE_RADIUS,
+                        //     .y = RING_PROBE_RADIUS,
+                        //     .z = RING_PROBE_RADIUS,
+                        // });
+                        // Renderer.draw_mesh(
+                        //     Assets.gpu_meshes.getPtr(.Sphere),
+                        //     t,
+                        //     Assets.materials.get(.Sphere),
+                        // );
 
                         if (physics.circle_circle_collision(
                             PLAYER_CIRCLE,
@@ -340,6 +387,7 @@ pub const Level = struct {
                     r2_position,
                 ) == .Full) {
                     self.box_on_the_platform = true;
+                    self.door_animation_progress = 0.0;
                 }
             }
         }
@@ -381,8 +429,16 @@ pub const Level = struct {
                         material.albedo.lerp(.TEAL, @abs(@sin(self.selected_object_t)));
                 }
             }
-            if (object.model == .Platform and self.box_on_the_platform)
+            if ((object.model == .Platform or
+                object.model == .DoorOuterLight or
+                object.model == .DoorInnerLight) and
+                self.box_on_the_platform)
                 material.albedo = .GREEN;
+
+            if ((object.model == .DoorOuterLight or
+                object.model == .DoorInnerLight) and
+                !self.box_on_the_platform)
+                material.albedo = .RED;
 
             Renderer.draw_mesh(
                 Assets.gpu_meshes.getPtr(object.model),

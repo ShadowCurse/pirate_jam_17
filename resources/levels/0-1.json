@@ -10,6 +10,7 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 0e0,
+            "target_rotation_z": null,
             "scale": {
                 "x": 1e1,
                 "y": 1e1,
@@ -26,6 +27,7 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 0e0,
+            "target_rotation_z": null,
             "scale": {
                 "x": 1e0,
                 "y": 1e0,
@@ -42,6 +44,7 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 0e0,
+            "target_rotation_z": null,
             "scale": {
                 "x": 1e0,
                 "y": 1e0,
@@ -58,6 +61,7 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 1.5700000524520874e0,
+            "target_rotation_z": null,
             "scale": {
                 "x": 1e0,
                 "y": 1e0,
@@ -74,6 +78,7 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 0e0,
+            "target_rotation_z": null,
             "scale": {
                 "x": 1e0,
                 "y": 1e0,
@@ -83,13 +88,14 @@
         {
             "model": "Platform",
             "position": {
-                "x": 1.7799999713897705e0,
-                "y": 3.5999999046325684e0,
+                "x": -1.5099999904632568e0,
+                "y": 1.850000023841858e0,
                 "z": 0e0
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 0e0,
+            "target_rotation_z": null,
             "scale": {
                 "x": 1e0,
                 "y": 1e0,
@@ -106,6 +112,7 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 1.5700000524520874e0,
+            "target_rotation_z": null,
             "scale": {
                 "x": 1e0,
                 "y": 1e0,
@@ -122,6 +129,7 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 1.5700000524520874e0,
+            "target_rotation_z": null,
             "scale": {
                 "x": 1e0,
                 "y": 1e0,
@@ -138,6 +146,7 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 1.5700000524520874e0,
+            "target_rotation_z": null,
             "scale": {
                 "x": 1e0,
                 "y": 1e0,
@@ -154,6 +163,7 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 1.5700000524520874e0,
+            "target_rotation_z": null,
             "scale": {
                 "x": 1e0,
                 "y": 1e0,
@@ -170,6 +180,7 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": -1.5700000524520874e0,
+            "target_rotation_z": null,
             "scale": {
                 "x": 1e0,
                 "y": 1e0,
@@ -186,6 +197,7 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": -1.5700000524520874e0,
+            "target_rotation_z": null,
             "scale": {
                 "x": 1e0,
                 "y": 1e0,
