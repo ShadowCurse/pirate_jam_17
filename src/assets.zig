@@ -13,12 +13,7 @@ const Mesh = @import("mesh.zig");
 
 pub const DEFAULT_MESHES_DIR_PATH = "resources/models";
 
-pub const ModelType = enum {
-    Floor,
-    Wall,
-    Box,
-    Platform,
-};
+pub const ModelType = enum { Floor, Wall, Box, Platform, DoorDoor, DoorFrame, DoorInnerLight, DoorOuterLight };
 
 const ModelPathsType = std.EnumArray(ModelType, [:0]const u8);
 const MODEL_PATHS = ModelPathsType.init(.{
@@ -26,6 +21,10 @@ const MODEL_PATHS = ModelPathsType.init(.{
     .Wall = DEFAULT_MESHES_DIR_PATH ++ "/wall.glb",
     .Box = DEFAULT_MESHES_DIR_PATH ++ "/box.glb",
     .Platform = DEFAULT_MESHES_DIR_PATH ++ "/platform.glb",
+    .DoorDoor = DEFAULT_MESHES_DIR_PATH ++ "/door_door.glb",
+    .DoorFrame = DEFAULT_MESHES_DIR_PATH ++ "/door_frame.glb",
+    .DoorInnerLight = DEFAULT_MESHES_DIR_PATH ++ "/door_inner_light.glb",
+    .DoorOuterLight = DEFAULT_MESHES_DIR_PATH ++ "/door_outer_light.glb",
 });
 
 pub const GpuMeshes = std.EnumArray(ModelType, gpu.Mesh);
