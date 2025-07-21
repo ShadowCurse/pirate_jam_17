@@ -11,6 +11,7 @@ const Camera = @import("root").Camera;
 const PLAYER_CIRCLE = @import("root").PLAYER_CIRCLE;
 const Platform = @import("platform.zig");
 const Renderer = @import("renderer.zig");
+const Input = @import("input.zig");
 const Assets = @import("assets.zig");
 
 const DEFAULT_LEVEL_DIR_PATH = "resources/levels";
@@ -59,6 +60,9 @@ pub const Level = struct {
     put_down_object: ?u32 = null,
     box_on_the_platform: bool = false,
     in_the_door: bool = false,
+
+    // Cursor
+    looking_at_pickable_object: bool = false,
 
     // Door
     door_animation_progress: f32 = 0.0,
@@ -119,6 +123,25 @@ pub const Level = struct {
         }
     }
 
+    pub fn cursor_animate(self: *Self, dt: f32) void {
+        const MAX_SIZE = 0.05;
+        const MIN_SIZE = 0.0;
+        if (self.looking_at_pickable_object)
+            self.environment.cursor_size = math.exp_decay(
+                self.environment.cursor_size,
+                MAX_SIZE,
+                18.0,
+                dt,
+            )
+        else
+            self.environment.cursor_size = math.exp_decay(
+                self.environment.cursor_size,
+                MIN_SIZE,
+                18.0,
+                dt,
+            );
+    }
+
     pub fn door_animate(self: *Self, dt: f32) void {
         if (DOOR_OPEN_ANIMATION_TIME < self.door_animation_progress) return;
         if (!self.box_on_the_platform and !self.in_the_door) return;
@@ -153,6 +176,7 @@ pub const Level = struct {
     }
 
     pub fn player_pick_up_object(self: *Self, ray: *const math.Ray) void {
+        self.looking_at_pickable_object = false;
         if (self.holding_object != null) return;
 
         var closest_t: f32 = std.math.floatMax(f32);
@@ -165,9 +189,11 @@ pub const Level = struct {
 
             const t = object.transform();
             if (m.ray_intersection(&t, ray)) |r| {
+                self.looking_at_pickable_object = true;
                 if (r.t < closest_t) {
                     closest_t = r.t;
-                    self.holding_object = @intCast(i);
+                    if (Input.was_pressed(.LMB))
+                        self.holding_object = @intCast(i);
                 }
             }
         }

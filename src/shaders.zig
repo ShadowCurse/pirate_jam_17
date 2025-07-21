@@ -314,6 +314,7 @@ pub const CursorShader = struct {
     shader: Shader,
 
     size_loc: i32,
+    window_size_loc: i32,
 
     const Self = @This();
 
@@ -324,16 +325,19 @@ pub const CursorShader = struct {
         );
 
         const size_loc = shader.get_uniform_location("size");
+        const window_size_loc = shader.get_uniform_location("window_size");
 
         return .{
             .shader = shader,
             .size_loc = size_loc,
+            .window_size_loc = window_size_loc,
         };
     }
 
-    pub fn draw(self: *const Self, size: math.Vec2) void {
+    pub fn draw(self: *const Self, size: f32) void {
         self.shader.use();
-        gl.glUniform2f(self.size_loc, size.x, size.y);
+        gl.glUniform1f(self.size_loc, size);
+        gl.glUniform2f(self.window_size_loc, Platform.WINDOW_WIDTH, Platform.WINDOW_HEIGHT);
 
         gl.glDisable(gl.GL_DEPTH_TEST);
         gl.glDrawArrays(gl.GL_TRIANGLES, 0, 6);

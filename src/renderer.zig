@@ -135,8 +135,9 @@ pub fn render(
         mi.mesh.draw();
     }
 
-    Self.cursor_shader.draw(.{
-        .x = environment.cursor_size,
-        .y = environment.cursor_size * Platform.WINDOW_WIDTH / Platform.WINDOW_HEIGHT,
-    });
+    Self.cursor_shader.draw(environment.cursor_size);
+    //     .{
+    //     .x = environment.cursor_size,
+    //     .y = environment.cursor_size * Platform.WINDOW_WIDTH / Platform.WINDOW_HEIGHT,
+    // });
 }
