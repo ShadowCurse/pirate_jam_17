@@ -295,9 +295,11 @@ const Game = struct {
                 const camera_ray = self.free_camera.mouse_to_ray(mouse_clip);
 
                 if (Input.was_pressed(.LMB))
-                    current_level.select_object(&camera_ray);
-                if (Input.was_pressed(.RMB))
+                    current_level.select(&camera_ray);
+                if (Input.was_pressed(.RMB)) {
                     current_level.selected_object = null;
+                    current_level.selected_light = null;
+                }
 
                 break :blk &self.free_camera;
             },

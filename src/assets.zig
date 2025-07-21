@@ -22,7 +22,6 @@ pub const ModelType = enum {
     DoorDoor,
     DoorFrame,
     DoorInnerLight,
-    DoorOuterLight,
 };
 
 const ModelPathsType = std.EnumArray(ModelType, [:0]const u8);
@@ -35,7 +34,6 @@ const MODEL_PATHS = ModelPathsType.init(.{
     .DoorDoor = DEFAULT_MESHES_DIR_PATH ++ "/door_door.glb",
     .DoorFrame = DEFAULT_MESHES_DIR_PATH ++ "/door_frame.glb",
     .DoorInnerLight = DEFAULT_MESHES_DIR_PATH ++ "/door_inner_light.glb",
-    .DoorOuterLight = DEFAULT_MESHES_DIR_PATH ++ "/door_outer_light.glb",
 });
 
 pub const GpuMeshes = std.EnumArray(ModelType, gpu.Mesh);
@@ -129,7 +127,9 @@ pub fn load_model(
         .albedo = @bitCast(material.pbr_metallic_roughness.base_color_factor),
         .metallic = material.pbr_metallic_roughness.metallic_factor,
         .roughness = material.pbr_metallic_roughness.roughness_factor,
+        .emissive_strength = material.emissive_strength.emissive_strength,
     };
+    log.info(@src(), "Mesh material: {any}", .{materials.getPtr(model_type).*});
 
     const mesh_name = std.mem.span(gltf_mesh.name);
     log.info(@src(), "Mesh name: {s}", .{mesh_name});

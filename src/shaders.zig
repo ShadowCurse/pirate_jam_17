@@ -142,6 +142,7 @@ pub const MeshShader = struct {
     metallic_loc: i32,
     roughness_loc: i32,
     ao_loc: i32,
+    emissive_loc: i32,
     use_shadow_map_loc: i32,
 
     const Self = @This();
@@ -164,6 +165,7 @@ pub const MeshShader = struct {
         const metallic_loc = shader.get_uniform_location("metallic");
         const roughness_loc = shader.get_uniform_location("roughness");
         const ao_loc = shader.get_uniform_location("ao");
+        const emissive_loc = shader.get_uniform_location("emissive_strength");
         const use_shadow_map_loc = shader.get_uniform_location("use_shadow_map");
 
         return .{
@@ -182,6 +184,7 @@ pub const MeshShader = struct {
             .metallic_loc = metallic_loc,
             .roughness_loc = roughness_loc,
             .ao_loc = ao_loc,
+            .emissive_loc = emissive_loc,
             .use_shadow_map_loc = use_shadow_map_loc,
         };
     }
@@ -257,6 +260,7 @@ pub const MeshShader = struct {
         gl.glUniform1f(self.metallic_loc, material.metallic);
         gl.glUniform1f(self.roughness_loc, material.roughness);
         gl.glUniform1f(self.ao_loc, 0.03);
+        gl.glUniform1f(self.emissive_loc, material.emissive_strength);
     }
 };
 

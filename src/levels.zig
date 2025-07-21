@@ -54,7 +54,9 @@ pub const Level = struct {
 
     // Edit
     selected_object: ?u32 = null,
-    selected_object_t: f32 = 0.0,
+    selected_light: ?u32 = null,
+    selected_t: f32 = 0.0,
+    draw_light_spheres: bool = true,
 
     // Player
     holding_object: ?u32 = null,
@@ -104,9 +106,10 @@ pub const Level = struct {
         };
     }
 
-    pub fn select_object(self: *Self, ray: *const math.Ray) void {
+    pub fn select(self: *Self, ray: *const math.Ray) void {
         self.selected_object = null;
-        self.selected_object_t = 0.0;
+        self.selected_light = null;
+        self.selected_t = 0.0;
         var closest_t: f32 = std.math.floatMax(f32);
         for (self.objects.items, 0..) |*object, i| {
             const m = Assets.meshes.getPtrConst(object.model);
@@ -115,6 +118,18 @@ pub const Level = struct {
                 if (r.t < closest_t) {
                     closest_t = r.t;
                     self.selected_object = @intCast(i);
+                }
+            }
+        }
+
+        for (&self.environment.lights_position, 0..) |*lp, i| {
+            const m = Assets.meshes.getPtrConst(.Sphere);
+            const t = math.Mat4.IDENDITY.translate(lp.*).scale(math.vec3(0.1, 0.1, 0.1));
+            if (m.ray_intersection(&t, ray)) |r| {
+                if (r.t < closest_t) {
+                    closest_t = r.t;
+                    self.selected_object = null;
+                    self.selected_light = @intCast(i);
                 }
             }
         }
@@ -428,13 +443,13 @@ pub const Level = struct {
     }
 
     pub fn draw(self: *Self, dt: f32) void {
-        self.selected_object_t += dt;
+        self.selected_t += dt;
         for (self.objects.items, 0..) |*object, i| {
             var material = Assets.materials.get(object.model);
             if (self.selected_object) |so| {
                 if (so == i) {
                     material.albedo =
-                        material.albedo.lerp(.TEAL, @abs(@sin(self.selected_object_t)));
+                        material.albedo.lerp(.TEAL, @abs(@sin(self.selected_t)));
                 }
             }
             // if ((object.model == .Platform or
@@ -453,6 +468,25 @@ pub const Level = struct {
                 object.transform(),
                 material,
             );
+        }
+        if (self.draw_light_spheres) {
+            for (
+                &self.environment.lights_position,
+                &self.environment.lights_color,
+                0..,
+            ) |*lp, *lc, i| {
+                var color: math.Color4 = lc.*.with_alpha(1.0);
+                if (self.selected_light) |sl| {
+                    if (sl == i)
+                        color =
+                            color.lerp(.TEAL, @abs(@sin(self.selected_t)));
+                }
+                Renderer.draw_mesh(
+                    Assets.gpu_meshes.getPtr(.Sphere),
+                    math.Mat4.IDENDITY.translate(lp.*).scale(math.vec3(0.1, 0.1, 0.1)),
+                    .{ .albedo = color },
+                );
+            }
         }
     }
 
@@ -525,6 +559,7 @@ pub const Level = struct {
             }
 
             cimgui.format("Environment", &self.environment);
+            cimgui.format("Draw light spheres", &self.draw_light_spheres);
 
             _ = cimgui.igSeparatorText("Add");
             for (std.enums.values(Assets.ModelType)) |v| {
@@ -539,11 +574,19 @@ pub const Level = struct {
         }
 
         if (self.selected_object) |so| {
-            _ = cimgui.igBegin("Selecte object", &open, 0);
+            _ = cimgui.igBegin("Selected object", &open, 0);
             defer cimgui.igEnd();
 
             const object = &self.objects.items[so];
             cimgui.format(null, object);
+        }
+
+        if (self.selected_light) |sl| {
+            _ = cimgui.igBegin("Selected light", &open, 0);
+            defer cimgui.igEnd();
+
+            cimgui.format("Position", &self.environment.lights_position[sl]);
+            cimgui.format("Color", &self.environment.lights_color[sl]);
         }
     }
 };

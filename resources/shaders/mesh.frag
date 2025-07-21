@@ -21,6 +21,7 @@ uniform vec3 albedo;
 uniform float metallic;
 uniform float roughness;
 uniform float ao;
+uniform float emissive_strength;
 
 uniform int use_shadow_map;
 uniform sampler2D shadow_map_texture;
@@ -164,7 +165,7 @@ void main() {
     }
 
     vec3 ambient = albedo * ao;
-    vec3 color = ambient + radiance_out;
+    vec3 color = ambient + radiance_out + albedo * emissive_strength;
 
     color = color / (color + vec3(1.0));
     color = pow(color, vec3(1.0 / 2.2));  

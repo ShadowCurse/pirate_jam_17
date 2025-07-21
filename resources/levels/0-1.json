@@ -103,23 +103,6 @@
             }
         },
         {
-            "model": "DoorOuterLight",
-            "position": {
-                "x": -1.5e0,
-                "y": 4e0,
-                "z": 0e0
-            },
-            "rotation_x": 0e0,
-            "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0,
-            "target_rotation_z": null,
-            "scale": {
-                "x": 1e0,
-                "y": 1e0,
-                "z": 1e0
-            }
-        },
-        {
             "model": "DoorInnerLight",
             "position": {
                 "x": -1.5e0,
@@ -169,36 +152,19 @@
                 "y": 1e0,
                 "z": 1e0
             }
-        },
-        {
-            "model": "DoorOuterLight",
-            "position": {
-                "x": -1.5e0,
-                "y": 4e0,
-                "z": 0e0
-            },
-            "rotation_x": 0e0,
-            "rotation_y": 0e0,
-            "rotation_z": -1.5700000524520874e0,
-            "target_rotation_z": null,
-            "scale": {
-                "x": 1e0,
-                "y": 1e0,
-                "z": 1e0
-            }
         }
     ],
     "environment": {
         "lights_position": [
             {
-                "x": 1e0,
-                "y": 1e0,
-                "z": 1e0
+                "x": -1.5e0,
+                "y": 2.8299999237060547e0,
+                "z": 1.2699999809265137e0
             },
             {
-                "x": -1e0,
-                "y": 1e0,
-                "z": 1e0
+                "x": -1.5e0,
+                "y": 4e0,
+                "z": 1.190000057220459e0
             },
             {
                 "x": 1e0,
@@ -213,8 +179,8 @@
         ],
         "lights_color": [
             {
-                "r": 1e0,
-                "g": 0e0,
+                "r": 8.823537826538086e-2,
+                "g": 1e0,
                 "b": 0e0
             },
             {
@@ -247,6 +213,6 @@
         "shadow_map_width": 3e1,
         "shadow_map_height": 3e1,
         "shadow_map_depth": 5e1,
-        "cursor_size": 5.000000074505806e-2
+        "cursor_size": 4.203895392974451e-45
     }
 }

@@ -8,6 +8,7 @@ pub const Material = struct {
     albedo: math.Color4 = .WHITE,
     metallic: f32 = 0.5,
     roughness: f32 = 0.5,
+    emissive_strength: f32 = 0.0,
 };
 
 const Self = @This();
