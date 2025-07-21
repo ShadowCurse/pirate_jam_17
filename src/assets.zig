@@ -13,10 +13,21 @@ const Mesh = @import("mesh.zig");
 
 pub const DEFAULT_MESHES_DIR_PATH = "resources/models";
 
-pub const ModelType = enum { Floor, Wall, Box, Platform, DoorDoor, DoorFrame, DoorInnerLight, DoorOuterLight };
+pub const ModelType = enum {
+    Sphere,
+    Floor,
+    Wall,
+    Box,
+    Platform,
+    DoorDoor,
+    DoorFrame,
+    DoorInnerLight,
+    DoorOuterLight,
+};
 
 const ModelPathsType = std.EnumArray(ModelType, [:0]const u8);
 const MODEL_PATHS = ModelPathsType.init(.{
+    .Sphere = DEFAULT_MESHES_DIR_PATH ++ "/sphere.glb",
     .Floor = DEFAULT_MESHES_DIR_PATH ++ "/floor.glb",
     .Wall = DEFAULT_MESHES_DIR_PATH ++ "/wall.glb",
     .Box = DEFAULT_MESHES_DIR_PATH ++ "/box.glb",
