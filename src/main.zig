@@ -73,7 +73,7 @@ pub const Camera = struct {
     pitch: f32 = 0.0,
 
     fovy: f32 = math.PI / 2.0,
-    near: f32 = 0.1,
+    near: f32 = 0.01,
     far: f32 = 10000.0,
 
     velocity: math.Vec3 = .{},
@@ -253,6 +253,7 @@ const Game = struct {
 
     pub fn update(self: *Self, dt: f32) void {
         _ = self.frame_arena.reset(.retain_capacity);
+        Renderer.reset();
 
         if (Input.was_pressed(.@"1")) {
             self.mode = .Game;
@@ -298,7 +299,6 @@ const Game = struct {
             },
         };
 
-        Renderer.reset();
         current_level.draw(dt);
         Renderer.render(camera_in_use, &current_level.environment);
 

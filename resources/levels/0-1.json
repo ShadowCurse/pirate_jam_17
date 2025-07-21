@@ -95,6 +95,102 @@
                 "y": 1e0,
                 "z": 1e0
             }
+        },
+        {
+            "model": "DoorOuterLight",
+            "position": {
+                "x": -1.5e0,
+                "y": 4e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 1.5700000524520874e0,
+            "scale": {
+                "x": 1e0,
+                "y": 1e0,
+                "z": 1e0
+            }
+        },
+        {
+            "model": "DoorInnerLight",
+            "position": {
+                "x": -1.5e0,
+                "y": 4e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 1.5700000524520874e0,
+            "scale": {
+                "x": 1e0,
+                "y": 1e0,
+                "z": 1e0
+            }
+        },
+        {
+            "model": "DoorFrame",
+            "position": {
+                "x": -1.5e0,
+                "y": 4e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 1.5700000524520874e0,
+            "scale": {
+                "x": 1e0,
+                "y": 1e0,
+                "z": 1e0
+            }
+        },
+        {
+            "model": "DoorDoor",
+            "position": {
+                "x": -1.5e0,
+                "y": 4e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 1.5700000524520874e0,
+            "scale": {
+                "x": 1e0,
+                "y": 1e0,
+                "z": 1e0
+            }
+        },
+        {
+            "model": "DoorOuterLight",
+            "position": {
+                "x": -1.5e0,
+                "y": 4e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": -1.5700000524520874e0,
+            "scale": {
+                "x": 1e0,
+                "y": 1e0,
+                "z": 1e0
+            }
+        },
+        {
+            "model": "DoorDoor",
+            "position": {
+                "x": -1.5e0,
+                "y": 4e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": -1.5700000524520874e0,
+            "scale": {
+                "x": 1e0,
+                "y": 1e0,
+                "z": 1e0
+            }
         }
     ],
     "environment": {

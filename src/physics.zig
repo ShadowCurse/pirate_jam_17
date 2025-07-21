@@ -35,6 +35,31 @@ pub const CollisionPoint = struct {
     normal: math.Vec2,
 };
 
+// Assuming that it is the circle_1 who is trying to collide with circle_2. If they collide
+// the collision point will be on the circle_2 surface.
+pub fn circle_circle_collision(
+    circle_1: Circle,
+    circle_1_position: math.Vec2,
+    circle_2: Circle,
+    circle_2_position: math.Vec2,
+) ?CollisionPoint {
+    const to_circle_2 = circle_2_position.sub(circle_1_position);
+    const to_circle_2_len = to_circle_2.len();
+    if (to_circle_2_len < circle_1.radius + circle_2.radius) {
+        const to_collision_len = to_circle_2_len - circle_2.radius;
+        const to_circle_2_normalized = to_circle_2.normalize();
+        const collision_position = circle_1_position
+            .add(to_circle_2_normalized.mul_f32(to_collision_len));
+        const collision_normal = to_circle_2_normalized.neg();
+        return .{
+            .position = collision_position,
+            .normal = collision_normal,
+        };
+    } else {
+        return null;
+    }
+}
+
 // Assuming that it is the circle who is tryign to collide with rectangle. If they collide
 // the collision point will be on the rectangle surface.
 pub fn circle_rectangle_collision(

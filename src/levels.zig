@@ -171,6 +171,12 @@ pub const Level = struct {
     }
 
     pub fn player_collide(self: *const Self, camera: *Camera) void {
+        // Constants for the door cirlec ring collision.
+        const DELTA_DEGREES: f32 = 40.0;
+        const DELTA_RADIANS: f32 = std.math.degreesToRadians(DELTA_DEGREES);
+        const DELTA_RADIANS_HALF: f32 = std.math.degreesToRadians(DELTA_DEGREES / 2);
+        const RING_RADIUS = 0.37;
+
         for (self.objects.items, 0..) |*object, i| {
             if (object.model == .Box) {
                 if (self.holding_object) |ho| {
@@ -178,21 +184,135 @@ pub const Level = struct {
                         continue;
                 }
             }
-            if (object.model != .Wall and object.model != .Box) continue;
 
-            var wall_rectangle = Assets.aabbs.get(object.model);
-            wall_rectangle.rotation = object.rotation_z;
-            const wall_position = object.position.xy();
+            switch (object.model) {
+                .Wall, .Box => {
+                    var wall_rectangle = Assets.aabbs.get(object.model);
+                    wall_rectangle.rotation = object.rotation_z;
+                    const wall_position = object.position.xy();
 
-            if (physics.circle_rectangle_collision(
-                PLAYER_CIRCLE,
-                camera.position.xy(),
-                wall_rectangle,
-                wall_position,
-            )) |collision| {
-                camera.position = collision.position
-                    .add(collision.normal.mul_f32(PLAYER_CIRCLE.radius))
-                    .extend(1.0);
+                    if (physics.circle_rectangle_collision(
+                        PLAYER_CIRCLE,
+                        camera.position.xy(),
+                        wall_rectangle,
+                        wall_position,
+                    )) |collision| {
+                        camera.position = collision.position
+                            .add(collision.normal.mul_f32(PLAYER_CIRCLE.radius))
+                            .extend(1.0);
+                    }
+                },
+                .DoorDoor => {
+                    const distance_to_object = camera.position.xy()
+                        .sub(object.position.xy()).len();
+                    if (RING_RADIUS * 2.0 < distance_to_object) continue;
+
+                    const NNN: u32 = @floor((180.0 - 2 * DELTA_DEGREES) / (DELTA_DEGREES / 2));
+                    const position = object.position;
+                    const starting_rotation = object.rotation_z + DELTA_RADIANS;
+                    for (0..NNN) |n| {
+                        const rotation = math.Quat.from_axis_angle(
+                            .Z,
+                            starting_rotation - DELTA_RADIANS_HALF * @as(f32, @floatFromInt(n)),
+                        );
+                        const forward = rotation.rotate_vec3(.NEG_X);
+                        const circle_position = position.add(forward.mul_f32(RING_RADIUS));
+                        const R: f32 = 0.01;
+                        const circle: physics.Circle = .{ .radius = R };
+
+                        // const t = math.Mat4.IDENDITY
+                        //     .translate(circle_position.add(.{ .z = 1.0 }))
+                        //     .scale(.{ .x = R, .y = R, .z = R });
+                        // Renderer.draw_mesh(
+                        //     Assets.gpu_meshes.getPtr(.Sphere),
+                        //     t,
+                        //     Assets.materials.get(.Sphere),
+                        // );
+
+                        if (physics.circle_circle_collision(
+                            PLAYER_CIRCLE,
+                            camera.position.xy(),
+                            circle,
+                            circle_position.xy(),
+                        )) |collision| {
+                            camera.position = collision.position
+                                .add(collision.normal.mul_f32(PLAYER_CIRCLE.radius))
+                                .extend(1.0);
+                        }
+                    }
+                },
+                .DoorFrame => {
+                    const distance_to_object = camera.position.xy()
+                        .sub(object.position.xy()).len();
+                    if (RING_RADIUS * 2.0 < distance_to_object) continue;
+
+                    const NNN: u32 = @floor((180.0 - 2 * DELTA_DEGREES) / (DELTA_DEGREES / 2)) + 1;
+                    const position = object.position;
+                    var starting_rotation = object.rotation_z + DELTA_RADIANS;
+                    for (0..NNN) |n| {
+                        const rotation = math.Quat.from_axis_angle(
+                            .Z,
+                            starting_rotation + DELTA_RADIANS_HALF * @as(f32, @floatFromInt(n)),
+                        );
+                        const forward = rotation.rotate_vec3(.NEG_X);
+                        const circle_position = position.add(forward.mul_f32(RING_RADIUS));
+                        const R: f32 = 0.01;
+                        const circle: physics.Circle = .{ .radius = R };
+
+                        // const t = math.Mat4.IDENDITY
+                        //     .translate(circle_position.add(.{ .z = 1.0 }))
+                        //     .scale(.{ .x = R, .y = R, .z = R });
+                        // Renderer.draw_mesh(
+                        //     Assets.gpu_meshes.getPtr(.Sphere),
+                        //     t,
+                        //     Assets.materials.get(.Sphere),
+                        // );
+
+                        if (physics.circle_circle_collision(
+                            PLAYER_CIRCLE,
+                            camera.position.xy(),
+                            circle,
+                            circle_position.xy(),
+                        )) |collision| {
+                            camera.position = collision.position
+                                .add(collision.normal.mul_f32(PLAYER_CIRCLE.radius))
+                                .extend(1.0);
+                        }
+                    }
+
+                    starting_rotation = object.rotation_z - DELTA_RADIANS;
+                    for (0..NNN) |n| {
+                        const rotation = math.Quat.from_axis_angle(
+                            .Z,
+                            starting_rotation - DELTA_RADIANS_HALF * @as(f32, @floatFromInt(n)),
+                        );
+                        const forward = rotation.rotate_vec3(.NEG_X);
+                        const circle_position = position.add(forward.mul_f32(RING_RADIUS));
+                        const R: f32 = 0.01;
+                        const circle: physics.Circle = .{ .radius = R };
+
+                        const t = math.Mat4.IDENDITY
+                            .translate(circle_position.add(.{ .z = 1.0 }))
+                            .scale(.{ .x = R, .y = R, .z = R });
+                        Renderer.draw_mesh(
+                            Assets.gpu_meshes.getPtr(.Sphere),
+                            t,
+                            Assets.materials.get(.Sphere),
+                        );
+
+                        if (physics.circle_circle_collision(
+                            PLAYER_CIRCLE,
+                            camera.position.xy(),
+                            circle,
+                            circle_position.xy(),
+                        )) |collision| {
+                            camera.position = collision.position
+                                .add(collision.normal.mul_f32(PLAYER_CIRCLE.radius))
+                                .extend(1.0);
+                        }
+                    }
+                },
+                else => {},
             }
         }
     }

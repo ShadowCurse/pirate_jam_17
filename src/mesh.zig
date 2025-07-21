@@ -5,9 +5,9 @@ indices: []const Index,
 vertices: []const Vertex,
 
 pub const Material = struct {
-    albedo: math.Color4,
-    metallic: f32,
-    roughness: f32,
+    albedo: math.Color4 = .WHITE,
+    metallic: f32 = 0.5,
+    roughness: f32 = 0.5,
 };
 
 const Self = @This();
