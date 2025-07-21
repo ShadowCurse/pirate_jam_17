@@ -83,7 +83,10 @@ pub const Level = struct {
     const Self = @This();
 
     pub fn reset(self: *Self) void {
-        _ = self.arena.reset(.retain_capacity);
+        var arena = self.arena;
+        _ = arena.reset(.retain_capacity);
+        self.* = .{};
+        self.arena = arena;
     }
 
     pub fn empty() Self {
