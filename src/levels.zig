@@ -25,7 +25,7 @@ pub const Tag = enum {
 pub const Levels = std.EnumArray(Tag, Level);
 
 var scratch: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
-pub var levels: Levels = undefined;
+pub var levels: Levels = .initFill(.empty());
 
 pub fn init() void {
     _ = scratch.reset(.retain_capacity);
@@ -40,7 +40,6 @@ pub fn init() void {
         ) catch unreachable;
 
         const level = levels.getPtr(tag);
-        level.* = .empty();
         level.reset();
         level.load(scratch_alloc, path) catch |e| {
             log.err(@src(), "Error loading level from path: {s}: {}", .{ path, e });
@@ -84,7 +83,7 @@ pub const Level = struct {
     const Self = @This();
 
     pub fn reset(self: *Self) void {
-        _ = self.arena.reset(.free_all);
+        _ = self.arena.reset(.retain_capacity);
     }
 
     pub fn empty() Self {
