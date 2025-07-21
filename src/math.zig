@@ -3,6 +3,10 @@ const log = @import("log.zig");
 
 pub const PI = std.math.pi;
 
+pub inline fn lerp(start: f32, end: f32, t: f32) f32 {
+    return start + (end - start) * t;
+}
+
 pub inline fn exp_decay(start: f32, end: f32, decay: f32, dt: f32) f32 {
     return end + (start - end) * std.math.exp(-decay * dt);
 }

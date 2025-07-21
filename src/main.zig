@@ -17,6 +17,7 @@ const Renderer = @import("renderer.zig");
 const Assets = @import("assets.zig");
 const Input = @import("input.zig");
 const Levels = @import("levels.zig");
+const Animations = @import("animations.zig");
 
 pub const log_options = log.Options{
     .level = .Info,
@@ -269,6 +270,8 @@ const Game = struct {
         const camera_in_use = switch (self.mode) {
             .Game => blk: {
                 Platform.reset_mouse();
+                Animations.play(dt);
+
                 player_camera_move(&self.player_camera, dt);
 
                 const camera_ray = self.player_camera.mouse_to_ray(.{});
@@ -281,8 +284,6 @@ const Game = struct {
                 current_level.player_collide(&self.player_camera);
                 current_level.player_in_the_door(&self.player_camera);
 
-                current_level.settle_put_down_object(dt);
-                current_level.door_animate(dt);
                 current_level.cursor_animate(dt);
 
                 break :blk &self.player_camera;

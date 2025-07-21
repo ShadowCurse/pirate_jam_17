@@ -9,6 +9,7 @@ const physics = @import("physics.zig");
 
 const Camera = @import("root").Camera;
 const PLAYER_CIRCLE = @import("root").PLAYER_CIRCLE;
+const Animations = @import("animations.zig");
 const Platform = @import("platform.zig");
 const Renderer = @import("renderer.zig");
 const Input = @import("input.zig");
@@ -58,19 +59,15 @@ pub const Level = struct {
     // Player
     holding_object: ?u32 = null,
     put_down_object: ?u32 = null,
-    box_on_the_platform: bool = false,
-    in_the_door: bool = false,
+    finished: bool = false,
 
     // Cursor
     looking_at_pickable_object: bool = false,
 
-    // Door
-    door_animation_progress: f32 = 0.0,
-
     objects: std.ArrayListUnmanaged(Object) = .{},
     environment: Renderer.Environment = .{},
 
-    const Object = struct {
+    pub const Object = struct {
         model: Assets.ModelType,
         position: math.Vec3 = .{},
         rotation_x: f32 = 0.0,
@@ -89,7 +86,7 @@ pub const Level = struct {
         }
     };
 
-    const DOOR_OPEN_ANIMATION_TIME = 0.5;
+    const DOOR_OPEN_ANIMATION_TIME = 1.5;
     const PICKUP_DISTANCE: f32 = 1.5;
     const Self = @This();
 
@@ -142,24 +139,35 @@ pub const Level = struct {
             );
     }
 
-    pub fn door_animate(self: *Self, dt: f32) void {
-        if (DOOR_OPEN_ANIMATION_TIME < self.door_animation_progress) return;
-        if (!self.box_on_the_platform and !self.in_the_door) return;
-
-        self.door_animation_progress += dt;
+    pub fn open_doors(self: *Self) void {
         for (self.objects.items) |*object| {
             if (object.model != .DoorDoor) continue;
-            if (object.target_rotation_z) |rtz| {
-                object.rotation_z = math.exp_decay(object.rotation_z, rtz, 16.0, dt);
-                if (DOOR_OPEN_ANIMATION_TIME < self.door_animation_progress) {
-                    object.target_rotation_z = null;
-                }
-            } else {
-                if (self.box_on_the_platform)
-                    object.target_rotation_z = object.rotation_z + std.math.pi / 2.0;
-                if (self.in_the_door)
-                    object.target_rotation_z = object.rotation_z - std.math.pi / 2.0;
-            }
+            Animations.add(
+                .{
+                    .object = object,
+                    .action = .{ .rotate_z = .{
+                        .start = object.rotation_z,
+                        .end = 0.0,
+                    } },
+                    .duration = DOOR_OPEN_ANIMATION_TIME,
+                },
+            );
+        }
+    }
+
+    pub fn close_doors(self: *Self) void {
+        for (self.objects.items) |*object| {
+            if (object.model != .DoorDoor) continue;
+            Animations.add(
+                .{
+                    .object = object,
+                    .action = .{ .rotate_z = .{
+                        .start = object.rotation_z,
+                        .end = std.math.pi / 2.0,
+                    } },
+                    .duration = DOOR_OPEN_ANIMATION_TIME,
+                },
+            );
         }
     }
 
@@ -168,9 +176,14 @@ pub const Level = struct {
             if (object.model != .DoorFrame) continue;
             const distance_to_object = camera.position.xy()
                 .sub(object.position.xy()).len();
-            if (distance_to_object < 0.26) {
-                self.in_the_door = true;
-                self.door_animation_progress = 0.0;
+            if (distance_to_object < 0.26 and !self.finished) {
+                self.close_doors();
+                self.finished = true;
+                log.info(@src(), "Level finished", .{});
+            } else if (0.26 < distance_to_object and self.finished) {
+                self.open_doors();
+                self.finished = false;
+                log.info(@src(), "Level un finished", .{});
             }
         }
     }
@@ -204,12 +217,20 @@ pub const Level = struct {
             if (self.is_box_on_the_box())
                 return;
 
-            if (self.put_down_object) |pdo| {
-                const object = &self.objects.items[pdo];
-                object.position.z = 0.0;
-                self.is_box_on_the_platform();
-            }
-            self.put_down_object = ho;
+            const object = &self.objects.items[ho];
+            log.info(@src(), "player_put_down_object", .{});
+            Animations.add(
+                .{
+                    .object = object,
+                    .action = .{ .move = .{
+                        .start = object.position,
+                        .end = object.position.xy().extend(0.0),
+                    } },
+                    .duration = 0.2,
+                    .callback_data = self,
+                    .callback = @ptrCast(&Self.on_box_placement),
+                },
+            );
         }
         self.holding_object = null;
     }
@@ -223,19 +244,6 @@ pub const Level = struct {
                     .add(.{ .z = -0.5 });
             object.position = object.position.exp_decay(new_position, 14.0, dt);
             object.rotation_z = math.exp_decay(object.rotation_z, camera.yaw, 14.0, dt);
-        }
-    }
-
-    pub fn settle_put_down_object(self: *Self, dt: f32) void {
-        if (self.put_down_object) |pdo| {
-            const object = &self.objects.items[pdo];
-            object.position.z = math.exp_decay(object.position.z, 0.0, 20, dt);
-            if (object.position.z < 0.01) {
-                self.is_box_on_the_platform();
-
-                object.position.z = 0.0;
-                self.put_down_object = null;
-            }
         }
     }
 
@@ -279,35 +287,42 @@ pub const Level = struct {
 
                     const NNN: u32 = @floor((180.0 - 2 * DELTA_DEGREES) / (DELTA_DEGREES / 2));
                     const position = object.position;
-                    const starting_rotation = object.rotation_z + DELTA_RADIANS;
-                    for (0..NNN) |n| {
-                        const rotation = math.Quat.from_axis_angle(
-                            .Z,
-                            starting_rotation - DELTA_RADIANS_HALF * @as(f32, @floatFromInt(n)),
-                        );
-                        const forward = rotation.rotate_vec3(.NEG_X);
-                        const circle_position = position.add(forward.mul_f32(RING_RADIUS));
-                        const R: f32 = 0.01;
-                        const circle: physics.Circle = .{ .radius = R };
+                    for (&[_]f32{
+                        object.rotation_z + DELTA_RADIANS,
+                        object.rotation_z + DELTA_RADIANS + std.math.pi,
+                    }) |starting_rotation| {
+                        for (0..NNN) |n| {
+                            const rotation = math.Quat.from_axis_angle(
+                                .Z,
+                                starting_rotation - DELTA_RADIANS_HALF * @as(f32, @floatFromInt(n)),
+                            );
+                            const forward = rotation.rotate_vec3(.NEG_X);
+                            const circle_position = position.add(forward.mul_f32(RING_RADIUS));
+                            const circle: physics.Circle = .{ .radius = RING_PROBE_RADIUS };
 
-                        // const t = math.Mat4.IDENDITY
-                        //     .translate(circle_position.add(.{ .z = 1.0 }))
-                        //     .scale(.{ .x = R, .y = R, .z = R });
-                        // Renderer.draw_mesh(
-                        //     Assets.gpu_meshes.getPtr(.Sphere),
-                        //     t,
-                        //     Assets.materials.get(.Sphere),
-                        // );
+                            // const t = math.Mat4.IDENDITY
+                            //     .translate(circle_position.add(.{ .z = 1.0 }))
+                            //     .scale(.{
+                            //     .x = RING_PROBE_RADIUS,
+                            //     .y = RING_PROBE_RADIUS,
+                            //     .z = RING_PROBE_RADIUS,
+                            // });
+                            // Renderer.draw_mesh(
+                            //     Assets.gpu_meshes.getPtr(.Sphere),
+                            //     t,
+                            //     Assets.materials.get(.Sphere),
+                            // );
 
-                        if (physics.circle_circle_collision(
-                            PLAYER_CIRCLE,
-                            camera.position.xy(),
-                            circle,
-                            circle_position.xy(),
-                        )) |collision| {
-                            camera.position = collision.position
-                                .add(collision.normal.mul_f32(PLAYER_CIRCLE.radius))
-                                .extend(1.0);
+                            if (physics.circle_circle_collision(
+                                PLAYER_CIRCLE,
+                                camera.position.xy(),
+                                circle,
+                                circle_position.xy(),
+                            )) |collision| {
+                                camera.position = collision.position
+                                    .add(collision.normal.mul_f32(PLAYER_CIRCLE.radius))
+                                    .extend(1.0);
+                            }
                         }
                     }
                 },
@@ -318,73 +333,42 @@ pub const Level = struct {
 
                     const NNN: u32 = @floor((180.0 - 2 * DELTA_DEGREES) / (DELTA_DEGREES / 2)) + 1;
                     const position = object.position;
-                    var starting_rotation = object.rotation_z + DELTA_RADIANS;
-                    for (0..NNN) |n| {
-                        const rotation = math.Quat.from_axis_angle(
-                            .Z,
-                            starting_rotation + DELTA_RADIANS_HALF * @as(f32, @floatFromInt(n)),
-                        );
-                        const forward = rotation.rotate_vec3(.NEG_X);
-                        const circle_position = position.add(forward.mul_f32(RING_RADIUS));
-                        const circle: physics.Circle = .{ .radius = RING_PROBE_RADIUS };
+                    for (&[_]f32{
+                        object.rotation_z + DELTA_RADIANS,
+                        object.rotation_z + DELTA_RADIANS + std.math.pi,
+                    }) |starting_rotation| {
+                        for (0..NNN) |n| {
+                            const rotation = math.Quat.from_axis_angle(
+                                .Z,
+                                starting_rotation + DELTA_RADIANS_HALF * @as(f32, @floatFromInt(n)),
+                            );
+                            const forward = rotation.rotate_vec3(.NEG_X);
+                            const circle_position = position.add(forward.mul_f32(RING_RADIUS));
+                            const circle: physics.Circle = .{ .radius = RING_PROBE_RADIUS };
 
-                        // const t = math.Mat4.IDENDITY
-                        //     .translate(circle_position.add(.{ .z = 1.0 }))
-                        //     .scale(.{
-                        //     .x = RING_PROBE_RADIUS,
-                        //     .y = RING_PROBE_RADIUS,
-                        //     .z = RING_PROBE_RADIUS,
-                        // });
-                        // Renderer.draw_mesh(
-                        //     Assets.gpu_meshes.getPtr(.Sphere),
-                        //     t,
-                        //     Assets.materials.get(.Sphere),
-                        // );
+                            // const t = math.Mat4.IDENDITY
+                            //     .translate(circle_position.add(.{ .z = 1.0 }))
+                            //     .scale(.{
+                            //     .x = RING_PROBE_RADIUS,
+                            //     .y = RING_PROBE_RADIUS,
+                            //     .z = RING_PROBE_RADIUS,
+                            // });
+                            // Renderer.draw_mesh(
+                            //     Assets.gpu_meshes.getPtr(.Sphere),
+                            //     t,
+                            //     Assets.materials.get(.Sphere),
+                            // );
 
-                        if (physics.circle_circle_collision(
-                            PLAYER_CIRCLE,
-                            camera.position.xy(),
-                            circle,
-                            circle_position.xy(),
-                        )) |collision| {
-                            camera.position = collision.position
-                                .add(collision.normal.mul_f32(PLAYER_CIRCLE.radius))
-                                .extend(1.0);
-                        }
-                    }
-
-                    starting_rotation = object.rotation_z - DELTA_RADIANS;
-                    for (0..NNN) |n| {
-                        const rotation = math.Quat.from_axis_angle(
-                            .Z,
-                            starting_rotation - DELTA_RADIANS_HALF * @as(f32, @floatFromInt(n)),
-                        );
-                        const forward = rotation.rotate_vec3(.NEG_X);
-                        const circle_position = position.add(forward.mul_f32(RING_RADIUS));
-                        const circle: physics.Circle = .{ .radius = RING_PROBE_RADIUS };
-
-                        // const t = math.Mat4.IDENDITY
-                        //     .translate(circle_position.add(.{ .z = 1.0 }))
-                        //     .scale(.{
-                        //     .x = RING_PROBE_RADIUS,
-                        //     .y = RING_PROBE_RADIUS,
-                        //     .z = RING_PROBE_RADIUS,
-                        // });
-                        // Renderer.draw_mesh(
-                        //     Assets.gpu_meshes.getPtr(.Sphere),
-                        //     t,
-                        //     Assets.materials.get(.Sphere),
-                        // );
-
-                        if (physics.circle_circle_collision(
-                            PLAYER_CIRCLE,
-                            camera.position.xy(),
-                            circle,
-                            circle_position.xy(),
-                        )) |collision| {
-                            camera.position = collision.position
-                                .add(collision.normal.mul_f32(PLAYER_CIRCLE.radius))
-                                .extend(1.0);
+                            if (physics.circle_circle_collision(
+                                PLAYER_CIRCLE,
+                                camera.position.xy(),
+                                circle,
+                                circle_position.xy(),
+                            )) |collision| {
+                                camera.position = collision.position
+                                    .add(collision.normal.mul_f32(PLAYER_CIRCLE.radius))
+                                    .extend(1.0);
+                            }
                         }
                     }
                 },
@@ -393,28 +377,26 @@ pub const Level = struct {
         }
     }
 
-    fn is_box_on_the_platform(self: *Self) void {
-        if (self.put_down_object) |pdo| {
-            const object = &self.objects.items[pdo];
+    fn on_box_placement(
+        self: *Self,
+        object: *Object,
+    ) void {
+        var r1 = Assets.aabbs.get(object.model);
+        r1.rotation = object.rotation_z;
+        const r1_position = object.position.xy();
 
-            var r1 = Assets.aabbs.get(object.model);
-            r1.rotation = object.rotation_z;
-            const r1_position = object.position.xy();
+        for (self.objects.items) |*o| {
+            if (o.model != .Platform) continue;
 
-            for (self.objects.items) |*o| {
-                if (o.model != .Platform) continue;
-
-                const r2 = Assets.aabbs.get(o.model);
-                const r2_position = o.position.xy();
-                if (physics.rectangle_rectangle_intersection(
-                    r1,
-                    r1_position,
-                    r2,
-                    r2_position,
-                ) == .Full) {
-                    self.box_on_the_platform = true;
-                    self.door_animation_progress = 0.0;
-                }
+            const r2 = Assets.aabbs.get(o.model);
+            const r2_position = o.position.xy();
+            if (physics.rectangle_rectangle_intersection(
+                r1,
+                r1_position,
+                r2,
+                r2_position,
+            ) == .Full) {
+                self.open_doors();
             }
         }
     }
@@ -455,16 +437,16 @@ pub const Level = struct {
                         material.albedo.lerp(.TEAL, @abs(@sin(self.selected_object_t)));
                 }
             }
-            if ((object.model == .Platform or
-                object.model == .DoorOuterLight or
-                object.model == .DoorInnerLight) and
-                self.box_on_the_platform)
-                material.albedo = .GREEN;
-
-            if ((object.model == .DoorOuterLight or
-                object.model == .DoorInnerLight) and
-                !self.box_on_the_platform)
-                material.albedo = .RED;
+            // if ((object.model == .Platform or
+            //     object.model == .DoorOuterLight or
+            //     object.model == .DoorInnerLight) and
+            //     self.box_on_the_platform)
+            //     material.albedo = .GREEN;
+            //
+            // if ((object.model == .DoorOuterLight or
+            //     object.model == .DoorInnerLight) and
+            //     !self.box_on_the_platform)
+            //     material.albedo = .RED;
 
             Renderer.draw_mesh(
                 Assets.gpu_meshes.getPtr(object.model),
