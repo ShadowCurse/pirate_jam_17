@@ -1,6 +1,8 @@
 #version 300 es
 precision highp float;
 
+out vec2 vert_position;
+
 uniform float size;
 uniform vec2 window_size;
 
@@ -13,5 +15,6 @@ void main() {
     vec2 point = grid_planes[gl_VertexID];
     vec2 scale = vec2(size, window_size.x / window_size.y * size);
     point *= scale;
+    vert_position = grid_planes[gl_VertexID];
     gl_Position = vec4(point, 0.0, 1.0);
 }
