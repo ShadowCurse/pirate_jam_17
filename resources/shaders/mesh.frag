@@ -25,6 +25,7 @@ uniform float emissive_strength;
 
 uniform int use_shadow_map;
 uniform sampler2D shadow_map_texture;
+uniform samplerCube point_shadow_map_texture;
 
 const float PI = 3.14159265359;
 
@@ -93,6 +94,15 @@ float shadow(vec4 light_space_position, vec3 normal, vec3 to_light) {
   return shadow;
 }
 
+float point_shadow(vec3 normal, vec3 to_light) {
+  float curr_depth = length(to_light);
+  float bias = max(0.005 * (1.0 - dot(normal, to_light)), 0.001);
+  float closest_depth = texture(point_shadow_map_texture, to_light).r;
+  // Far parameter of the camera
+  closest_depth *= 10000.0;
+  return closest_depth < curr_depth - bias ? 1.0 : 0.0;
+}
+
 void main() {
     vec3 normal = normalize(vert_normal);
     vec3 to_camera = normalize(camera_position - vert_position);
@@ -106,29 +116,37 @@ void main() {
         vec3 to_light     = normalize(light_positions[i] - vert_position);
         vec3 half_vector  = normalize(to_camera + to_light);
 
-        float ndl = max(dot(normal, to_light), 0.0);                
-        float ndc = max(dot(normal, to_camera), 0.0);                
+        float ndl = max(dot(normal, to_light), 0.0);
+        float ndc = max(dot(normal, to_camera), 0.0);
         float ndh = max(dot(half_vector, to_camera), 0.0);
 
         float distance    = length(light_positions[i] - vert_position);
         float attenuation = 1.0 / (distance * distance);
-        vec3 radiance     = light_colors[i] * attenuation;        
+        vec3 radiance     = light_colors[i] * attenuation;
         
         // cook-torrance brdf
-        float normalDF = distribution_ggx(normal, half_vector, roughness);        
-        float G        = geometry_smith(ndl, ndc, roughness);      
-        vec3 F         = fresnel_schlick(ndh, base_reflectivity);       
+        float normalDF = distribution_ggx(normal, half_vector, roughness);
+        float G        = geometry_smith(ndl, ndc, roughness);
+        vec3  F        = fresnel_schlick(ndh, base_reflectivity);
         
         vec3 kS = F;
         vec3 kD = vec3(1.0) - kS;
-        kD *= 1.0 - metallic;	  
+        kD *= 1.0 - metallic;
         
         vec3 numerator    = normalDF * G * F;
         float denominator = 4.0 * ndc * ndl + 0.0001;
-        vec3 specular     = numerator / denominator;  
-            
+        vec3 specular     = numerator / denominator;
+
+        float point_shadow_value = 1.0;
+        if (i == 0) {
+            if (use_shadow_map == 1) {
+                vec3 from_light = vert_position - light_positions[i];
+                point_shadow_value = (1.0 - point_shadow(normal, from_light));
+            }
+        }
+
         // add to outgoing radiance
-        radiance_out += (kD * albedo / PI + specular) * radiance * ndl; 
+        radiance_out += (kD * albedo / PI + specular) * radiance * ndl * point_shadow_value;
     }
 
     // Direct light
@@ -137,16 +155,16 @@ void main() {
         vec3 to_light     = normalize(-direct_light_direction);
         vec3 half_vector  = normalize(to_camera + to_light);
 
-        float ndl = max(dot(normal, to_light), 0.0);                
-        float ndc = max(dot(normal, to_camera), 0.0);                
+        float ndl = max(dot(normal, to_light), 0.0);
+        float ndc = max(dot(normal, to_camera), 0.0);
         float ndh = max(dot(half_vector, to_camera), 0.0);
 
-        vec3 radiance = direct_light_color;        
+        vec3 radiance = direct_light_color;
         
         // cook-torrance brdf
-        float normalDF = distribution_ggx(normal, half_vector, roughness);        
-        float G        = geometry_smith(ndl, ndc, roughness);      
-        vec3 F         = fresnel_schlick(ndh, base_reflectivity);       
+        float normalDF = distribution_ggx(normal, half_vector, roughness);
+        float G        = geometry_smith(ndl, ndc, roughness);
+        vec3  F        = fresnel_schlick(ndh, base_reflectivity);
         
         vec3 kS = F;
         vec3 kD = vec3(1.0) - kS;
@@ -160,8 +178,7 @@ void main() {
         if (use_shadow_map == 1)
           shadow_value = (1.0 - shadow(vert_light_space_position, normal, to_light));
         // add to outgoing radiance
-        radiance_out += (kD * albedo / PI + specular) *
-                        radiance * ndl * shadow_value;
+        radiance_out += (kD * albedo / PI + specular) * radiance * ndl * shadow_value;
     }
 
     vec3 ambient = albedo * ao;
