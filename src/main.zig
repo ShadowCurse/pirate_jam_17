@@ -217,7 +217,9 @@ fn player_camera_move(camera: *Camera, dt: f32) void {
     const ra =
         -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.A)))) +
         1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.D))));
-    camera.acceleration = forward.mul_f32(fa).add(right.mul_f32(ra)).mul_f32(camera.speed);
+    camera.acceleration = forward.mul_f32(fa).add(right.mul_f32(ra));
+    if (camera.acceleration.len_squared() != 0.0)
+        camera.acceleration = camera.acceleration.normalize().mul_f32(camera.speed);
 
     camera.acceleration = camera.acceleration.sub(camera.velocity.mul_f32(camera.friction));
     camera.position = camera.acceleration.mul_f32(0.5 * dt * dt)
