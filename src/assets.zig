@@ -42,7 +42,7 @@ pub const Meshes = std.EnumArray(ModelType, Mesh);
 pub const AABBs = std.EnumArray(ModelType, physics.Rectangle);
 
 pub const DEFAULT_SOUNDTRACKS_DIR_PATH = "resources/soundtracks";
-pub const SoundtrackType = enum {
+pub const SoundtrackType = enum(u8) {
     Background,
     Door,
     Success,

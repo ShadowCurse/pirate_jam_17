@@ -7,8 +7,10 @@ const log = @import("log.zig");
 const math = @import("math.zig");
 const physics = @import("physics.zig");
 
-const Camera = @import("root").Camera;
-const PLAYER_CIRCLE = @import("root").PLAYER_CIRCLE;
+const Game = @import("root");
+const Camera = Game.Camera;
+const PLAYER_CIRCLE = Game.PLAYER_CIRCLE;
+
 const Animations = @import("animations.zig");
 const Platform = @import("platform.zig");
 const Renderer = @import("renderer.zig");
@@ -158,7 +160,7 @@ pub const Level = struct {
     pub fn open_doors(self: *Self) void {
         for (self.objects.items) |*object| {
             if (object.model != .DoorDoor) continue;
-            Audio.play(.Door);
+            Audio.play(.Door, &object.position);
             Animations.add(
                 .{
                     .object = object,
@@ -175,7 +177,7 @@ pub const Level = struct {
     pub fn close_doors(self: *Self) void {
         for (self.objects.items) |*object| {
             if (object.model != .DoorDoor) continue;
-            Audio.play(.Door);
+            Audio.play(.Door, &object.position);
             Animations.add(
                 .{
                     .object = object,
@@ -225,7 +227,7 @@ pub const Level = struct {
                     closest_t = r.t;
                     if (Input.was_pressed(.LMB)) {
                         self.holding_object = @intCast(i);
-                        Audio.play(.BoxPickup);
+                        Audio.play(.BoxPickup, null);
                     }
                 }
             }
@@ -259,7 +261,7 @@ pub const Level = struct {
             const object = &self.objects.items[ho];
             const new_position =
                 camera.position
-                    .add(camera.forward().mul_f32(1.0))
+                    .add(camera.forward().xy().extend(0.0))
                     .add(.{ .z = -0.5 });
             object.position = object.position.exp_decay(new_position, 14.0, dt);
             object.rotation_z = math.exp_decay(object.rotation_z, camera.yaw, 14.0, dt);
@@ -400,7 +402,7 @@ pub const Level = struct {
         self: *Self,
         object: *Object,
     ) void {
-        Audio.play(.BoxPutDown);
+        Audio.play(.BoxPutDown, &object.position);
         var r1 = Assets.aabbs.get(object.model);
         r1.rotation = object.rotation_z;
         const r1_position = object.position.xy();
@@ -416,7 +418,7 @@ pub const Level = struct {
                 r2,
                 r2_position,
             ) == .Full) {
-                Audio.play(.Success);
+                Audio.play(.Success, null);
                 self.open_doors();
             }
         }
