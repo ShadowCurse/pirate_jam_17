@@ -51,7 +51,7 @@ pub fn main() void {
     Assets.init();
     Levels.init();
 
-    var game: Game = .init();
+    init();
 
     var t = std.time.nanoTimestamp();
     while (!Platform.stop) {
@@ -64,7 +64,7 @@ pub fn main() void {
         Platform.process_events();
         Input.update();
 
-        game.update(dt);
+        update(dt);
 
         Platform.present();
     }
@@ -93,8 +93,11 @@ pub const Camera = struct {
     const Self = @This();
 
     pub fn forward(self: *const Self) math.Vec3 {
-        const rotation = math.Quat.from_axis_angle(.Z, self.yaw).mul(Camera.ORIENTATION).to_mat4();
-        return rotation.mul_vec4(.Z).shrink();
+        return self.rotation().rotate_vec3(.Z);
+    }
+
+    pub fn up(self: *const Self) math.Vec3 {
+        return self.rotation().rotate_vec3(.NEG_Y);
     }
 
     pub fn move(self: *Camera, dt: f32) void {
@@ -119,20 +122,24 @@ pub const Camera = struct {
             self.pitch = -math.PI / 2.0;
         }
 
-        const rotation = self.rotation_matrix();
-        const velocity = self.velocity.mul_f32(self.speed * dt).extend(1.0);
-        const delta = rotation.mul_vec4(velocity);
-        self.position = self.position.add(delta.shrink());
+        const r = self.rotation();
+        const velocity = self.velocity.mul_f32(self.speed * dt);
+        const delta = r.rotate_vec3(velocity);
+        self.position = self.position.add(delta);
     }
 
     pub fn transform(self: *const Self) math.Mat4 {
         return self.rotation_matrix().translate(self.position);
     }
 
-    pub fn rotation_matrix(self: *const Self) math.Mat4 {
+    pub fn rotation(self: *const Self) math.Quat {
         const r_yaw = math.Quat.from_axis_angle(.Z, self.yaw);
         const r_pitch = math.Quat.from_axis_angle(.X, self.pitch);
-        return r_yaw.mul(r_pitch).mul(Self.ORIENTATION).to_mat4();
+        return r_yaw.mul(r_pitch).mul(Self.ORIENTATION);
+    }
+
+    pub fn rotation_matrix(self: *const Self) math.Mat4 {
+        return self.rotation().to_mat4();
     }
 
     pub fn perspective(self: *const Self) math.Mat4 {
@@ -162,45 +169,45 @@ pub const Camera = struct {
     }
 };
 
-fn free_camera_move(self: *Camera, dt: f32) void {
-    self.active = Input.is_pressed(.WHEEL);
-    if (!self.active) return;
-    self.velocity.x =
+fn free_camera_move(camera: *Camera, dt: f32) void {
+    camera.active = Input.is_pressed(.WHEEL);
+    if (!camera.active) return;
+    camera.velocity.x =
         -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.A)))) +
         1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.D))));
-    self.velocity.y =
+    camera.velocity.y =
         -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.SPACE)))) +
         1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.LCTRL))));
-    self.velocity.z =
+    camera.velocity.z =
         -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.S)))) +
         1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.W))));
 
-    self.yaw -= Input.mouse_motion.x * self.sensitivity * dt;
-    self.pitch -= Input.mouse_motion.y * self.sensitivity * dt;
-    if (math.PI / 2.0 < self.pitch) {
-        self.pitch = math.PI / 2.0;
+    camera.yaw -= Input.mouse_motion.x * camera.sensitivity * dt;
+    camera.pitch -= Input.mouse_motion.y * camera.sensitivity * dt;
+    if (math.PI / 2.0 < camera.pitch) {
+        camera.pitch = math.PI / 2.0;
     }
-    if (self.pitch < -math.PI / 2.0) {
-        self.pitch = -math.PI / 2.0;
+    if (camera.pitch < -math.PI / 2.0) {
+        camera.pitch = -math.PI / 2.0;
     }
 
-    const rotation = self.rotation_matrix();
-    const velocity = self.velocity.mul_f32(self.speed * dt).extend(1.0);
+    const rotation = camera.rotation_matrix();
+    const velocity = camera.velocity.mul_f32(camera.speed * dt).extend(1.0);
     const delta = rotation.mul_vec4(velocity);
-    self.position = self.position.add(delta.shrink());
+    camera.position = camera.position.add(delta.shrink());
 }
 
-fn player_camera_move(self: *Camera, dt: f32) void {
-    self.yaw -= Input.mouse_motion.x * self.sensitivity * dt;
-    self.pitch -= Input.mouse_motion.y * self.sensitivity * dt;
-    if (math.PI / 2.0 < self.pitch) {
-        self.pitch = math.PI / 2.0;
+fn player_camera_move(camera: *Camera, dt: f32) void {
+    camera.yaw -= Input.mouse_motion.x * camera.sensitivity * dt;
+    camera.pitch -= Input.mouse_motion.y * camera.sensitivity * dt;
+    if (math.PI / 2.0 < camera.pitch) {
+        camera.pitch = math.PI / 2.0;
     }
-    if (self.pitch < -math.PI / 2.0) {
-        self.pitch = -math.PI / 2.0;
+    if (camera.pitch < -math.PI / 2.0) {
+        camera.pitch = -math.PI / 2.0;
     }
 
-    const rotation = math.Quat.from_axis_angle(.Z, self.yaw).mul(Camera.ORIENTATION).to_mat4();
+    const rotation = math.Quat.from_axis_angle(.Z, camera.yaw).mul(Camera.ORIENTATION).to_mat4();
     const forward = rotation.mul_vec4(.Z).shrink();
     const right = rotation.mul_vec4(.X).shrink();
 
@@ -210,175 +217,177 @@ fn player_camera_move(self: *Camera, dt: f32) void {
     const ra =
         -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.A)))) +
         1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.D))));
-    self.acceleration = forward.mul_f32(fa).add(right.mul_f32(ra)).mul_f32(self.speed);
+    camera.acceleration = forward.mul_f32(fa).add(right.mul_f32(ra)).mul_f32(camera.speed);
 
-    self.acceleration = self.acceleration.sub(self.velocity.mul_f32(self.friction));
-    self.position = self.acceleration.mul_f32(0.5 * dt * dt)
-        .add(self.velocity.mul_f32(dt))
-        .add(self.position);
-    self.velocity = self.velocity.add(self.acceleration.mul_f32(dt));
+    camera.acceleration = camera.acceleration.sub(camera.velocity.mul_f32(camera.friction));
+    camera.position = camera.acceleration.mul_f32(0.5 * dt * dt)
+        .add(camera.velocity.mul_f32(dt))
+        .add(camera.position);
+    camera.velocity = camera.velocity.add(camera.acceleration.mul_f32(dt));
 }
 
-const Game = struct {
-    frame_arena: std.heap.ArenaAllocator = undefined,
+pub var frame_arena: std.heap.ArenaAllocator = undefined;
 
-    current_level_tag: Levels.Tag = .@"0-1",
-    mode: Mode = .Edit,
+pub var current_level_tag: Levels.Tag = .@"0-1";
+pub var mode: Mode = .Edit;
 
-    free_camera: Camera = .{},
-    player_camera: Camera = .{},
-    // Footsteps
-    random_footstep: std.Random.Xoroshiro128 = .init(0),
-    player_move_time: f32 = 0.0,
-    player_last_footstep_position: math.Vec2 = .{},
+pub var free_camera: Camera = .{};
+pub var player_camera: Camera = .{};
 
-    const Mode = enum {
-        Game,
-        Edit,
+// Footsteps
+pub var random_footstep: std.Random.Xoroshiro128 = .init(0);
+pub var player_move_time: f32 = 0.0;
+pub var player_last_footstep_position: math.Vec2 = .{};
+
+const Mode = enum {
+    Game,
+    Edit,
+};
+
+pub fn init() void {
+    frame_arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+
+    free_camera = .{
+        .position = .{ .y = -5.0, .z = 5.0 },
     };
+    player_camera = .{
+        .position = .{ .y = -2.0, .z = 1.0 },
+        .friction = 12.0,
+        .speed = 50.0,
+    };
+}
 
-    const Self = @This();
+fn play_footstep(dt: f32) void {
+    const NUM_FOOTSTEPS =
+        @intFromEnum(Assets.SoundtrackType.Footstep4) -
+        @intFromEnum(Assets.SoundtrackType.Footstep0);
 
-    pub fn init() Self {
-        const frame_arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-
-        const free_camera: Camera = .{
-            .position = .{ .y = -5.0, .z = 5.0 },
-        };
-        const player_camera: Camera = .{
-            .position = .{ .y = -2.0, .z = 1.0 },
-            .friction = 12.0,
-            .speed = 50.0,
-        };
-
-        return .{
-            .frame_arena = frame_arena,
-            .free_camera = free_camera,
-            .player_camera = player_camera,
-        };
-    }
-
-    fn play_footstep(self: *Self, dt: f32) void {
-        const NUM_FOOTSTEPS =
-            @intFromEnum(Assets.SoundtrackType.Footstep4) -
-            @intFromEnum(Assets.SoundtrackType.Footstep0);
-
-        const random = self.random_footstep.random();
-        if (0.3 < self.player_camera.velocity.len_squared()) {
-            self.player_move_time += dt;
-            if (0.6 < self.player_move_time) {
-                const footstep_sound: Assets.SoundtrackType =
-                    @enumFromInt(
-                        @intFromEnum(Assets.SoundtrackType.Footstep0) +
-                            random.intRangeAtMost(u8, 0, NUM_FOOTSTEPS),
-                    );
-                Audio.play(footstep_sound);
-                self.player_move_time = 0.0;
-                self.player_last_footstep_position = self.player_camera.position.xy();
-            }
-        }
-        if (2.0 < (self.player_camera.position.xy()
-            .sub(self.player_last_footstep_position)).len_squared())
-        {
+    const random = random_footstep.random();
+    if (0.3 < player_camera.velocity.len_squared()) {
+        player_move_time += dt;
+        if (0.6 < player_move_time) {
             const footstep_sound: Assets.SoundtrackType =
                 @enumFromInt(
                     @intFromEnum(Assets.SoundtrackType.Footstep0) +
                         random.intRangeAtMost(u8, 0, NUM_FOOTSTEPS),
                 );
-            Audio.play(footstep_sound);
-            self.player_move_time = 0.0;
-            self.player_last_footstep_position = self.player_camera.position.xy();
+            Audio.play(footstep_sound, null);
+            player_move_time = 0.0;
+            player_last_footstep_position = player_camera.position.xy();
         }
     }
+    if (2.0 < (player_camera.position.xy()
+        .sub(player_last_footstep_position)).len_squared())
+    {
+        const footstep_sound: Assets.SoundtrackType =
+            @enumFromInt(
+                @intFromEnum(Assets.SoundtrackType.Footstep0) +
+                    random.intRangeAtMost(u8, 0, NUM_FOOTSTEPS),
+            );
+        Audio.play(footstep_sound, null);
+        player_move_time = 0.0;
+        player_last_footstep_position = player_camera.position.xy();
+    }
+}
 
-    pub fn update(self: *Self, dt: f32) void {
-        _ = self.frame_arena.reset(.retain_capacity);
-        Renderer.reset();
+pub fn current_camera() *const Camera {
+    switch (mode) {
+        .Game => {
+            return &player_camera;
+        },
+        .Edit => {
+            return &free_camera;
+        },
+    }
+}
 
-        if (Input.was_pressed(.@"1")) {
-            self.mode = .Game;
-            Platform.hide_mouse(true);
-        }
-        if (Input.was_pressed(.@"2")) {
-            self.mode = .Edit;
-            Platform.hide_mouse(false);
-        }
+pub fn update(dt: f32) void {
+    _ = frame_arena.reset(.retain_capacity);
+    Renderer.reset();
 
-        const current_level = Levels.levels.getPtr(self.current_level_tag);
+    if (Input.was_pressed(.@"1")) {
+        mode = .Game;
+        Platform.hide_mouse(true);
+    }
+    if (Input.was_pressed(.@"2")) {
+        mode = .Edit;
+        Platform.hide_mouse(false);
+    }
 
-        const camera_in_use = switch (self.mode) {
-            .Game => blk: {
-                Platform.reset_mouse();
-                Animations.play(dt);
+    const current_level = Levels.levels.getPtr(current_level_tag);
 
-                player_camera_move(&self.player_camera, dt);
-                self.play_footstep(dt);
+    const camera_in_use = switch (mode) {
+        .Game => blk: {
+            Platform.reset_mouse();
+            Animations.play(dt);
 
-                const camera_ray = self.player_camera.mouse_to_ray(.{});
+            player_camera_move(&player_camera, dt);
+            play_footstep(dt);
 
-                current_level.player_pick_up_object(&camera_ray);
-                if (Input.was_pressed(.RMB))
-                    current_level.player_put_down_object();
+            const camera_ray = player_camera.mouse_to_ray(.{});
 
-                current_level.player_move_object(&self.player_camera, dt);
-                current_level.player_collide(&self.player_camera);
-                current_level.player_in_the_door(&self.player_camera);
+            current_level.player_pick_up_object(&camera_ray);
+            if (Input.was_pressed(.RMB))
+                current_level.player_put_down_object();
 
-                current_level.cursor_animate(dt);
+            current_level.player_move_object(&player_camera, dt);
+            current_level.player_collide(&player_camera);
+            current_level.player_in_the_door(&player_camera);
 
-                break :blk &self.player_camera;
-            },
-            .Edit => blk: {
-                free_camera_move(&self.free_camera, dt);
+            current_level.cursor_animate(dt);
 
-                const mouse_clip = Platform.mouse_clip();
-                const camera_ray = self.free_camera.mouse_to_ray(mouse_clip);
+            break :blk &player_camera;
+        },
+        .Edit => blk: {
+            free_camera_move(&free_camera, dt);
 
-                if (Input.was_pressed(.LMB))
-                    current_level.select(&camera_ray);
-                if (Input.was_pressed(.RMB)) {
-                    current_level.selected_object = null;
-                    current_level.selected_light = null;
-                }
+            const mouse_clip = Platform.mouse_clip();
+            const camera_ray = free_camera.mouse_to_ray(mouse_clip);
 
-                break :blk &self.free_camera;
-            },
-        };
+            if (Input.was_pressed(.LMB))
+                current_level.select(&camera_ray);
+            if (Input.was_pressed(.RMB)) {
+                current_level.selected_object = null;
+                current_level.selected_light = null;
+            }
 
-        current_level.draw(dt);
-        Renderer.render(camera_in_use, &current_level.environment);
+            break :blk &free_camera;
+        },
+    };
+
+    current_level.draw(dt);
+    Renderer.render(camera_in_use, &current_level.environment);
+
+    {
+        cimgui.prepare_frame();
+        defer cimgui.render_frame();
+
+        // _ = cimgui.igShowDemoWindow(&a);
 
         {
-            cimgui.prepare_frame();
-            defer cimgui.render_frame();
+            var open: bool = true;
+            _ = cimgui.igBegin("Options", &open, 0);
+            defer cimgui.igEnd();
 
-            // _ = cimgui.igShowDemoWindow(&a);
+            if (cimgui.igCollapsingHeader_BoolPtr(
+                "General",
+                &open,
+                cimgui.ImGuiTreeNodeFlags_DefaultOpen,
+            )) {
+                _ = cimgui.igSeparatorText("Cameras");
+                cimgui.format("Player camera", &player_camera);
+                cimgui.format("Free camera", &free_camera);
+                _ = cimgui.igSeparatorText("Levels selection");
+                cimgui.format("Current level", &current_level_tag);
 
-            {
-                var open: bool = true;
-                _ = cimgui.igBegin("Options", &open, 0);
-                defer cimgui.igEnd();
-
-                if (cimgui.igCollapsingHeader_BoolPtr(
-                    "General",
-                    &open,
-                    cimgui.ImGuiTreeNodeFlags_DefaultOpen,
-                )) {
-                    _ = cimgui.igSeparatorText("Cameras");
-                    cimgui.format("Player camera", &self.player_camera);
-                    cimgui.format("Free camera", &self.free_camera);
-                    _ = cimgui.igSeparatorText("Levels selection");
-                    cimgui.format("Current level", &self.current_level_tag);
-
-                    if (cimgui.igButton("Reload levels", .{})) {
-                        Levels.init();
-                    }
+                if (cimgui.igButton("Reload levels", .{})) {
+                    Levels.init();
                 }
-
-                current_level.imgui_ui(self.frame_arena.allocator(), self.current_level_tag);
-                Audio.imgui_ui();
-                Input.imgui_ui();
             }
+
+            current_level.imgui_ui(frame_arena.allocator(), current_level_tag);
+            Audio.imgui_ui();
+            Input.imgui_ui();
         }
     }
-};
+}
