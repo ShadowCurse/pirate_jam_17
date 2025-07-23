@@ -388,7 +388,6 @@ pub fn load_texture(
         const width: u32 = @intCast(x);
         const height: u32 = @intCast(y);
         const channels: u32 = @intCast(c);
-        log.info(@src(), "{}, {}, {}", .{ width, height, channels });
 
         log.assert(
             @src(),
