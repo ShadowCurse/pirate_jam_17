@@ -7,7 +7,7 @@ pub fn build(b: *std.Build) !void {
     var env_map = try std.process.getEnvMap(b.allocator);
     defer env_map.deinit();
 
-    const cimgui = build_cimgui(b, target, optimize, &env_map);
+    const c_lib = build_c_libc(b, target, &env_map);
 
     const artifact = if (target.result.os.tag == .emscripten) blk: {
         const cache_include = std.fs.path.join(
@@ -22,8 +22,8 @@ pub fn build(b: *std.Build) !void {
         defer b.allocator.free(cache_include);
         const cache_path = std.Build.LazyPath{ .cwd_relative = cache_include };
 
-        cimgui.addIncludePath(cache_path);
-        b.installArtifact(cimgui);
+        c_lib.addIncludePath(cache_path);
+        b.installArtifact(c_lib);
 
         const lib = b.addStaticLibrary(.{
             .name = "wasm",
@@ -51,9 +51,10 @@ pub fn build(b: *std.Build) !void {
     artifact.addIncludePath(b.path("thirdparty/cimgui"));
     artifact.addIncludePath(b.path("thirdparty/cgltf/"));
     artifact.addIncludePath(b.path("thirdparty/stb/"));
-    artifact.addCSourceFile(.{ .file = b.path("thirdparty/cgltf/cgltf.c") });
-    artifact.addCSourceFile(.{ .file = b.path("thirdparty/stb/stb.c") });
-    artifact.linkLibrary(cimgui);
+    // artifact.addCSourceFile(.{ .file = b.path("thirdparty/cgltf/cgltf.c") });
+    // artifact.addCSourceFile(.{ .file = b.path("thirdparty/stb/stb.c") });
+    artifact.linkLibrary(c_lib);
+    artifact.linkLibrary(c_lib);
     artifact.linkLibC();
     b.installArtifact(artifact);
 
@@ -70,18 +71,17 @@ pub fn build(b: *std.Build) !void {
     }
 }
 
-fn build_cimgui(
+fn build_c_libc(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
     env_map: *const std.process.EnvMap,
 ) *std.Build.Step.Compile {
-    const cimgui = b.addStaticLibrary(.{
+    const c_lib = b.addStaticLibrary(.{
         .name = "cimgui",
         .target = target,
-        .optimize = optimize,
+        .optimize = .ReleaseFast,
     });
-    cimgui.addCSourceFiles(.{
+    c_lib.addCSourceFiles(.{
         .files = &.{
             "thirdparty/cimgui/cimgui.cpp",
             "thirdparty/cimgui/imgui/imgui.cpp",
@@ -91,12 +91,16 @@ fn build_cimgui(
             "thirdparty/cimgui/imgui/imgui_widgets.cpp",
             "thirdparty/cimgui/imgui/backends/imgui_impl_sdl3.cpp",
             "thirdparty/cimgui/imgui/backends/imgui_impl_opengl3.cpp",
+            "thirdparty/cgltf/cgltf.c",
+            "thirdparty/stb/stb.c",
         },
     });
-    cimgui.addIncludePath(b.path("thirdparty/cimgui"));
-    cimgui.addIncludePath(b.path("thirdparty/cimgui/imgui"));
-    cimgui.addIncludePath(b.path("thirdparty/cimgui/imgui/backends"));
-    cimgui.addIncludePath(.{ .cwd_relative = env_map.get("SDL3_INCLUDE_PATH").? });
-    cimgui.linkLibCpp();
-    return cimgui;
+    c_lib.addIncludePath(b.path("thirdparty/stb/"));
+    c_lib.addIncludePath(b.path("thirdparty/cgltf/"));
+    c_lib.addIncludePath(b.path("thirdparty/cimgui"));
+    c_lib.addIncludePath(b.path("thirdparty/cimgui/imgui"));
+    c_lib.addIncludePath(b.path("thirdparty/cimgui/imgui/backends"));
+    c_lib.addIncludePath(.{ .cwd_relative = env_map.get("SDL3_INCLUDE_PATH").? });
+    c_lib.linkLibCpp();
+    return c_lib;
 }
