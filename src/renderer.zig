@@ -17,7 +17,7 @@ var shadow_map_shader: shaders.ShadowMapShader = undefined;
 var shadow_map: gpu.ShadowMap = undefined;
 
 var point_shadow_map_shader: shaders.PointShadowMapShader = undefined;
-var point_shadow_map: gpu.PointShadowMap = undefined;
+var point_shadow_maps: gpu.PointShadowMaps = undefined;
 
 var cursor_shader: shaders.CursorShader = undefined;
 
@@ -60,7 +60,7 @@ pub const Environment = struct {
         return projection;
     }
 
-    pub fn point_shadow_map_views(e: *const Environment) [6]math.Mat4 {
+    pub fn point_shadow_map_views(e: *const Environment, light_index: u32) [6]math.Mat4 {
         var r: [6]math.Mat4 = undefined;
         for (
             &[_]struct { math.Vec3, math.Vec3 }{
@@ -75,7 +75,7 @@ pub const Environment = struct {
         ) |d, *rr| {
             const v = math.Mat4.look_at(.{}, d[0], d[1])
                 .mul(Camera.ORIENTATION.to_mat4())
-                .translate(e.lights_position[0])
+                .translate(e.lights_position[light_index])
                 .inverse();
             rr.* = v;
         }
@@ -104,7 +104,7 @@ pub fn init() void {
     Self.shadow_map_shader = .init();
     Self.shadow_map = .init();
     Self.point_shadow_map_shader = .init();
-    Self.point_shadow_map = .init();
+    Self.point_shadow_maps = .init();
     Self.cursor_shader = .init();
 }
 
@@ -141,8 +141,8 @@ fn prepare_shadow_map_context() void {
 }
 
 fn prepare_point_shadow_map_context() void {
-    gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, Self.point_shadow_map.framebuffer);
-    gl.glViewport(0, 0, gpu.PointShadowMap.SHADOW_WIDTH, gpu.PointShadowMap.SHADOW_HEIGHT);
+    gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, Self.point_shadow_maps.framebuffer);
+    gl.glViewport(0, 0, gpu.PointShadowMaps.SHADOW_WIDTH, gpu.PointShadowMaps.SHADOW_HEIGHT);
     gl.glDepthFunc(gl.GL_LEQUAL);
 }
 
@@ -171,24 +171,24 @@ pub fn render(
     Self.point_shadow_map_shader.use();
     const point_light_projection = environment.point_shadow_map_projection();
     Self.point_shadow_map_shader.set_projection(&point_light_projection);
-    for (0..1) |light_index| {
+    for (0..NUM_LIGHTS) |light_index| {
         Self.point_shadow_map_shader.set_light_position(
             &environment.lights_position[light_index],
         );
-        const face_views = environment.point_shadow_map_views();
-        for (&face_views, 0..) |*t, i| {
+        const face_views = environment.point_shadow_map_views(@intCast(light_index));
+        for (&face_views, 0..) |*view, i| {
             const face =
                 @as(u32, @intCast(gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X)) + @as(u32, @intCast(i));
             gl.glFramebufferTexture2D(
                 gl.GL_FRAMEBUFFER,
                 gl.GL_DEPTH_ATTACHMENT,
                 face,
-                Self.point_shadow_map.depth_cube_texture,
+                Self.point_shadow_maps.depth_cubes[light_index],
                 0,
             );
             gl.glClearDepth(1.0);
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT);
-            Self.point_shadow_map_shader.set_face_params(t);
+            Self.point_shadow_map_shader.set_face_view(view);
             for (Self.mesh_infos.slice()) |*mi| {
                 Self.point_shadow_map_shader.set_mesh_params(&mi.model);
                 mi.mesh.draw();
@@ -207,7 +207,7 @@ pub fn render(
         &projection,
         environment,
         &Self.shadow_map,
-        &Self.point_shadow_map,
+        &Self.point_shadow_maps,
     );
     for (Self.mesh_infos.slice()) |*mi| {
         Self.mesh_shader.set_mesh_params(&mi.model, &mi.material);

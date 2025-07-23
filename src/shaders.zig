@@ -154,8 +154,11 @@ pub const MeshShader = struct {
     emissive: i32,
 
     use_shadow_map: i32,
-    shadow_map_texture: i32,
-    point_shadow_map_texture: i32,
+    direct_light_shadow: i32,
+    point_light_0_shadow: i32,
+    point_light_1_shadow: i32,
+    point_light_2_shadow: i32,
+    point_light_3_shadow: i32,
 
     const Self = @This();
 
@@ -183,8 +186,11 @@ pub const MeshShader = struct {
         const emissive = shader.get_uniform_location("emissive_strength");
 
         const use_shadow_map = shader.get_uniform_location("use_shadow_map");
-        const shadow_map_texture = shader.get_uniform_location("shadow_map_texture");
-        const point_shadow_map_texture = shader.get_uniform_location("point_shadow_map_texture");
+        const direct_light_shadow = shader.get_uniform_location("direct_light_shadow");
+        const point_light_0_shadow = shader.get_uniform_location("point_light_0_shadow");
+        const point_light_1_shadow = shader.get_uniform_location("point_light_1_shadow");
+        const point_light_2_shadow = shader.get_uniform_location("point_light_2_shadow");
+        const point_light_3_shadow = shader.get_uniform_location("point_light_3_shadow");
 
         return .{
             .shader = shader,
@@ -204,8 +210,11 @@ pub const MeshShader = struct {
             .ao = ao,
             .emissive = emissive,
             .use_shadow_map = use_shadow_map,
-            .shadow_map_texture = shadow_map_texture,
-            .point_shadow_map_texture = point_shadow_map_texture,
+            .direct_light_shadow = direct_light_shadow,
+            .point_light_0_shadow = point_light_0_shadow,
+            .point_light_1_shadow = point_light_1_shadow,
+            .point_light_2_shadow = point_light_2_shadow,
+            .point_light_3_shadow = point_light_3_shadow,
         };
     }
 
@@ -219,8 +228,8 @@ pub const MeshShader = struct {
         camera_position: *const math.Vec3,
         camera_projection: *const math.Mat4,
         environment: *const Renderer.Environment,
-        shadow_map: *const gpu.ShadowMap,
-        point_shadow_map: *const gpu.PointShadowMap,
+        direct_light_shadow: *const gpu.ShadowMap,
+        point_light_shadows: *const gpu.PointShadowMaps,
     ) void {
         gl.glUniformMatrix4fv(self.view, 1, gl.GL_FALSE, @ptrCast(camera_view));
         gl.glUniformMatrix4fv(self.projection, 1, gl.GL_FALSE, @ptrCast(camera_projection));
@@ -266,11 +275,16 @@ pub const MeshShader = struct {
 
         if (environment.use_shadow_map) {
             gl.glActiveTexture(gl.GL_TEXTURE0);
-            gl.glBindTexture(gl.GL_TEXTURE_2D, shadow_map.depth_texture);
-            gl.glActiveTexture(gl.GL_TEXTURE1);
-            gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, point_shadow_map.depth_cube_texture);
-            gl.glUniform1i(self.shadow_map_texture, 0);
-            gl.glUniform1i(self.point_shadow_map_texture, 1);
+            gl.glBindTexture(gl.GL_TEXTURE_2D, direct_light_shadow.depth_texture);
+            for (point_light_shadows.depth_cubes, 0..) |dc, i| {
+                gl.glActiveTexture(@as(u32, @intCast(gl.GL_TEXTURE1 + @as(i32, @intCast(i)))));
+                gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, dc);
+            }
+            gl.glUniform1i(self.direct_light_shadow, 0);
+            gl.glUniform1i(self.point_light_0_shadow, 1);
+            gl.glUniform1i(self.point_light_1_shadow, 2);
+            gl.glUniform1i(self.point_light_2_shadow, 3);
+            gl.glUniform1i(self.point_light_3_shadow, 4);
             gl.glUniform1i(self.use_shadow_map, 1);
         } else gl.glUniform1i(self.use_shadow_map, 0);
     }
@@ -397,7 +411,7 @@ pub const PointShadowMapShader = struct {
         );
     }
 
-    pub fn set_face_params(
+    pub fn set_face_view(
         self: *const Self,
         view: *const math.Mat4,
     ) void {

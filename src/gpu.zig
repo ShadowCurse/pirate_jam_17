@@ -3,6 +3,7 @@ const log = @import("log.zig");
 const gl = @import("bindings/gl.zig");
 
 const Platform = @import("platform.zig");
+const Renderer = @import("renderer.zig");
 
 pub const Mesh = struct {
     vertex_buffer: u32,
@@ -117,67 +118,53 @@ pub const ShadowMap = struct {
     }
 };
 
-pub const PointShadowMap = struct {
+pub const PointShadowMaps = struct {
     framebuffer: u32,
-    depth_cube_texture: u32,
+    depth_cubes: [Renderer.NUM_LIGHTS]u32,
 
     pub const SHADOW_WIDTH = Platform.WINDOW_WIDTH;
     pub const SHADOW_HEIGHT = Platform.WINDOW_WIDTH; //WINDOW_HEIGHT;
     const Self = ShadowMap;
 
-    pub fn init() PointShadowMap {
+    pub fn init() PointShadowMaps {
         var framebuffer: u32 = undefined;
         gl.glGenFramebuffers(1, &framebuffer);
 
-        var depth_cube_texture: u32 = undefined;
-        gl.glGenTextures(1, &depth_cube_texture);
-        gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, depth_cube_texture);
-        for (0..6) |i| {
-            const index =
-                @as(u32, @intCast(gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X)) + @as(u32, @intCast(i));
-            log.info(@src(), "Setting cube map index: {d}", .{index});
-            gl.glTexImage2D(
-                index,
-                0,
-                gl.GL_DEPTH_COMPONENT32F,
-                SHADOW_WIDTH,
-                SHADOW_HEIGHT,
-                0,
-                gl.GL_DEPTH_COMPONENT,
-                gl.GL_FLOAT,
-                null,
-            );
-        }
-        gl.glTexParameteri(gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST);
-        gl.glTexParameteri(gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST);
+        var depth_cubes: [Renderer.NUM_LIGHTS]u32 = undefined;
+        for (&depth_cubes) |*dc| {
+            gl.glGenTextures(1, dc);
+            gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, dc.*);
+            for (0..6) |i| {
+                const index =
+                    @as(u32, @intCast(gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X)) + @as(u32, @intCast(i));
+                log.info(@src(), "Setting cube map index: {d}", .{index});
+                gl.glTexImage2D(
+                    index,
+                    0,
+                    gl.GL_DEPTH_COMPONENT32F,
+                    SHADOW_WIDTH,
+                    SHADOW_HEIGHT,
+                    0,
+                    gl.GL_DEPTH_COMPONENT,
+                    gl.GL_FLOAT,
+                    null,
+                );
+            }
+            gl.glTexParameteri(gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST);
+            gl.glTexParameteri(gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST);
 
-        gl.glTexParameteri(gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE);
-        gl.glTexParameteri(gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE);
-        gl.glTexParameteri(gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_WRAP_R, gl.GL_CLAMP_TO_EDGE);
-        // gl.glTexParameteri(
-        //     gl.GL_TEXTURE_CUBE_MAP,
-        //     gl.GL_TEXTURE_COMPARE_MODE,
-        //     gl.GL_COMPARE_REF_TO_TEXTURE,
-        // );
-        // gl.glTexParameteri(
-        //     gl.GL_TEXTURE_CUBE_MAP,
-        //     gl.GL_TEXTURE_COMPARE_FUNC,
-        //     gl.GL_GEQUAL,
-        // );
+            gl.glTexParameteri(gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE);
+            gl.glTexParameteri(gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE);
+            gl.glTexParameteri(gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_WRAP_R, gl.GL_CLAMP_TO_EDGE);
+        }
 
         gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, framebuffer);
-        // gl.glFramebufferTexture(
-        //     gl.GL_FRAMEBUFFER,
-        //     gl.GL_DEPTH_ATTACHMENT,
-        //     depth_cube_texture,
-        //     0,
-        // );
         gl.glDrawBuffers(gl.GL_NONE, null);
         gl.glReadBuffer(gl.GL_NONE);
 
         return .{
             .framebuffer = framebuffer,
-            .depth_cube_texture = depth_cube_texture,
+            .depth_cubes = depth_cubes,
         };
     }
 };

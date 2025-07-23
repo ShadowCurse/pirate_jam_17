@@ -24,8 +24,11 @@ uniform float ao;
 uniform float emissive_strength;
 
 uniform int use_shadow_map;
-uniform sampler2D shadow_map_texture;
-uniform samplerCube point_shadow_map_texture;
+uniform sampler2D direct_light_shadow;
+uniform samplerCube point_light_0_shadow;
+uniform samplerCube point_light_1_shadow;
+uniform samplerCube point_light_2_shadow;
+uniform samplerCube point_light_3_shadow;
 
 const float PI = 3.14159265359;
 
@@ -76,13 +79,11 @@ float shadow(vec4 light_space_position, vec3 normal, vec3 to_light) {
   float curr_depth = projection.z;
   float bias = max(0.005 * (1.0 - dot(normal, to_light)), 0.001);
 
-  // return texture(shadow_map_texture, uv.xy).r;
-
   float shadow = 0.0;
-  vec2 texel_size = vec2(1.0) / vec2(textureSize(shadow_map_texture, 0));
+  vec2 texel_size = vec2(1.0) / vec2(textureSize(direct_light_shadow, 0));
   for(int x = -1; x <= 1; ++x) {
       for(int y = -1; y <= 1; ++y) {
-          float pcf_depth = texture(shadow_map_texture, uv.xy + vec2(x, y) * texel_size).r;
+          float pcf_depth = texture(direct_light_shadow, uv.xy + vec2(x, y) * texel_size).r;
 #if WEBGL
           // for some reason on web the depth is from 0.5 to 1.0
           pcf_depth = (pcf_depth - 0.5) * 2.0;
@@ -94,13 +95,21 @@ float shadow(vec4 light_space_position, vec3 normal, vec3 to_light) {
   return shadow;
 }
 
-float point_shadow(vec3 normal, vec3 to_light) {
-  float curr_depth = length(to_light);
-  float bias = max(0.005 * (1.0 - dot(normal, to_light)), 0.001);
-  float closest_depth = texture(point_shadow_map_texture, to_light).r;
-  // Far parameter of the camera
-  closest_depth *= 10000.0;
-  return closest_depth < curr_depth - bias ? 1.0 : 0.0;
+float point_shadow(vec3 normal, vec3 from_light, int light_index) {
+    float curr_depth = length(from_light);
+
+    float closest_depth = 0.0;
+    switch  (light_index) {
+      case 0: closest_depth = texture(point_light_0_shadow, from_light).r; break;
+      case 1: closest_depth = texture(point_light_1_shadow, from_light).r; break;
+      case 2: closest_depth = texture(point_light_2_shadow, from_light).r; break;
+      case 3: closest_depth = texture(point_light_3_shadow, from_light).r; break;
+    }
+    // Far parameter of the camera
+    closest_depth *= 10000.0;
+
+    float bias = max(0.005 * (1.0 - dot(normal, from_light)), 0.001);
+    return closest_depth < curr_depth - bias ? 1.0 : 0.0;
 }
 
 void main() {
@@ -138,11 +147,9 @@ void main() {
         vec3 specular     = numerator / denominator;
 
         float point_shadow_value = 1.0;
-        if (i == 0) {
-            if (use_shadow_map == 1) {
-                vec3 from_light = vert_position - light_positions[i];
-                point_shadow_value = (1.0 - point_shadow(normal, from_light));
-            }
+        if (use_shadow_map == 1) {
+            vec3 from_light = vert_position - light_positions[i];
+            point_shadow_value = (1.0 - point_shadow(normal, from_light, i));
         }
 
         // add to outgoing radiance
