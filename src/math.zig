@@ -260,6 +260,10 @@ pub const Vec3 = extern struct {
         return .{ .x = self.x, .y = self.y };
     }
 
+    pub inline fn neg(self: Vec3) Vec3 {
+        return .{ .x = -self.x, .y = -self.y, .z = -self.z };
+    }
+
     pub inline fn extend(self: Vec3, w: f32) Vec4 {
         return .{ .x = self.x, .y = self.y, .z = self.z, .w = w };
     }
