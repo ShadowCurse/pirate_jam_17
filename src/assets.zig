@@ -42,7 +42,7 @@ pub const Meshes = std.EnumArray(ModelType, Mesh);
 pub const AABBs = std.EnumArray(ModelType, physics.Rectangle);
 
 pub const DEFAULT_SOUNDTRACKS_DIR_PATH = "resources/soundtracks";
-pub const SoundtrackType = enum(u8) {
+pub const SoundtrackType = enum {
     Background,
     Door,
     Success,
@@ -61,19 +61,30 @@ const SOUNDTRACK_PATHS = SoundtrackPathsType.init(.{
     .Door = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/door.ogg",
     .Success = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/success.ogg",
     .Error = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/error.ogg",
-    .BoxPickup =  DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/impactSoft_medium_001.ogg",
+    .BoxPickup = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/impactSoft_medium_001.ogg",
     .BoxPutDown = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/impactSoft_heavy_001.ogg",
-    .Footstep0 =  DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/footstep_concrete_000.ogg",
-    .Footstep1 =  DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/footstep_concrete_001.ogg",
-    .Footstep2 =  DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/footstep_concrete_002.ogg",
-    .Footstep3 =  DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/footstep_concrete_003.ogg",
-    .Footstep4 =  DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/footstep_concrete_004.ogg",
+    .Footstep0 = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/footstep_concrete_000.ogg",
+    .Footstep1 = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/footstep_concrete_001.ogg",
+    .Footstep2 = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/footstep_concrete_002.ogg",
+    .Footstep3 = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/footstep_concrete_003.ogg",
+    .Footstep4 = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/footstep_concrete_004.ogg",
 });
 pub const Soundtracks = std.EnumArray(SoundtrackType, Audio.Soundtrack);
+
+pub const DEFAULT_TEXTURES_DIR_PATH = "resources/textures";
+pub const TextureType = enum {
+    SpeakerIcon,
+};
+const TexturePathsType = std.EnumArray(TextureType, [:0]const u8);
+const TEXTURE_PATHS = TexturePathsType.init(.{
+    .SpeakerIcon = DEFAULT_TEXTURES_DIR_PATH ++ "/speaker.png",
+});
+pub const GpuTextures = std.EnumArray(TextureType, gpu.Texture);
 
 var arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
 var scratch: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
 pub var gpu_meshes: GpuMeshes = undefined;
+pub var gpu_textures: GpuTextures = undefined;
 pub var materials: Materials = undefined;
 pub var meshes: Meshes = undefined;
 pub var aabbs: AABBs = undefined;
@@ -106,11 +117,20 @@ pub fn init() void {
     }
 
     for (0..SoundtrackPathsType.len) |i| {
-        const model_type = SoundtrackPathsType.Indexer.keyForIndex(i);
+        const soundtrack_type = SoundtrackPathsType.Indexer.keyForIndex(i);
         const path = SOUNDTRACK_PATHS.values[i];
 
-        load_soundtrack(path, arena_alloc, model_type) catch |e| {
+        load_soundtrack(path, arena_alloc, soundtrack_type) catch |e| {
             log.panic(@src(), "Error loading soundtrack from path: {s}: {}", .{ path, e });
+        };
+    }
+
+    for (0..TexturePathsType.len) |i| {
+        const texture_type = TexturePathsType.Indexer.keyForIndex(i);
+        const path = TEXTURE_PATHS.values[i];
+
+        load_texture(path, texture_type) catch |e| {
+            log.panic(@src(), "Error loading texture from path: {s}: {}", .{ path, e });
         };
     }
 }
@@ -337,4 +357,49 @@ pub fn load_soundtrack(
 
     const soundtrack = soundtracks.getPtr(soundtrack_type);
     soundtrack.data = @ptrCast(soundtrack_data);
+}
+
+pub fn load_texture(
+    path: [:0]const u8,
+    texture_type: TextureType,
+) !void {
+    log.info(
+        @src(),
+        "Loading textures of type {any} from path: {s}",
+        .{ texture_type, path },
+    );
+
+    const file_mem = try Platform.FileMem.init(path);
+    defer file_mem.deinit();
+
+    var x: i32 = undefined;
+    var y: i32 = undefined;
+    var c: i32 = undefined;
+    if (@as(?[*]u8, stb.stbi_load_from_memory(
+        file_mem.mem.ptr,
+        @intCast(file_mem.mem.len),
+        &x,
+        &y,
+        &c,
+        stb.STBI_rgb_alpha,
+    ))) |image| {
+        defer stb.stbi_image_free(image);
+
+        const width: u32 = @intCast(x);
+        const height: u32 = @intCast(y);
+        const channels: u32 = @intCast(c);
+        log.info(@src(), "{}, {}, {}", .{ width, height, channels });
+
+        log.assert(
+            @src(),
+            channels == 4,
+            "Cannot load texture with {} channels. Need 4.",
+            .{channels},
+        );
+
+        const texture = gpu_textures.getPtr(texture_type);
+        texture.* = .init(image, width, height);
+        return;
+    }
+    return error.CannotLoadTexture;
 }

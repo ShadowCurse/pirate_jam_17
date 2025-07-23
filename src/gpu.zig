@@ -61,6 +61,39 @@ pub const Mesh = struct {
     }
 };
 
+pub const Texture = struct {
+    texture: u32,
+
+    const Self = @This();
+
+    pub fn init(data: [*]u8, width: u32, height: u32) Self {
+        var texture: u32 = undefined;
+        gl.glGenTextures(1, &texture);
+        gl.glBindTexture(gl.GL_TEXTURE_2D, texture);
+
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE);
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE);
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR);
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR);
+
+        gl.glTexImage2D(
+            gl.GL_TEXTURE_2D,
+            0,
+            gl.GL_RGBA,
+            @intCast(width),
+            @intCast(height),
+            0,
+            gl.GL_RGBA,
+            gl.GL_UNSIGNED_BYTE,
+            @ptrCast(data),
+        );
+
+        return .{
+            .texture = texture,
+        };
+    }
+};
+
 pub const ShadowMap = struct {
     framebuffer: u32,
     depth_texture: u32,
