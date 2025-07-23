@@ -135,6 +135,7 @@ pub fn draw_mesh(
 
 fn prepare_shadow_map_context() void {
     gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, Self.shadow_map.framebuffer);
+    gl.glViewport(0, 0, gpu.ShadowMap.SHADOW_WIDTH, gpu.ShadowMap.SHADOW_HEIGHT);
     gl.glClearDepth(1.0);
     gl.glClear(gl.GL_DEPTH_BUFFER_BIT);
     gl.glDepthFunc(gl.GL_LEQUAL);
@@ -196,7 +197,6 @@ pub fn render(
         }
     }
 
-    // _ = camera;
     prepare_mesh_context();
     Self.mesh_shader.use();
     const view = camera.transform().inverse();

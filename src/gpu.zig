@@ -65,8 +65,8 @@ pub const ShadowMap = struct {
     framebuffer: u32,
     depth_texture: u32,
 
-    const SHADOW_WIDTH = Platform.WINDOW_WIDTH;
-    const SHADOW_HEIGHT = Platform.WINDOW_HEIGHT;
+    pub const SHADOW_WIDTH = 1920;
+    pub const SHADOW_HEIGHT = 1920;
     const Self = ShadowMap;
 
     pub fn init() ShadowMap {

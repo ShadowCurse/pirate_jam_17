@@ -64,7 +64,7 @@ float geometry_smith(float ndl, float ndc, float roughness) {
     return ggx1 * ggx2;
 }
 
-float shadow(vec4 light_space_position, vec3 normal, vec3 to_light) {
+float direct_shadow(vec4 light_space_position, vec3 normal, vec3 to_light) {
   vec3 projection = light_space_position.xyz / light_space_position.w;
   if (1.0 < projection.z)
     return 0.0;
@@ -183,7 +183,7 @@ void main() {
             
         float shadow_value = 1.0;
         if (use_shadow_map == 1)
-          shadow_value = (1.0 - shadow(vert_light_space_position, normal, to_light));
+          shadow_value = (1.0 - direct_shadow(vert_light_space_position, normal, to_light));
         // add to outgoing radiance
         radiance_out += (kD * albedo / PI + specular) * radiance * ndl * shadow_value;
     }
