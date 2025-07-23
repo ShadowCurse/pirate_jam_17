@@ -3,6 +3,7 @@ const log = @import("../log.zig");
 const math = @import("../math.zig");
 
 const Input = @import("../input.zig");
+const Audio = @import("../audio.zig");
 
 const cimgui = @cImport({
     @cDefine("CIMGUI_DEFINE_ENUMS_AND_STRUCTS", "");
@@ -103,7 +104,7 @@ fn fmt_simple_type(name: [*c]const u8, v: anytype) bool {
         *math.Mat4,
         => fmt_math(name, v),
         *Input.KeyState => fmt_key_state(name, v),
-        *Input.KeyStates => fmt_enum_array(name, v),
+        *Input.KeyStates, *Audio.SoundtrackVolumes => fmt_enum_array(name, v),
         else => return false,
     }
     return true;

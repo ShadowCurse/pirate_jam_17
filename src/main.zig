@@ -51,7 +51,6 @@ pub fn main() void {
     Assets.init();
     Levels.init();
 
-    // Audio.play(.Background, 0.5, 0.5);
     var game: Game = .init();
 
     var t = std.time.nanoTimestamp();
@@ -263,7 +262,6 @@ const Game = struct {
         const NUM_FOOTSTEPS =
             @intFromEnum(Assets.SoundtrackType.Footstep4) -
             @intFromEnum(Assets.SoundtrackType.Footstep0);
-        const VOLUME = 0.3;
 
         const random = self.random_footstep.random();
         if (0.3 < self.player_camera.velocity.len_squared()) {
@@ -274,7 +272,7 @@ const Game = struct {
                         @intFromEnum(Assets.SoundtrackType.Footstep0) +
                             random.intRangeAtMost(u8, 0, NUM_FOOTSTEPS),
                     );
-                Audio.play(footstep_sound, VOLUME, VOLUME);
+                Audio.play(footstep_sound);
                 self.player_move_time = 0.0;
                 self.player_last_footstep_position = self.player_camera.position.xy();
             }
@@ -287,7 +285,7 @@ const Game = struct {
                     @intFromEnum(Assets.SoundtrackType.Footstep0) +
                         random.intRangeAtMost(u8, 0, NUM_FOOTSTEPS),
                 );
-            Audio.play(footstep_sound, VOLUME, VOLUME);
+            Audio.play(footstep_sound);
             self.player_move_time = 0.0;
             self.player_last_footstep_position = self.player_camera.position.xy();
         }
@@ -378,6 +376,7 @@ const Game = struct {
                 }
 
                 current_level.imgui_ui(self.frame_arena.allocator(), self.current_level_tag);
+                Audio.imgui_ui();
                 Input.imgui_ui();
             }
         }
