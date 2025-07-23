@@ -61,13 +61,13 @@ const SOUNDTRACK_PATHS = SoundtrackPathsType.init(.{
     .Door = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/door.ogg",
     .Success = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/success.ogg",
     .Error = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/error.ogg",
-    .BoxPickup = "tmp/kenney_impact_soundts/Audio/impactSoft_medium_001.ogg",
-    .BoxPutDown = "tmp/kenney_impact_soundts/Audio/impactSoft_heavy_001.ogg",
-    .Footstep0 = "tmp/kenney_impact_soundts/Audio/footstep_concrete_000.ogg",
-    .Footstep1 = "tmp/kenney_impact_soundts/Audio/footstep_concrete_001.ogg",
-    .Footstep2 = "tmp/kenney_impact_soundts/Audio/footstep_concrete_002.ogg",
-    .Footstep3 = "tmp/kenney_impact_soundts/Audio/footstep_concrete_003.ogg",
-    .Footstep4 = "tmp/kenney_impact_soundts/Audio/footstep_concrete_004.ogg",
+    .BoxPickup =  DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/impactSoft_medium_001.ogg",
+    .BoxPutDown = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/impactSoft_heavy_001.ogg",
+    .Footstep0 =  DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/footstep_concrete_000.ogg",
+    .Footstep1 =  DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/footstep_concrete_001.ogg",
+    .Footstep2 =  DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/footstep_concrete_002.ogg",
+    .Footstep3 =  DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/footstep_concrete_003.ogg",
+    .Footstep4 =  DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/footstep_concrete_004.ogg",
 });
 pub const Soundtracks = std.EnumArray(SoundtrackType, Audio.Soundtrack);
 
@@ -326,7 +326,7 @@ pub fn load_soundtrack(
 
     log.info(
         @src(),
-        "Loaded WAV file from {s} with specs: freq: {}, channels: {}, total samples: {}",
+        "Loaded OGG file from {s} with specs: freq: {}, channels: {}, total samples: {}",
         .{
             path,
             info.sample_rate,
