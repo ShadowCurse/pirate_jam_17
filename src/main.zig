@@ -12,12 +12,13 @@ const mesh = @import("mesh.zig");
 const math = @import("math.zig");
 const physics = @import("physics.zig");
 
+const Animations = @import("animations.zig");
 const Platform = @import("platform.zig");
 const Renderer = @import("renderer.zig");
 const Assets = @import("assets.zig");
-const Input = @import("input.zig");
 const Levels = @import("levels.zig");
-const Animations = @import("animations.zig");
+const Input = @import("input.zig");
+const Audio = @import("audio.zig");
 
 pub const log_options = log.Options{
     .level = .Info,
@@ -45,10 +46,12 @@ pub const PLAYER_CIRCLE: physics.Circle = .{ .radius = 0.12 };
 
 pub fn main() void {
     Platform.init();
+    Audio.init();
     Renderer.init();
     Assets.init();
     Levels.init();
 
+    Audio.play(.Background, 0.5, 0.5);
     var game: Game = .init();
 
     var t = std.time.nanoTimestamp();

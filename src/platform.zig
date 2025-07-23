@@ -20,7 +20,7 @@ pub var sdl_events: []const sdl.SDL_Event = &.{};
 pub var mouse_position: math.Vec2 = .{};
 
 pub fn init() void {
-    sdl.assert(@src(), sdl.SDL_Init(sdl.SDL_INIT_VIDEO));
+    sdl.assert(@src(), sdl.SDL_Init(sdl.SDL_INIT_VIDEO | sdl.SDL_INIT_AUDIO));
 
     // for 24bit depth
     sdl.assert(@src(), sdl.SDL_GL_SetAttribute(sdl.SDL_GL_DEPTH_SIZE, 24));

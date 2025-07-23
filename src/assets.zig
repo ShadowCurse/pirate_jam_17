@@ -9,10 +9,11 @@ const gpu = @import("gpu.zig");
 const math = @import("math.zig");
 const physics = @import("physics.zig");
 
+const Platform = @import("platform.zig");
 const Mesh = @import("mesh.zig");
+const Audio = @import("audio.zig");
 
 pub const DEFAULT_MESHES_DIR_PATH = "resources/models";
-
 pub const ModelType = enum {
     Sphere,
     Floor,
@@ -23,7 +24,6 @@ pub const ModelType = enum {
     DoorFrame,
     DoorInnerLight,
 };
-
 const ModelPathsType = std.EnumArray(ModelType, [:0]const u8);
 const MODEL_PATHS = ModelPathsType.init(.{
     .Sphere = DEFAULT_MESHES_DIR_PATH ++ "/sphere.glb",
@@ -41,12 +41,21 @@ pub const Materials = std.EnumArray(ModelType, Mesh.Material);
 pub const Meshes = std.EnumArray(ModelType, Mesh);
 pub const AABBs = std.EnumArray(ModelType, physics.Rectangle);
 
+pub const DEFAULT_SOUNDTRACKS_DIR_PATH = "resources/soundtracks";
+pub const SoundtrackType = enum { Background };
+const SoundtrackPathsType = std.EnumArray(SoundtrackType, [:0]const u8);
+const SOUNDTRACK_PATHS = SoundtrackPathsType.init(.{
+    .Background = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/background.ogg",
+});
+pub const Soundtracks = std.EnumArray(SoundtrackType, Audio.Soundtrack);
+
 var arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
 var scratch: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
 pub var gpu_meshes: GpuMeshes = undefined;
 pub var materials: Materials = undefined;
 pub var meshes: Meshes = undefined;
 pub var aabbs: AABBs = undefined;
+pub var soundtracks: Soundtracks = undefined;
 
 const Self = @This();
 
@@ -72,6 +81,15 @@ pub fn init() void {
 
     for (std.enums.values(ModelType)) |v| {
         aabbs.getPtr(v).* = calculate_aabb(meshes.getPtrConst(v));
+    }
+
+    for (0..SoundtrackPathsType.len) |i| {
+        const model_type = SoundtrackPathsType.Indexer.keyForIndex(i);
+        const path = SOUNDTRACK_PATHS.values[i];
+
+        load_soundtrack(path, arena_alloc, model_type) catch |e| {
+            log.panic(@src(), "Error loading soundtrack from path: {s}: {}", .{ path, e });
+        };
     }
 }
 
@@ -235,4 +253,66 @@ pub fn load_model(
     const mesh = meshes.getPtr(model_type);
     mesh.indices = indices;
     mesh.vertices = vertices;
+}
+
+pub fn load_soundtrack(
+    path: [:0]const u8,
+    assets_alloc: Allocator,
+    soundtrack_type: SoundtrackType,
+) !void {
+    log.info(
+        @src(),
+        "Loading soundtrack of type {any} from path: {s}",
+        .{ soundtrack_type, path },
+    );
+
+    const file_mem = try Platform.FileMem.init(path);
+    defer file_mem.deinit();
+
+    var err: i32 = undefined;
+    const vorbis = stb.stb_vorbis_open_memory(
+        file_mem.mem.ptr,
+        @intCast(file_mem.mem.len),
+        &err,
+        null,
+    );
+    log.assert(
+        @src(),
+        vorbis != null,
+        "Cannot open vorbis memory: {} for the file path: {s}",
+        .{ err, path },
+    );
+    defer stb.stb_vorbis_close(vorbis);
+
+    const samples_per_channel = stb.stb_vorbis_stream_length_in_samples(vorbis);
+    const samples = samples_per_channel * Audio.CHANNELS;
+    const soundtrack_data = try assets_alloc.alignedAlloc(u16, 64, samples);
+
+    const info = stb.stb_vorbis_get_info(vorbis);
+    const n = stb.stb_vorbis_get_samples_short_interleaved(
+        vorbis,
+        info.channels,
+        @ptrCast(soundtrack_data.ptr),
+        @intCast(samples),
+    );
+    log.assert(
+        @src(),
+        n * 2 == samples,
+        "Did not load the whole soundtrack in memory. Only loaded {d} out of {d}",
+        .{ n * 2, samples },
+    );
+
+    log.info(
+        @src(),
+        "Loaded WAV file from {s} with specs: freq: {}, channels: {}, total samples: {}",
+        .{
+            path,
+            info.sample_rate,
+            info.channels,
+            samples,
+        },
+    );
+
+    const soundtrack = soundtracks.getPtr(soundtrack_type);
+    soundtrack.data = @ptrCast(soundtrack_data);
 }
