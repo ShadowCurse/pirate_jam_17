@@ -42,10 +42,32 @@ pub const Meshes = std.EnumArray(ModelType, Mesh);
 pub const AABBs = std.EnumArray(ModelType, physics.Rectangle);
 
 pub const DEFAULT_SOUNDTRACKS_DIR_PATH = "resources/soundtracks";
-pub const SoundtrackType = enum { Background };
+pub const SoundtrackType = enum {
+    Background,
+    Door,
+    Success,
+    Error,
+    BoxPickup,
+    BoxPutDown,
+    Footstep0,
+    Footstep1,
+    Footstep2,
+    Footstep3,
+    Footstep4,
+};
 const SoundtrackPathsType = std.EnumArray(SoundtrackType, [:0]const u8);
 const SOUNDTRACK_PATHS = SoundtrackPathsType.init(.{
     .Background = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/background.ogg",
+    .Door = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/door.ogg",
+    .Success = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/success.ogg",
+    .Error = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/error.ogg",
+    .BoxPickup = "tmp/kenney_impact_soundts/Audio/impactSoft_medium_001.ogg",
+    .BoxPutDown = "tmp/kenney_impact_soundts/Audio/impactSoft_heavy_001.ogg",
+    .Footstep0 = "tmp/kenney_impact_soundts/Audio/footstep_concrete_000.ogg",
+    .Footstep1 = "tmp/kenney_impact_soundts/Audio/footstep_concrete_001.ogg",
+    .Footstep2 = "tmp/kenney_impact_soundts/Audio/footstep_concrete_002.ogg",
+    .Footstep3 = "tmp/kenney_impact_soundts/Audio/footstep_concrete_003.ogg",
+    .Footstep4 = "tmp/kenney_impact_soundts/Audio/footstep_concrete_004.ogg",
 });
 pub const Soundtracks = std.EnumArray(SoundtrackType, Audio.Soundtrack);
 

@@ -51,7 +51,7 @@ pub fn main() void {
     Assets.init();
     Levels.init();
 
-    Audio.play(.Background, 0.5, 0.5);
+    // Audio.play(.Background, 0.5, 0.5);
     var game: Game = .init();
 
     var t = std.time.nanoTimestamp();
@@ -228,6 +228,10 @@ const Game = struct {
 
     free_camera: Camera = .{},
     player_camera: Camera = .{},
+    // Footsteps
+    random_footstep: std.Random.Xoroshiro128 = .init(0),
+    player_move_time: f32 = 0.0,
+    player_last_footstep_position: math.Vec2 = .{},
 
     const Mode = enum {
         Game,
@@ -255,6 +259,40 @@ const Game = struct {
         };
     }
 
+    fn play_footstep(self: *Self, dt: f32) void {
+        const NUM_FOOTSTEPS =
+            @intFromEnum(Assets.SoundtrackType.Footstep4) -
+            @intFromEnum(Assets.SoundtrackType.Footstep0);
+        const VOLUME = 0.3;
+
+        const random = self.random_footstep.random();
+        if (0.3 < self.player_camera.velocity.len_squared()) {
+            self.player_move_time += dt;
+            if (0.6 < self.player_move_time) {
+                const footstep_sound: Assets.SoundtrackType =
+                    @enumFromInt(
+                        @intFromEnum(Assets.SoundtrackType.Footstep0) +
+                            random.intRangeAtMost(u8, 0, NUM_FOOTSTEPS),
+                    );
+                Audio.play(footstep_sound, VOLUME, VOLUME);
+                self.player_move_time = 0.0;
+                self.player_last_footstep_position = self.player_camera.position.xy();
+            }
+        }
+        if (2.0 < (self.player_camera.position.xy()
+            .sub(self.player_last_footstep_position)).len_squared())
+        {
+            const footstep_sound: Assets.SoundtrackType =
+                @enumFromInt(
+                    @intFromEnum(Assets.SoundtrackType.Footstep0) +
+                        random.intRangeAtMost(u8, 0, NUM_FOOTSTEPS),
+                );
+            Audio.play(footstep_sound, VOLUME, VOLUME);
+            self.player_move_time = 0.0;
+            self.player_last_footstep_position = self.player_camera.position.xy();
+        }
+    }
+
     pub fn update(self: *Self, dt: f32) void {
         _ = self.frame_arena.reset(.retain_capacity);
         Renderer.reset();
@@ -276,6 +314,7 @@ const Game = struct {
                 Animations.play(dt);
 
                 player_camera_move(&self.player_camera, dt);
+                self.play_footstep(dt);
 
                 const camera_ray = self.player_camera.mouse_to_ray(.{});
 

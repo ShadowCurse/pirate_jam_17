@@ -14,6 +14,7 @@ const Platform = @import("platform.zig");
 const Renderer = @import("renderer.zig");
 const Input = @import("input.zig");
 const Assets = @import("assets.zig");
+const Audio = @import("audio.zig");
 
 const DEFAULT_LEVEL_DIR_PATH = "resources/levels";
 
@@ -157,6 +158,7 @@ pub const Level = struct {
     pub fn open_doors(self: *Self) void {
         for (self.objects.items) |*object| {
             if (object.model != .DoorDoor) continue;
+            Audio.play(.Door, 1.0, 1.0);
             Animations.add(
                 .{
                     .object = object,
@@ -173,6 +175,7 @@ pub const Level = struct {
     pub fn close_doors(self: *Self) void {
         for (self.objects.items) |*object| {
             if (object.model != .DoorDoor) continue;
+            Audio.play(.Door, 1.0, 1.0);
             Animations.add(
                 .{
                     .object = object,
@@ -220,8 +223,10 @@ pub const Level = struct {
                 self.looking_at_pickable_object = true;
                 if (r.t < closest_t) {
                     closest_t = r.t;
-                    if (Input.was_pressed(.LMB))
+                    if (Input.was_pressed(.LMB)) {
                         self.holding_object = @intCast(i);
+                        Audio.play(.BoxPickup, 1.0, 1.0);
+                    }
                 }
             }
         }
@@ -233,7 +238,6 @@ pub const Level = struct {
                 return;
 
             const object = &self.objects.items[ho];
-            log.info(@src(), "player_put_down_object", .{});
             Animations.add(
                 .{
                     .object = object,
@@ -396,6 +400,7 @@ pub const Level = struct {
         self: *Self,
         object: *Object,
     ) void {
+        Audio.play(.BoxPutDown, 1.0, 1.0);
         var r1 = Assets.aabbs.get(object.model);
         r1.rotation = object.rotation_z;
         const r1_position = object.position.xy();
@@ -411,6 +416,7 @@ pub const Level = struct {
                 r2,
                 r2_position,
             ) == .Full) {
+                Audio.play(.Success, 1.0, 1.0);
                 self.open_doors();
             }
         }
