@@ -139,7 +139,7 @@ pub const Level = struct {
     }
 
     pub fn cursor_animate(self: *Self, dt: f32) void {
-        const MAX_SIZE = 0.05;
+        const MAX_SIZE = 0.01;
         const MIN_SIZE = 0.0;
         if (self.looking_at_pickable_object)
             self.environment.cursor_size = math.exp_decay(

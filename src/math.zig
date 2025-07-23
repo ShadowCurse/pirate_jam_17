@@ -232,6 +232,11 @@ pub const Vec2 = extern struct {
     pub inline fn lerp(start: Vec2, end: Vec2, t: f32) Vec2 {
         return start.add(end.sub(start).mul_f32(t));
     }
+
+    // lower decay => slower movement
+    pub inline fn exp_decay(start: Vec2, end: Vec2, decay: f32, dt: f32) Vec2 {
+        return end.add(start.sub(end).mul_f32(std.math.exp(-decay * dt)));
+    }
 };
 
 pub fn vec3(x: f32, y: f32, z: f32) Vec3 {

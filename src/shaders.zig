@@ -429,8 +429,11 @@ pub const PointShadowMapShader = struct {
 pub const CursorShader = struct {
     shader: Shader,
 
-    size_loc: i32,
-    window_size_loc: i32,
+    size: i32,
+    radius: i32,
+    width: i32,
+    position: i32,
+    window_size: i32,
 
     const Self = @This();
 
@@ -440,20 +443,35 @@ pub const CursorShader = struct {
             "resources/shaders/cursor.frag",
         );
 
-        const size_loc = shader.get_uniform_location("size");
-        const window_size_loc = shader.get_uniform_location("window_size");
+        const size = shader.get_uniform_location("size");
+        const radius = shader.get_uniform_location("radius");
+        const width = shader.get_uniform_location("width");
+        const position = shader.get_uniform_location("position");
+        const window_size = shader.get_uniform_location("window_size");
 
         return .{
             .shader = shader,
-            .size_loc = size_loc,
-            .window_size_loc = window_size_loc,
+            .size = size,
+            .radius = radius,
+            .width = width,
+            .position = position,
+            .window_size = window_size,
         };
     }
 
-    pub fn draw(self: *const Self, size: f32) void {
+    pub fn draw(
+        self: *const Self,
+        size: f32,
+        radius: f32,
+        width: f32,
+        position: math.Vec2,
+    ) void {
         self.shader.use();
-        gl.glUniform1f(self.size_loc, size);
-        gl.glUniform2f(self.window_size_loc, Platform.WINDOW_WIDTH, Platform.WINDOW_HEIGHT);
+        gl.glUniform1f(self.size, size);
+        gl.glUniform1f(self.radius, radius);
+        gl.glUniform1f(self.width, width);
+        gl.glUniform2f(self.position, position.x, position.y);
+        gl.glUniform2f(self.window_size, Platform.WINDOW_WIDTH, Platform.WINDOW_HEIGHT);
 
         gl.glDisable(gl.GL_DEPTH_TEST);
         gl.glDrawArrays(gl.GL_TRIANGLES, 0, 6);

@@ -213,6 +213,8 @@
         "shadow_map_width": 1e1,
         "shadow_map_height": 1e1,
         "shadow_map_depth": 5e1,
-        "cursor_size": 4.203895392974451e-45
+        "cursor_size": 9.999946691095829e-3,
+        "cursor_radius": 9.000000953674316e-1,
+        "cursor_width": 0e0
     }
 }

@@ -38,6 +38,8 @@ pub const Environment = struct {
     shadow_map_height: f32 = 10.0,
     shadow_map_depth: f32 = 50.0,
     cursor_size: f32 = 0.05,
+    cursor_radius: f32 = 0.2,
+    cursor_width: f32 = 0.0,
 
     pub fn shadow_map_view(e: *const Environment) math.Mat4 {
         return math.Mat4.look_at(
@@ -214,5 +216,24 @@ pub fn render(
         mi.mesh.draw();
     }
 
-    Self.cursor_shader.draw(environment.cursor_size);
+    Self.cursor_shader.draw(
+        environment.cursor_size,
+        environment.cursor_radius,
+        environment.cursor_width,
+        .{},
+    );
+
+    // Future audio slider
+    Self.cursor_shader.draw(
+        0.5,
+        0.02,
+        0.5,
+        .{ .y = -0.5 },
+    );
+    Self.cursor_shader.draw(
+        0.5,
+        0.05,
+        0.0,
+        .{ .y = -0.5 },
+    );
 }
