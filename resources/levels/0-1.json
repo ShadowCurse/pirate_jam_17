@@ -3,6 +3,19 @@
         {
             "model": "Floor",
             "tag": "None",
+            "material": {
+                "Custom": {
+                    "albedo": {
+                        "r": 3.4127142280340195e-2,
+                        "g": 5.882352590560913e-2,
+                        "b": 2.652825601398945e-2,
+                        "a": 1e0
+                    },
+                    "metallic": 0e0,
+                    "roughness": 1e0,
+                    "emissive_strength": 0e0
+                }
+            },
             "position": {
                 "x": 0e0,
                 "y": 0e0,
@@ -10,16 +23,24 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 0e0,
-            "scale": {
-                "x": 1e1,
-                "y": 1e1,
-                "z": 1e1
-            }
+            "rotation_z": 0e0
         },
         {
             "model": "Box",
             "tag": "CorrectBox",
+            "material": {
+                "Custom": {
+                    "albedo": {
+                        "r": 5.764706134796143e-1,
+                        "g": 1.8085351213812828e-2,
+                        "b": 1.8085351213812828e-2,
+                        "a": 1e0
+                    },
+                    "metallic": 0e0,
+                    "roughness": 5e-1,
+                    "emissive_strength": 0e0
+                }
+            },
             "position": {
                 "x": -1.600000023841858e0,
                 "y": 0e0,
@@ -27,16 +48,24 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 0e0,
-            "scale": {
-                "x": 1e0,
-                "y": 1e0,
-                "z": 1e0
-            }
+            "rotation_z": 0e0
         },
         {
             "model": "Wall",
             "tag": "None",
+            "material": {
+                "Custom": {
+                    "albedo": {
+                        "r": 9.019608050584793e-2,
+                        "g": 9.019608050584793e-2,
+                        "b": 9.019608050584793e-2,
+                        "a": 1e0
+                    },
+                    "metallic": 5e-1,
+                    "roughness": 1e0,
+                    "emissive_strength": 0e0
+                }
+            },
             "position": {
                 "x": -4.840000152587891e0,
                 "y": 0e0,
@@ -44,16 +73,24 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 0e0,
-            "scale": {
-                "x": 1e0,
-                "y": 1e0,
-                "z": 1e0
-            }
+            "rotation_z": 0e0
         },
         {
             "model": "Wall",
             "tag": "None",
+            "material": {
+                "Custom": {
+                    "albedo": {
+                        "r": 8.823531866073608e-2,
+                        "g": 8.823531866073608e-2,
+                        "b": 8.823531866073608e-2,
+                        "a": 1e0
+                    },
+                    "metallic": 5e-1,
+                    "roughness": 1e0,
+                    "emissive_strength": 0e0
+                }
+            },
             "position": {
                 "x": 0e0,
                 "y": 5e0,
@@ -61,16 +98,14 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0,
-            "scale": {
-                "x": 1e0,
-                "y": 1e0,
-                "z": 1e0
-            }
+            "rotation_z": 1.5700000524520874e0
         },
         {
             "model": "Box",
             "tag": "None",
+            "material": {
+                "Original": {}
+            },
             "position": {
                 "x": 1.600000023841858e0,
                 "y": 0e0,
@@ -78,16 +113,14 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 0e0,
-            "scale": {
-                "x": 1e0,
-                "y": 1e0,
-                "z": 1e0
-            }
+            "rotation_z": 0e0
         },
         {
             "model": "Platform",
             "tag": "None",
+            "material": {
+                "Original": {}
+            },
             "position": {
                 "x": 0e0,
                 "y": 1.850000023841858e0,
@@ -95,16 +128,14 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 0e0,
-            "scale": {
-                "x": 1e0,
-                "y": 1e0,
-                "z": 1e0
-            }
+            "rotation_z": 0e0
         },
         {
             "model": "DoorInnerLight",
             "tag": "None",
+            "material": {
+                "Original": {}
+            },
             "position": {
                 "x": 0e0,
                 "y": 4e0,
@@ -112,16 +143,14 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 0e0,
-            "scale": {
-                "x": 1e0,
-                "y": 1e0,
-                "z": 1e0
-            }
+            "rotation_z": 0e0
         },
         {
             "model": "DoorFrame",
             "tag": "None",
+            "material": {
+                "Original": {}
+            },
             "position": {
                 "x": 0e0,
                 "y": 4e0,
@@ -129,16 +158,14 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0,
-            "scale": {
-                "x": 1e0,
-                "y": 1e0,
-                "z": 1e0
-            }
+            "rotation_z": 1.5700000524520874e0
         },
         {
             "model": "DoorDoor",
             "tag": "ExitDoor",
+            "material": {
+                "Original": {}
+            },
             "position": {
                 "x": 0e0,
                 "y": 4e0,
@@ -146,16 +173,24 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0,
-            "scale": {
-                "x": 1e0,
-                "y": 1e0,
-                "z": 1e0
-            }
+            "rotation_z": 1.5700000524520874e0
         },
         {
             "model": "Wall",
             "tag": "None",
+            "material": {
+                "Custom": {
+                    "albedo": {
+                        "r": 9.019608050584793e-2,
+                        "g": 9.019608050584793e-2,
+                        "b": 9.019608050584793e-2,
+                        "a": 1e0
+                    },
+                    "metallic": 5e-1,
+                    "roughness": 1e0,
+                    "emissive_strength": 0e0
+                }
+            },
             "position": {
                 "x": 5e0,
                 "y": 0e0,
@@ -163,16 +198,24 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 0e0,
-            "scale": {
-                "x": 1e0,
-                "y": 1e0,
-                "z": 1e0
-            }
+            "rotation_z": 0e0
         },
         {
             "model": "Wall",
             "tag": "None",
+            "material": {
+                "Custom": {
+                    "albedo": {
+                        "r": 9.019608050584793e-2,
+                        "g": 9.019608050584793e-2,
+                        "b": 9.019608050584793e-2,
+                        "a": 1e0
+                    },
+                    "metallic": 5e-1,
+                    "roughness": 1e0,
+                    "emissive_strength": 0e0
+                }
+            },
             "position": {
                 "x": 0e0,
                 "y": -5e0,
@@ -180,16 +223,14 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0,
-            "scale": {
-                "x": 1e0,
-                "y": 1e0,
-                "z": 1e0
-            }
+            "rotation_z": 1.5700000524520874e0
         },
         {
             "model": "DoorDoor",
             "tag": "EntranceDoor",
+            "material": {
+                "Original": {}
+            },
             "position": {
                 "x": 0e0,
                 "y": -4e0,
@@ -197,16 +238,14 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0,
-            "scale": {
-                "x": 1e0,
-                "y": 1e0,
-                "z": 1e0
-            }
+            "rotation_z": 1.5700000524520874e0
         },
         {
             "model": "DoorFrame",
             "tag": "None",
+            "material": {
+                "Original": {}
+            },
             "position": {
                 "x": 0e0,
                 "y": -4e0,
@@ -214,16 +253,14 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0,
-            "scale": {
-                "x": 1e0,
-                "y": 1e0,
-                "z": 1e0
-            }
+            "rotation_z": 1.5700000524520874e0
         },
         {
             "model": "DoorInnerLight",
             "tag": "None",
+            "material": {
+                "Original": {}
+            },
             "position": {
                 "x": 0e0,
                 "y": -4e0,
@@ -231,16 +268,14 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 0e0,
-            "scale": {
-                "x": 1e0,
-                "y": 1e0,
-                "z": 1e0
-            }
+            "rotation_z": 0e0
         },
         {
             "model": "Box",
             "tag": "None",
+            "material": {
+                "Original": {}
+            },
             "position": {
                 "x": 0e0,
                 "y": 0e0,
@@ -248,12 +283,7 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 0e0,
-            "scale": {
-                "x": 1e0,
-                "y": 1e0,
-                "z": 1e0
-            }
+            "rotation_z": 0e0
         }
     ],
     "environment": {

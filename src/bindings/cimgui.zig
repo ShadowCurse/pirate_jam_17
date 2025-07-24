@@ -66,6 +66,16 @@ pub fn format(name: ?[*c]const u8, v: anytype) void {
                             _ = cimgui.igEndListBox();
                         }
                     },
+                    .@"union" => |u| {
+                        _ = cimgui.igSeparatorText(type_name);
+                        const active_tag = std.meta.activeTag(v.*);
+                        inline for (u.fields, 0..) |field, i| {
+                            if (i == @intFromEnum(active_tag)) {
+                                const vv: *field.type = @ptrCast(v);
+                                format(field.name, vv);
+                            }
+                        }
+                    },
                     .array => |a| {
                         if (cimgui.igTreeNode_Str(type_name)) {
                             defer cimgui.igTreePop();
@@ -94,6 +104,7 @@ pub fn format(name: ?[*c]const u8, v: anytype) void {
 
 fn fmt_simple_type(name: [*c]const u8, v: anytype) bool {
     switch (@TypeOf(v)) {
+        *void => fmt_void(name),
         *bool => fmt_bool(name, v),
         *u8, *u16, *u32, *u64, *usize => fmt_unsigned(name, v),
         *i8, *i16, *i32, *i64, *isize => fmt_signed(name, v),
@@ -110,6 +121,10 @@ fn fmt_simple_type(name: [*c]const u8, v: anytype) bool {
         else => return false,
     }
     return true;
+}
+
+fn fmt_void(name: [*c]const u8) void {
+    _ = cimgui.igText(name);
 }
 
 fn fmt_bool(name: [*c]const u8, v: *bool) void {

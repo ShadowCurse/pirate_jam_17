@@ -17,6 +17,7 @@ const Renderer = @import("renderer.zig");
 const Input = @import("input.zig");
 const Assets = @import("assets.zig");
 const Audio = @import("audio.zig");
+const Mesh = @import("mesh.zig");
 
 const DEFAULT_LEVEL_DIR_PATH = "resources/levels";
 
@@ -76,11 +77,21 @@ pub const Level = struct {
     pub const Object = struct {
         model: Assets.ModelType,
         tag: Object.Tag = .None,
+        material: Object.Material = .Original,
         position: math.Vec3 = .{},
         rotation_x: f32 = 0.0,
         rotation_y: f32 = 0.0,
         rotation_z: f32 = 0.0,
-        scale: math.Vec3 = .ONE,
+
+        pub const MaterialTag = enum {
+            Original,
+            Custom,
+        };
+
+        pub const Material = union(MaterialTag) {
+            Original,
+            Custom: Mesh.Material,
+        };
 
         pub const Tag = enum {
             None,
@@ -94,7 +105,7 @@ pub const Level = struct {
                 .mul(math.Quat.from_axis_angle(.Y, self.rotation_y))
                 .mul(math.Quat.from_axis_angle(.Z, self.rotation_z))
                 .to_mat4();
-            return math.Mat4.IDENDITY.translate(self.position).scale(self.scale).mul(rotation);
+            return math.Mat4.IDENDITY.translate(self.position).mul(rotation);
         }
     };
 
@@ -444,23 +455,17 @@ pub const Level = struct {
     pub fn draw(self: *Self, dt: f32) void {
         self.selected_t += dt;
         for (self.objects.items, 0..) |*object, i| {
-            var material = Assets.materials.get(object.model);
-            if (self.selected_object) |so| {
-                if (so == i) {
-                    material.albedo =
-                        material.albedo.lerp(.TEAL, @abs(@sin(self.selected_t)));
-                }
-            }
-            // if ((object.model == .Platform or
-            //     object.model == .DoorOuterLight or
-            //     object.model == .DoorInnerLight) and
-            //     self.box_on_the_platform)
-            //     material.albedo = .GREEN;
-            //
-            // if ((object.model == .DoorOuterLight or
-            //     object.model == .DoorInnerLight) and
-            //     !self.box_on_the_platform)
-            //     material.albedo = .RED;
+            const material = switch (object.material) {
+                .Original => Assets.materials.get(object.model),
+                .Custom => |m| m,
+            };
+            _ = i;
+            // if (self.selected_object) |so| {
+            //     if (so == i) {
+            //         material.albedo =
+            //             material.albedo.lerp(.TEAL, @abs(@sin(self.selected_t)));
+            //     }
+            // }
 
             Renderer.draw_mesh(
                 Assets.gpu_meshes.getPtr(object.model),
@@ -578,6 +583,13 @@ pub const Level = struct {
 
             const object = &self.objects.items[so];
             cimgui.format(null, object);
+
+            if (cimgui.igButton("Change to custom material", .{})) {
+                object.material = .{ .Custom = .{} };
+            }
+            if (cimgui.igButton("Change to origina material", .{})) {
+                object.material = .Original;
+            }
         }
 
         if (self.selected_light) |sl| {
