@@ -2,8 +2,11 @@ const gpu = @import("gpu.zig");
 const math = @import("math.zig");
 const cimgui = @import("bindings/cimgui.zig");
 
+const Platform = @import("platform.zig");
 const Renderer = @import("renderer.zig");
 const Assests = @import("assets.zig");
+const Audio = @import("audio.zig");
+const Input = @import("input.zig");
 
 pub var state: State = .Game;
 pub var volume_icon_position: math.Vec2 = .{
@@ -14,21 +17,26 @@ pub var volume_icon: Texture = .{ .size = 0.15 };
 pub var volume_slider_position: math.Vec2 = .{ .y = -0.5 };
 pub var volume_slider: Shape = .{
     .size = 0.5,
-    .radius = 0.02,
+    .radius = 0.017,
     .width = 0.5,
 };
-pub var volume_knob_position: math.Vec2 = .{ .y = -0.5 };
+pub var volume_knob_position: math.Vec2 = .{
+    .x = 0.25,
+    .y = -0.5,
+};
 pub var volume_knob: Shape = .{
     .size = 0.5,
-    .radius = 0.05,
+    .radius = KNOB_MIN_RADIUS,
     .width = 0.0,
 };
 pub var cursor_position: math.Vec2 = .{};
 pub var cursor: Shape = .{
     .size = 0.05,
-    .radius = 0.15,
+    .radius = CURSOR_MIN_RADIUS,
     .width = 0.0,
 };
+
+var knob_is_dragged: bool = false;
 
 pub const State = enum {
     Game,
@@ -48,6 +56,9 @@ pub const Texture = struct {
 
 const CURSOR_MAX_RADIUS = 0.15;
 const CURSOR_MIN_RADIUS = 0.0;
+const KNOB_MAX_RADIUS = 0.06;
+const KNOB_MID_RADIUS = 0.05;
+const KNOB_MIN_RADIUS = 0.04;
 
 pub fn init() void {
     volume_icon.texture = Assests.gpu_textures.getPtr(.SpeakerIcon);
@@ -68,6 +79,62 @@ pub fn animate_cursor(visible: bool, dt: f32) void {
             18.0,
             dt,
         );
+}
+
+pub fn interract(dt: f32) void {
+    const mouse_clip = Platform.mouse_clip();
+
+    const to_knob_len = volume_knob_position.sub(mouse_clip).len();
+    if (to_knob_len < volume_knob.radius) {
+        volume_knob.radius = math.exp_decay(
+            volume_knob.radius,
+            KNOB_MID_RADIUS,
+            18.0,
+            dt,
+        );
+
+        if (Input.was_pressed(.LMB)) {
+            knob_is_dragged = true;
+        }
+    }
+
+    if (Input.was_released(.LMB)) {
+        knob_is_dragged = false;
+    }
+
+    if (knob_is_dragged) {
+        volume_knob.radius = math.exp_decay(
+            volume_knob.radius,
+            KNOB_MAX_RADIUS,
+            18.0,
+            dt,
+        );
+
+        volume_knob_position.x = math.exp_decay(
+            volume_knob_position.x,
+            mouse_clip.x,
+            18.0,
+            dt,
+        );
+        volume_knob_position.x =
+            @min(
+                @max(
+                    volume_knob_position.x,
+                    -volume_slider.width / 2.0,
+                ),
+                volume_slider.width / 2.0,
+            );
+
+        const volume = volume_knob_position.x / volume_slider.width + 0.5;
+        Audio.global_volume = volume;
+    } else {
+        volume_knob.radius = math.exp_decay(
+            volume_knob.radius,
+            KNOB_MIN_RADIUS,
+            18.0,
+            dt,
+        );
+    }
 }
 
 pub fn draw() void {

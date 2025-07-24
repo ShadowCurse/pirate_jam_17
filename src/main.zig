@@ -53,6 +53,8 @@ pub fn main() void {
     Levels.init();
     Ui.init();
 
+    Audio.play(.Background, null);
+
     init();
 
     var t = std.time.nanoTimestamp();
@@ -234,6 +236,7 @@ pub var frame_arena: std.heap.ArenaAllocator = undefined;
 
 pub var current_level_tag: Levels.Tag = .@"0-1";
 pub var mode: Mode = .Edit;
+pub var pause: bool = false;
 
 pub var free_camera: Camera = .{};
 pub var player_camera: Camera = .{};
@@ -322,23 +325,34 @@ pub fn update(dt: f32) void {
 
     const camera_in_use = switch (mode) {
         .Game => blk: {
-            Platform.reset_mouse();
             Animations.play(dt);
 
-            player_camera_move(&player_camera, dt);
-            play_footstep(dt);
+            if (Input.was_pressed(.ESCAPE)) {
+                pause = !pause;
+                Platform.hide_mouse(!pause);
+            }
 
-            const camera_ray = player_camera.mouse_to_ray(.{});
+            if (pause) {
+                Ui.state = .Pause;
+                Ui.interract(dt);
+            } else {
+                Ui.state = .Game;
+                Platform.reset_mouse();
+                player_camera_move(&player_camera, dt);
+                play_footstep(dt);
 
-            current_level.player_pick_up_object(&camera_ray);
-            if (Input.was_pressed(.RMB))
-                current_level.player_put_down_object();
+                const camera_ray = player_camera.mouse_to_ray(.{});
 
-            current_level.player_move_object(&player_camera, dt);
-            current_level.player_collide(&player_camera);
-            current_level.player_in_the_door(&player_camera);
+                current_level.player_pick_up_object(&camera_ray);
+                if (Input.was_pressed(.RMB))
+                    current_level.player_put_down_object();
 
-            Ui.animate_cursor(current_level.looking_at_pickable_object, dt);
+                current_level.player_move_object(&player_camera, dt);
+                current_level.player_collide(&player_camera);
+                current_level.player_in_the_door(&player_camera);
+
+                Ui.animate_cursor(current_level.looking_at_pickable_object, dt);
+            }
 
             break :blk &player_camera;
         },
@@ -363,7 +377,7 @@ pub fn update(dt: f32) void {
     Ui.draw();
     Renderer.render(camera_in_use, &current_level.environment);
 
-    {
+    if (mode == .Edit) {
         cimgui.prepare_frame();
         defer cimgui.render_frame();
 

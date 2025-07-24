@@ -257,7 +257,7 @@ pub fn was_pressed(key: Keys) bool {
         return keys.get(key).was_pressed;
 }
 
-pub fn war_released(key: Keys) bool {
+pub fn was_released(key: Keys) bool {
     if (Platform.imgui_wants_to_handle_events())
         return false
     else
