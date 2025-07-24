@@ -42,6 +42,7 @@ pub const UiElement = union(enum) {
 const RenderUiInfo = struct {
     element: UiElement,
     position: math.Vec2,
+    transparency: f32,
 };
 
 pub const NUM_LIGHTS = 4;
@@ -156,10 +157,11 @@ pub fn draw_mesh(
     };
 }
 
-pub fn draw_ui(element: UiElement, position: math.Vec2) void {
+pub fn draw_ui(element: UiElement, position: math.Vec2, transparency: f32) void {
     const info = RenderUiInfo{
         .element = element,
         .position = position,
+        .transparency = transparency,
     };
     Self.ui_infos.append(info) catch {
         log.warn(@src(), "Cannot add more ui elements to draw queue", .{});
@@ -191,6 +193,10 @@ fn prepare_mesh_context() void {
 
 fn prepare_post_processing_context() void {
     gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0);
+    gl.glViewport(0, 0, Platform.WINDOW_WIDTH, Platform.WINDOW_HEIGHT);
+    gl.glClearDepth(0.0);
+    gl.glClearColor(0.0, 0.0, 0.0, 1.0);
+    gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT);
 }
 
 pub fn render(
@@ -260,6 +266,7 @@ pub fn render(
                 Self.ui_texture_shader.draw(
                     texture.size,
                     ui.position,
+                    ui.transparency,
                     texture.texture,
                 );
             },
@@ -267,6 +274,7 @@ pub fn render(
                 Self.ui_shape_shader.draw(
                     shape.size,
                     ui.position,
+                    ui.transparency,
                     shape.radius,
                     shape.width,
                 );

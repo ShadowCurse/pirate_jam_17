@@ -193,11 +193,12 @@ pub fn interract(dt: f32) void {
 
 pub fn draw() void {
     switch (state) {
-        .Game => Renderer.draw_ui(.{ .Shape = cursor }, cursor_position),
+        .Game => Renderer.draw_ui(.{ .Shape = cursor }, cursor_position, 1.0 - blur_strength),
         .Pause => {
-            Renderer.draw_ui(.{ .Shape = volume_slider }, volume_slider_position);
-            Renderer.draw_ui(.{ .Shape = volume_knob }, volume_knob_position);
-            Renderer.draw_ui(.{ .Texture = volume_icon }, volume_icon_position);
+            Renderer.draw_ui(.{ .Shape = cursor }, cursor_position, 1.0 - blur_strength);
+            Renderer.draw_ui(.{ .Shape = volume_slider }, volume_slider_position, blur_strength);
+            Renderer.draw_ui(.{ .Shape = volume_knob }, volume_knob_position, blur_strength);
+            Renderer.draw_ui(.{ .Texture = volume_icon }, volume_icon_position, blur_strength);
         },
     }
 }
@@ -205,7 +206,7 @@ pub fn draw() void {
 pub fn imgui_ui() void {
     const T = struct {
         state: *State = &state,
-        blur_stength: *f32 = &blur_strength,
+        blur_strength: *f32 = &blur_strength,
         volume_icon_position: *math.Vec2 = &volume_icon_position,
         volume_icon: *Texture = &volume_icon,
         volume_slider_position: *math.Vec2 = &volume_slider_position,

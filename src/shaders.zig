@@ -463,6 +463,7 @@ pub const UiShapeShader = struct {
         self: *const Self,
         size: f32,
         position: math.Vec2,
+        transparency: f32,
         radius: f32,
         width: f32,
     ) void {
@@ -472,7 +473,7 @@ pub const UiShapeShader = struct {
         gl.glUniform1f(self.width, width);
         gl.glUniform2f(self.position, position.x, position.y);
         gl.glUniform2f(self.window_size, Platform.WINDOW_WIDTH, Platform.WINDOW_HEIGHT);
-        gl.glUniform1f(self.transparancy, Ui.blur_strength);
+        gl.glUniform1f(self.transparancy, transparency);
 
         gl.glDisable(gl.GL_DEPTH_TEST);
         gl.glDrawArrays(gl.GL_TRIANGLES, 0, 6);
@@ -509,13 +510,14 @@ pub const UiTextureShader = struct {
         self: *const Self,
         size: f32,
         position: math.Vec2,
+        transparency: f32,
         texture: *const gpu.Texture,
     ) void {
         self.shader.use();
         gl.glUniform1f(self.size, size);
         gl.glUniform2f(self.position, position.x, position.y);
         gl.glUniform2f(self.window_size, Platform.WINDOW_WIDTH, Platform.WINDOW_HEIGHT);
-        gl.glUniform1f(self.transparancy, Ui.blur_strength);
+        gl.glUniform1f(self.transparancy, transparency);
         gl.glActiveTexture(gl.GL_TEXTURE0);
         gl.glBindTexture(gl.GL_TEXTURE_2D, texture.texture);
 

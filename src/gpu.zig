@@ -24,16 +24,16 @@ pub const Framebuffer = struct {
         gl.glTexImage2D(
             gl.GL_TEXTURE_2D,
             0,
-            gl.GL_RGB,
+            gl.GL_RGBA,
             WIDTH,
             HEIGHT,
             0,
-            gl.GL_RGB,
+            gl.GL_RGBA,
             gl.GL_UNSIGNED_BYTE,
             null,
         );
-        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST);
-        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST);
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR);
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR);
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE);
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE);
         gl.glFramebufferTexture2D(
@@ -47,7 +47,7 @@ pub const Framebuffer = struct {
         var depth_texture: u32 = undefined;
         gl.glGenRenderbuffers(1, &depth_texture);
         gl.glBindRenderbuffer(gl.GL_RENDERBUFFER, depth_texture);
-        gl.glRenderbufferStorage(gl.GL_RENDERBUFFER, gl.GL_DEPTH_COMPONENT, WIDTH, HEIGHT);
+        gl.glRenderbufferStorage(gl.GL_RENDERBUFFER, gl.GL_DEPTH_COMPONENT32F, WIDTH, HEIGHT);
         gl.glFramebufferRenderbuffer(
             gl.GL_FRAMEBUFFER,
             gl.GL_DEPTH_ATTACHMENT,
@@ -231,7 +231,6 @@ pub const PointShadowMaps = struct {
             for (0..6) |i| {
                 const index =
                     @as(u32, @intCast(gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X)) + @as(u32, @intCast(i));
-                log.info(@src(), "Setting cube map index: {d}", .{index});
                 gl.glTexImage2D(
                     index,
                     0,
