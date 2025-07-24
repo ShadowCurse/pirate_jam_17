@@ -232,6 +232,7 @@ pub const MeshShader = struct {
         environment: *const Renderer.Environment,
         direct_light_shadow: *const gpu.ShadowMap,
         point_light_shadows: *const gpu.PointShadowMaps,
+        use_shadow_map: bool,
     ) void {
         gl.glUniformMatrix4fv(self.view, 1, gl.GL_FALSE, @ptrCast(camera_view));
         gl.glUniformMatrix4fv(self.projection, 1, gl.GL_FALSE, @ptrCast(camera_projection));
@@ -275,7 +276,7 @@ pub const MeshShader = struct {
             environment.direct_light_color.b,
         );
 
-        if (environment.use_shadow_map) {
+        if (use_shadow_map) {
             gl.glActiveTexture(gl.GL_TEXTURE0);
             gl.glBindTexture(gl.GL_TEXTURE_2D, direct_light_shadow.depth_texture);
             for (point_light_shadows.depth_cubes, 0..) |dc, i| {

@@ -4,6 +4,7 @@ const log = @import("log.zig");
 const math = @import("math.zig");
 const gpu = @import("gpu.zig");
 const shaders = @import("shaders.zig");
+const cimgui = @import("bindings/cimgui.zig");
 
 const Platform = @import("platform.zig");
 const Ui = @import("ui.zig");
@@ -11,6 +12,7 @@ const Ui = @import("ui.zig");
 const Camera = @import("root").Camera;
 const Mesh = @import("mesh.zig");
 
+var use_shadow_map: bool = true;
 var framebuffer: gpu.Framebuffer = undefined;
 
 var mesh_shader: shaders.MeshShader = undefined;
@@ -51,13 +53,9 @@ pub const Environment = struct {
     lights_color: [NUM_LIGHTS]math.Color3 = .{math.Color3{}} ** NUM_LIGHTS,
     direct_light_direction: math.Vec3 = .{},
     direct_light_color: math.Color3 = .{},
-    use_shadow_map: bool = true,
     shadow_map_width: f32 = 10.0,
     shadow_map_height: f32 = 10.0,
     shadow_map_depth: f32 = 50.0,
-    cursor_size: f32 = 0.05,
-    cursor_radius: f32 = 0.2,
-    cursor_width: f32 = 0.0,
 
     pub fn shadow_map_view(e: *const Environment) math.Mat4 {
         return math.Mat4.look_at(
@@ -251,6 +249,7 @@ pub fn render(
         environment,
         &Self.shadow_map,
         &Self.point_shadow_maps,
+        use_shadow_map,
     );
     for (Self.mesh_infos.slice()) |*mi| {
         Self.mesh_shader.set_mesh_params(&mi.model, &mi.material);
@@ -280,5 +279,16 @@ pub fn render(
                 );
             },
         }
+    }
+}
+
+pub fn imgui_ui() void {
+    var open: bool = true;
+    if (cimgui.igCollapsingHeader_BoolPtr(
+        "Renderer",
+        &open,
+        0,
+    )) {
+        cimgui.format("Use shadow map", &use_shadow_map);
     }
 }

@@ -209,12 +209,8 @@
             "g": 1e0,
             "b": 1e0
         },
-        "use_shadow_map": true,
         "shadow_map_width": 1e1,
         "shadow_map_height": 1e1,
-        "shadow_map_depth": 5e1,
-        "cursor_size": 9.999946691095829e-3,
-        "cursor_radius": 9.000000953674316e-1,
-        "cursor_width": 0e0
+        "shadow_map_depth": 5e1
     }
 }

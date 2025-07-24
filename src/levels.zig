@@ -530,7 +530,7 @@ pub const Level = struct {
         if (cimgui.igCollapsingHeader_BoolPtr(
             "Level",
             &open,
-            cimgui.ImGuiTreeNodeFlags_DefaultOpen,
+            0,
         )) {
             _ = cimgui.igSeparatorText("Save/Load");
             const path = std.fmt.allocPrintZ(

@@ -217,5 +217,13 @@ pub fn imgui_ui() void {
         cursor: *Shape = &cursor,
     };
     var t: T = .{};
-    cimgui.format("Ui", &t);
+
+    var open: bool = true;
+    if (cimgui.igCollapsingHeader_BoolPtr(
+        "Ui",
+        &open,
+        0,
+    )) {
+        cimgui.format("Ui", &t);
+    }
 }
