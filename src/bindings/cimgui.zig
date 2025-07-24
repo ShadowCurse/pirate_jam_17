@@ -31,6 +31,7 @@ pub fn format(name: ?[*c]const u8, v: anytype) void {
     const type_info = @typeInfo(t);
     switch (type_info) {
         .pointer => |pointer| {
+            if (pointer.is_const) return;
             const type_name: [*c]const u8 = if (name) |n| n else @typeName(t);
             cimgui.igPushID_Str(type_name);
             defer cimgui.igPopID();
@@ -66,8 +67,6 @@ pub fn format(name: ?[*c]const u8, v: anytype) void {
                         }
                     },
                     .array => |a| {
-                        // var cimgui_id: i32 = 2048;
-
                         if (cimgui.igTreeNode_Str(type_name)) {
                             defer cimgui.igTreePop();
 
@@ -78,11 +77,13 @@ pub fn format(name: ?[*c]const u8, v: anytype) void {
                         }
                     },
                     .optional => {},
-                    .pointer => {},
+                    .pointer => {
+                        format(type_name, v.*);
+                    },
                     else => log.err(
                         @src(),
-                        "Cannot format pointer child type: {any}",
-                        .{pointer.child},
+                        "Cannot format pointer child type: {any} type info: {any}",
+                        .{ pointer.child, child_type_info },
                     ),
                 }
             }
@@ -120,7 +121,7 @@ fn fmt_unsigned(name: [*c]const u8, v: anytype) void {
         *u8 => cimgui.ImGuiDataType_U8,
         *u16 => cimgui.ImGuiDataType_U16,
         *u32 => cimgui.ImGuiDataType_U32,
-        *u64, usize => cimgui.ImGuiDataType_U64,
+        *u64, *usize => cimgui.ImGuiDataType_U64,
         else => log.comptime_err(@src(), "fmt_unsigned cannot format: {any} type", .{@TypeOf(v)}),
     };
     var step: u64 = 1;
@@ -133,7 +134,7 @@ fn fmt_signed(name: [*c]const u8, v: anytype) void {
         *i8 => cimgui.ImGuiDataType_S8,
         *i16 => cimgui.ImGuiDataType_S16,
         *i32 => cimgui.ImGuiDataType_S32,
-        *i64, usize => cimgui.ImGuiDataType_S64,
+        *i64, *usize => cimgui.ImGuiDataType_S64,
         else => log.comptime_err(@src(), "fmt_signed cannot format: {any} type", .{@TypeOf(v)}),
     };
     var step: i64 = 1;
