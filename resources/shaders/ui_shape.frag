@@ -5,6 +5,7 @@ in vec2 vert_position;
 
 out vec4 frag_color;
 
+uniform float transparancy;
 uniform float radius;
 uniform float width;
 
@@ -20,21 +21,21 @@ void main() {
           frag_color = vec4(v2);
       } else
           frag_color = vec4(0.0);
-      return;
-  }
-  if (center_right.x < vert_position.x) {
+  } else if (center_right.x < vert_position.x) {
       float v2 = length(vert_position - center_right);
       if (v2 < radius) {
           v2 = smoothstep(outer, inner, v2); 
           frag_color = vec4(v2);
       } else
           frag_color = vec4(0.0);
-      return;
+  } else {
+    float v2 = abs(vert_position.y);
+    if (v2 < radius) {
+        v2 = smoothstep(outer, inner, v2); 
+        frag_color = vec4(v2);
+    } else
+        frag_color = vec4(0.0);
   }
-  float v2 = abs(vert_position.y);
-  if (v2 < radius) {
-      v2 = smoothstep(outer, inner, v2); 
-      frag_color = vec4(v2);
-  } else
-      frag_color = vec4(0.0);
+
+  frag_color.a *= transparancy;
 }

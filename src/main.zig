@@ -330,13 +330,15 @@ pub fn update(dt: f32) void {
             if (Input.was_pressed(.ESCAPE)) {
                 pause = !pause;
                 Platform.hide_mouse(!pause);
+                if (pause)
+                    Ui.state_pause()
+                else
+                    Ui.state_game();
             }
 
             if (pause) {
-                Ui.state = .Pause;
                 Ui.interract(dt);
             } else {
-                Ui.state = .Game;
                 Platform.reset_mouse();
                 player_camera_move(&player_camera, dt);
                 play_footstep(dt);
@@ -353,6 +355,7 @@ pub fn update(dt: f32) void {
 
                 Ui.animate_cursor(current_level.looking_at_pickable_object, dt);
             }
+            Ui.animate_blur(dt);
 
             break :blk &player_camera;
         },

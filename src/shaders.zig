@@ -10,6 +10,8 @@ const Renderer = @import("renderer.zig");
 const Platform = @import("platform.zig");
 const FileMem = Platform.FileMem;
 
+const Ui = @import("ui.zig");
+
 pub const Shader = struct {
     shader: u32,
 
@@ -432,6 +434,7 @@ pub const UiShapeShader = struct {
     size: i32,
     position: i32,
     window_size: i32,
+    transparancy: i32,
 
     radius: i32,
     width: i32,
@@ -449,6 +452,7 @@ pub const UiShapeShader = struct {
             .size = shader.get_uniform_location("size"),
             .position = shader.get_uniform_location("position"),
             .window_size = shader.get_uniform_location("window_size"),
+            .transparancy = shader.get_uniform_location("transparancy"),
 
             .radius = shader.get_uniform_location("radius"),
             .width = shader.get_uniform_location("width"),
@@ -468,6 +472,7 @@ pub const UiShapeShader = struct {
         gl.glUniform1f(self.width, width);
         gl.glUniform2f(self.position, position.x, position.y);
         gl.glUniform2f(self.window_size, Platform.WINDOW_WIDTH, Platform.WINDOW_HEIGHT);
+        gl.glUniform1f(self.transparancy, Ui.blur_strength);
 
         gl.glDisable(gl.GL_DEPTH_TEST);
         gl.glDrawArrays(gl.GL_TRIANGLES, 0, 6);
@@ -481,6 +486,7 @@ pub const UiTextureShader = struct {
     size: i32,
     position: i32,
     window_size: i32,
+    transparancy: i32,
 
     const Self = @This();
 
@@ -495,6 +501,7 @@ pub const UiTextureShader = struct {
             .size = shader.get_uniform_location("size"),
             .position = shader.get_uniform_location("position"),
             .window_size = shader.get_uniform_location("window_size"),
+            .transparancy = shader.get_uniform_location("transparancy"),
         };
     }
 
@@ -508,11 +515,47 @@ pub const UiTextureShader = struct {
         gl.glUniform1f(self.size, size);
         gl.glUniform2f(self.position, position.x, position.y);
         gl.glUniform2f(self.window_size, Platform.WINDOW_WIDTH, Platform.WINDOW_HEIGHT);
+        gl.glUniform1f(self.transparancy, Ui.blur_strength);
         gl.glActiveTexture(gl.GL_TEXTURE0);
         gl.glBindTexture(gl.GL_TEXTURE_2D, texture.texture);
 
         gl.glDisable(gl.GL_DEPTH_TEST);
         gl.glDrawArrays(gl.GL_TRIANGLES, 0, 6);
         gl.glEnable(gl.GL_DEPTH_TEST);
+    }
+};
+
+pub const PostProcessingShader = struct {
+    shader: Shader,
+
+    window_size: i32,
+    blur_strength: i32,
+
+    const Self = @This();
+
+    pub fn init() Self {
+        const shader = Shader.init(
+            "resources/shaders/post_processing.vert",
+            "resources/shaders/post_processing.frag",
+        );
+
+        return .{
+            .shader = shader,
+            .window_size = shader.get_uniform_location("window_size"),
+            .blur_strength = shader.get_uniform_location("blur_strength"),
+        };
+    }
+
+    pub fn draw(
+        self: *const Self,
+        blur_strength: f32,
+        texture: u32,
+    ) void {
+        self.shader.use();
+        gl.glUniform2f(self.window_size, Platform.WINDOW_WIDTH, Platform.WINDOW_HEIGHT);
+        gl.glUniform1f(self.blur_strength, blur_strength);
+        gl.glActiveTexture(gl.GL_TEXTURE0);
+        gl.glBindTexture(gl.GL_TEXTURE_2D, texture);
+        gl.glDrawArrays(gl.GL_TRIANGLES, 0, 6);
     }
 };

@@ -5,6 +5,67 @@ const gl = @import("bindings/gl.zig");
 const Platform = @import("platform.zig");
 const Renderer = @import("renderer.zig");
 
+pub const Framebuffer = struct {
+    framebuffer: u32,
+    texture: u32,
+    depth_texture: u32,
+
+    pub const WIDTH = Platform.WINDOW_WIDTH;
+    pub const HEIGHT = Platform.WINDOW_HEIGHT;
+
+    pub fn init() Framebuffer {
+        var framebuffer: u32 = undefined;
+        gl.glGenFramebuffers(1, &framebuffer);
+        gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, framebuffer);
+
+        var texture: u32 = undefined;
+        gl.glGenTextures(1, &texture);
+        gl.glBindTexture(gl.GL_TEXTURE_2D, texture);
+        gl.glTexImage2D(
+            gl.GL_TEXTURE_2D,
+            0,
+            gl.GL_RGB,
+            WIDTH,
+            HEIGHT,
+            0,
+            gl.GL_RGB,
+            gl.GL_UNSIGNED_BYTE,
+            null,
+        );
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST);
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST);
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE);
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE);
+        gl.glFramebufferTexture2D(
+            gl.GL_FRAMEBUFFER,
+            gl.GL_COLOR_ATTACHMENT0,
+            gl.GL_TEXTURE_2D,
+            texture,
+            0,
+        );
+
+        var depth_texture: u32 = undefined;
+        gl.glGenRenderbuffers(1, &depth_texture);
+        gl.glBindRenderbuffer(gl.GL_RENDERBUFFER, depth_texture);
+        gl.glRenderbufferStorage(gl.GL_RENDERBUFFER, gl.GL_DEPTH_COMPONENT, WIDTH, HEIGHT);
+        gl.glFramebufferRenderbuffer(
+            gl.GL_FRAMEBUFFER,
+            gl.GL_DEPTH_ATTACHMENT,
+            gl.GL_RENDERBUFFER,
+            depth_texture,
+        );
+
+        if (gl.glCheckFramebufferStatus(gl.GL_FRAMEBUFFER) != gl.GL_FRAMEBUFFER_COMPLETE)
+            log.err(@src(), "Framebuffer is not complete", .{});
+
+        return .{
+            .framebuffer = framebuffer,
+            .texture = texture,
+            .depth_texture = depth_texture,
+        };
+    }
+};
+
 pub const Mesh = struct {
     vertex_buffer: u32,
     index_buffer: u32,

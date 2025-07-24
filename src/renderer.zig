@@ -11,6 +11,8 @@ const Ui = @import("ui.zig");
 const Camera = @import("root").Camera;
 const Mesh = @import("mesh.zig");
 
+var framebuffer: gpu.Framebuffer = undefined;
+
 var mesh_shader: shaders.MeshShader = undefined;
 var mesh_infos: std.BoundedArray(RenderMeshInfo, 128) = .{};
 
@@ -23,6 +25,8 @@ var point_shadow_maps: gpu.PointShadowMaps = undefined;
 var ui_shape_shader: shaders.UiShapeShader = undefined;
 var ui_texture_shader: shaders.UiTextureShader = undefined;
 var ui_infos: std.BoundedArray(RenderUiInfo, 8) = .{};
+
+var post_processing_shader: shaders.PostProcessingShader = undefined;
 
 const RenderMeshInfo = struct {
     mesh: *const gpu.Mesh,
@@ -115,6 +119,7 @@ pub const Environment = struct {
 const Self = @This();
 
 pub fn init() void {
+    Self.framebuffer = .init();
     Self.mesh_shader = .init();
     Self.shadow_map_shader = .init();
     Self.shadow_map = .init();
@@ -122,6 +127,7 @@ pub fn init() void {
     Self.point_shadow_maps = .init();
     Self.ui_shape_shader = .init();
     Self.ui_texture_shader = .init();
+    Self.post_processing_shader = .init();
 }
 
 pub fn reset() void {
@@ -175,12 +181,16 @@ fn prepare_point_shadow_map_context() void {
 }
 
 fn prepare_mesh_context() void {
-    gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0);
-    gl.glViewport(0, 0, Platform.WINDOW_WIDTH, Platform.WINDOW_HEIGHT);
+    gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, Self.framebuffer.framebuffer);
+    gl.glViewport(0, 0, gpu.Framebuffer.WIDTH, gpu.Framebuffer.HEIGHT);
     gl.glClearDepth(0.0);
     gl.glClearColor(0.0, 0.0, 0.0, 1.0);
     gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT);
     gl.glDepthFunc(gl.GL_GEQUAL);
+}
+
+fn prepare_post_processing_context() void {
+    gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0);
 }
 
 pub fn render(
@@ -240,6 +250,9 @@ pub fn render(
         Self.mesh_shader.set_mesh_params(&mi.model, &mi.material);
         mi.mesh.draw();
     }
+
+    prepare_post_processing_context();
+    Self.post_processing_shader.draw(Ui.blur_strength, Self.framebuffer.texture);
 
     for (Self.ui_infos.slice()) |*ui| {
         switch (ui.element) {

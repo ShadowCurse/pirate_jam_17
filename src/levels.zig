@@ -144,7 +144,7 @@ pub const Level = struct {
             Audio.play(.Door, &object.position);
             Animations.add(
                 .{
-                    .object = object,
+                    .object = .{ .LevelObject = object },
                     .action = .{ .rotate_z = .{
                         .start = object.rotation_z,
                         .end = 0.0,
@@ -161,7 +161,7 @@ pub const Level = struct {
             Audio.play(.Door, &object.position);
             Animations.add(
                 .{
-                    .object = object,
+                    .object = .{ .LevelObject = object },
                     .action = .{ .rotate_z = .{
                         .start = object.rotation_z,
                         .end = std.math.pi / 2.0,
@@ -223,7 +223,7 @@ pub const Level = struct {
             const object = &self.objects.items[ho];
             Animations.add(
                 .{
-                    .object = object,
+                    .object = .{ .LevelObject = object },
                     .action = .{ .move = .{
                         .start = object.position,
                         .end = object.position.xy().extend(0.0),
