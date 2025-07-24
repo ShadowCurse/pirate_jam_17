@@ -18,6 +18,7 @@ const Input = @import("input.zig");
 const Assets = @import("assets.zig");
 const Audio = @import("audio.zig");
 const Mesh = @import("mesh.zig");
+const Ui = @import("ui.zig");
 
 const DEFAULT_LEVEL_DIR_PATH = "resources/levels";
 
@@ -65,8 +66,12 @@ pub const Level = struct {
     // Player
     holding_object: ?u32 = null,
     put_down_object: ?u32 = null,
-    finished: bool = false,
+
+    started: bool = false,
+    starting: bool = false,
     solved: bool = false,
+    finishing: bool = false,
+    finished: bool = false,
 
     // Cursor
     looking_at_pickable_object: bool = false,
@@ -156,9 +161,39 @@ pub const Level = struct {
         }
     }
 
-    pub fn open_doors(self: *Self) void {
+    pub fn on_entrance_door_open(self: *Self, _: *anyopaque) void {
+        self.starting = false;
+        self.started = true;
+    }
+
+    pub fn start_level(self: *Self, camera: *Camera) void {
+        if (self.started or self.starting) return;
+
+        self.starting = true;
         for (self.objects.items) |*object| {
-            if (object.tag != .ExitDoor) continue;
+            if (object.tag != .EntranceDoor) continue;
+            camera.position = object.position;
+            camera.position.z = 1.0;
+        }
+        self.open_doors(.EntranceDoor);
+
+        Animations.add(
+            .{
+                .object = .{ .Float = &Ui.blur_strength },
+                .action = .{ .move_f32 = .{
+                    .start = 10.0,
+                    .end = 0.0,
+                } },
+                .duration = DOOR_OPEN_ANIMATION_TIME,
+                .callback_data = self,
+                .callback = @ptrCast(&Self.on_entrance_door_open),
+            },
+        );
+    }
+
+    pub fn open_doors(self: *Self, tag: Object.Tag) void {
+        for (self.objects.items) |*object| {
+            if (object.tag != tag) continue;
             Audio.play(.Door, &object.position);
             Animations.add(
                 .{
@@ -173,6 +208,12 @@ pub const Level = struct {
         }
     }
 
+    pub fn on_exit_door_close(self: *Self, _: *anyopaque) void {
+        self.finishing = false;
+        self.finished = true;
+        log.info(@src(), "Level finished", .{});
+    }
+
     pub fn close_doors(self: *Self) void {
         for (self.objects.items) |*object| {
             if (object.tag != .ExitDoor) continue;
@@ -185,24 +226,28 @@ pub const Level = struct {
                         .end = std.math.pi / 2.0,
                     } },
                     .duration = DOOR_OPEN_ANIMATION_TIME,
+                    .callback_data = self,
+                    .callback = @ptrCast(&Self.on_exit_door_close),
                 },
             );
         }
     }
 
     pub fn player_in_the_door(self: *Self, camera: *const Camera) void {
+        if (self.finished) return;
+
         for (self.objects.items) |*object| {
             if (object.tag != .ExitDoor) continue;
             const distance_to_object = camera.position.xy()
                 .sub(object.position.xy()).len();
-            if (distance_to_object < 0.26 and !self.finished) {
+            if (distance_to_object < 0.26 and !self.finishing) {
                 self.close_doors();
-                self.finished = true;
-                log.info(@src(), "Level finished", .{});
-            } else if (0.26 < distance_to_object and self.finished) {
-                self.open_doors();
-                self.finished = false;
-                log.info(@src(), "Level un finished", .{});
+                self.finishing = true;
+                log.info(@src(), "Level finishing", .{});
+            } else if (0.26 < distance_to_object and self.finishing) {
+                self.open_doors(.ExitDoor);
+                self.finishing = false;
+                log.info(@src(), "Level un finishing", .{});
             }
         }
     }
@@ -421,7 +466,7 @@ pub const Level = struct {
             ) == .Full) {
                 self.solved = true;
                 Audio.play(.Success, null);
-                self.open_doors();
+                self.open_doors(.ExitDoor);
             }
         }
     }

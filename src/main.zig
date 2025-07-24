@@ -235,7 +235,7 @@ fn player_camera_move(camera: *Camera, dt: f32) void {
 pub var frame_arena: std.heap.ArenaAllocator = undefined;
 
 pub var current_level_tag: Levels.Tag = .@"0-1";
-pub var mode: Mode = .Edit;
+pub var mode: Mode = .Game;
 pub var pause: bool = false;
 
 pub var free_camera: Camera = .{};
@@ -262,6 +262,8 @@ pub fn init() void {
         .friction = 12.0,
         .speed = 50.0,
     };
+
+    Platform.hide_mouse(true);
 }
 
 fn play_footstep(dt: f32) void {
@@ -325,9 +327,13 @@ pub fn update(dt: f32) void {
 
     const camera_in_use = switch (mode) {
         .Game => blk: {
+            if (!current_level.started) {
+                current_level.start_level(&player_camera);
+            }
+
             Animations.play(dt);
 
-            if (Input.was_pressed(.ESCAPE)) {
+            if (Input.was_pressed(.SPACE)) {
                 pause = !pause;
                 Platform.hide_mouse(!pause);
                 if (pause)
@@ -338,7 +344,7 @@ pub fn update(dt: f32) void {
 
             if (pause) {
                 Ui.interract(dt);
-            } else {
+            } else if (current_level.started) {
                 Platform.reset_mouse();
                 player_camera_move(&player_camera, dt);
                 play_footstep(dt);
@@ -401,6 +407,10 @@ pub fn update(dt: f32) void {
                 cimgui.format("Free camera", &free_camera);
                 _ = cimgui.igSeparatorText("Levels selection");
                 cimgui.format("Current level", &current_level_tag);
+
+                if (cimgui.igButton("Restart level", .{})) {
+                    Levels.levels.getPtr(current_level_tag).started = false;
+                }
 
                 if (cimgui.igButton("Reload levels", .{})) {
                     Levels.init();
