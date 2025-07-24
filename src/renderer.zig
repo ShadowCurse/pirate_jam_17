@@ -20,7 +20,8 @@ var shadow_map: gpu.ShadowMap = undefined;
 var point_shadow_map_shader: shaders.PointShadowMapShader = undefined;
 var point_shadow_maps: gpu.PointShadowMaps = undefined;
 
-var cursor_shader: shaders.CursorShader = undefined;
+var ui_shape_shader: shaders.UiShapeShader = undefined;
+var ui_texture_shader: shaders.UiTextureShader = undefined;
 var ui_infos: std.BoundedArray(RenderUiInfo, 8) = .{};
 
 const RenderMeshInfo = struct {
@@ -119,7 +120,8 @@ pub fn init() void {
     Self.shadow_map = .init();
     Self.point_shadow_map_shader = .init();
     Self.point_shadow_maps = .init();
-    Self.cursor_shader = .init();
+    Self.ui_shape_shader = .init();
+    Self.ui_texture_shader = .init();
 }
 
 pub fn reset() void {
@@ -241,13 +243,19 @@ pub fn render(
 
     for (Self.ui_infos.slice()) |*ui| {
         switch (ui.element) {
-            .Texture => {},
+            .Texture => |texture| {
+                Self.ui_texture_shader.draw(
+                    texture.size,
+                    ui.position,
+                    texture.texture,
+                );
+            },
             .Shape => |shape| {
-                Self.cursor_shader.draw(
+                Self.ui_shape_shader.draw(
                     shape.size,
+                    ui.position,
                     shape.radius,
                     shape.width,
-                    .{},
                 );
             },
         }

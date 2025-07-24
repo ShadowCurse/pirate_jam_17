@@ -426,45 +426,41 @@ pub const PointShadowMapShader = struct {
     }
 };
 
-pub const CursorShader = struct {
+pub const UiShapeShader = struct {
     shader: Shader,
 
     size: i32,
-    radius: i32,
-    width: i32,
     position: i32,
     window_size: i32,
+
+    radius: i32,
+    width: i32,
 
     const Self = @This();
 
     pub fn init() Self {
         const shader = Shader.init(
-            "resources/shaders/cursor.vert",
-            "resources/shaders/cursor.frag",
+            "resources/shaders/ui_rect.vert",
+            "resources/shaders/ui_shape.frag",
         );
-
-        const size = shader.get_uniform_location("size");
-        const radius = shader.get_uniform_location("radius");
-        const width = shader.get_uniform_location("width");
-        const position = shader.get_uniform_location("position");
-        const window_size = shader.get_uniform_location("window_size");
 
         return .{
             .shader = shader,
-            .size = size,
-            .radius = radius,
-            .width = width,
-            .position = position,
-            .window_size = window_size,
+            .size = shader.get_uniform_location("size"),
+            .position = shader.get_uniform_location("position"),
+            .window_size = shader.get_uniform_location("window_size"),
+
+            .radius = shader.get_uniform_location("radius"),
+            .width = shader.get_uniform_location("width"),
         };
     }
 
     pub fn draw(
         self: *const Self,
         size: f32,
+        position: math.Vec2,
         radius: f32,
         width: f32,
-        position: math.Vec2,
     ) void {
         self.shader.use();
         gl.glUniform1f(self.size, size);
@@ -472,6 +468,48 @@ pub const CursorShader = struct {
         gl.glUniform1f(self.width, width);
         gl.glUniform2f(self.position, position.x, position.y);
         gl.glUniform2f(self.window_size, Platform.WINDOW_WIDTH, Platform.WINDOW_HEIGHT);
+
+        gl.glDisable(gl.GL_DEPTH_TEST);
+        gl.glDrawArrays(gl.GL_TRIANGLES, 0, 6);
+        gl.glEnable(gl.GL_DEPTH_TEST);
+    }
+};
+
+pub const UiTextureShader = struct {
+    shader: Shader,
+
+    size: i32,
+    position: i32,
+    window_size: i32,
+
+    const Self = @This();
+
+    pub fn init() Self {
+        const shader = Shader.init(
+            "resources/shaders/ui_rect.vert",
+            "resources/shaders/ui_texture.frag",
+        );
+
+        return .{
+            .shader = shader,
+            .size = shader.get_uniform_location("size"),
+            .position = shader.get_uniform_location("position"),
+            .window_size = shader.get_uniform_location("window_size"),
+        };
+    }
+
+    pub fn draw(
+        self: *const Self,
+        size: f32,
+        position: math.Vec2,
+        texture: *const gpu.Texture,
+    ) void {
+        self.shader.use();
+        gl.glUniform1f(self.size, size);
+        gl.glUniform2f(self.position, position.x, position.y);
+        gl.glUniform2f(self.window_size, Platform.WINDOW_WIDTH, Platform.WINDOW_HEIGHT);
+        gl.glActiveTexture(gl.GL_TEXTURE0);
+        gl.glBindTexture(gl.GL_TEXTURE_2D, texture.texture);
 
         gl.glDisable(gl.GL_DEPTH_TEST);
         gl.glDrawArrays(gl.GL_TRIANGLES, 0, 6);
