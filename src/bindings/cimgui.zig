@@ -78,6 +78,7 @@ pub fn format(name: ?[*c]const u8, v: anytype) void {
                         }
                     },
                     .optional => {},
+                    .pointer => {},
                     else => log.err(
                         @src(),
                         "Cannot format pointer child type: {any}",

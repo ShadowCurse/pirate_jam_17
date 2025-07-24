@@ -19,6 +19,7 @@ const Assets = @import("assets.zig");
 const Levels = @import("levels.zig");
 const Input = @import("input.zig");
 const Audio = @import("audio.zig");
+const Ui = @import("ui.zig");
 
 pub const log_options = log.Options{
     .level = .Info,
@@ -50,6 +51,7 @@ pub fn main() void {
     Renderer.init();
     Assets.init();
     Levels.init();
+    Ui.init();
 
     init();
 
@@ -336,7 +338,7 @@ pub fn update(dt: f32) void {
             current_level.player_collide(&player_camera);
             current_level.player_in_the_door(&player_camera);
 
-            current_level.cursor_animate(dt);
+            Ui.animate_cursor(current_level.looking_at_pickable_object, dt);
 
             break :blk &player_camera;
         },
@@ -358,6 +360,7 @@ pub fn update(dt: f32) void {
     };
 
     current_level.draw(dt);
+    Ui.draw();
     Renderer.render(camera_in_use, &current_level.environment);
 
     {
@@ -388,6 +391,7 @@ pub fn update(dt: f32) void {
             }
 
             current_level.imgui_ui(frame_arena.allocator(), current_level_tag);
+            Ui.imgui_ui();
             Audio.imgui_ui();
             Input.imgui_ui();
         }

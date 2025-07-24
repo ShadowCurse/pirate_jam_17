@@ -6,6 +6,7 @@ const gpu = @import("gpu.zig");
 const shaders = @import("shaders.zig");
 
 const Platform = @import("platform.zig");
+const Ui = @import("ui.zig");
 
 const Camera = @import("root").Camera;
 const Mesh = @import("mesh.zig");
@@ -20,11 +21,22 @@ var point_shadow_map_shader: shaders.PointShadowMapShader = undefined;
 var point_shadow_maps: gpu.PointShadowMaps = undefined;
 
 var cursor_shader: shaders.CursorShader = undefined;
+var ui_infos: std.BoundedArray(RenderUiInfo, 8) = .{};
 
 const RenderMeshInfo = struct {
     mesh: *const gpu.Mesh,
     model: math.Mat4,
     material: Mesh.Material,
+};
+
+pub const UiElement = union(enum) {
+    Texture: Ui.Texture,
+    Shape: Ui.Shape,
+};
+
+const RenderUiInfo = struct {
+    element: UiElement,
+    position: math.Vec2,
 };
 
 pub const NUM_LIGHTS = 4;
@@ -112,6 +124,7 @@ pub fn init() void {
 
 pub fn reset() void {
     Self.mesh_infos.clear();
+    Self.ui_infos.clear();
 }
 
 pub fn clear_current_buffers() void {
@@ -125,13 +138,23 @@ pub fn draw_mesh(
     model: math.Mat4,
     material: Mesh.Material,
 ) void {
-    const mesh_info = RenderMeshInfo{
+    const info = RenderMeshInfo{
         .mesh = mesh,
         .model = model,
         .material = material,
     };
-    Self.mesh_infos.append(mesh_info) catch {
+    Self.mesh_infos.append(info) catch {
         log.warn(@src(), "Cannot add more meshes to draw queue", .{});
+    };
+}
+
+pub fn draw_ui(element: UiElement, position: math.Vec2) void {
+    const info = RenderUiInfo{
+        .element = element,
+        .position = position,
+    };
+    Self.ui_infos.append(info) catch {
+        log.warn(@src(), "Cannot add more ui elements to draw queue", .{});
     };
 }
 
@@ -216,24 +239,17 @@ pub fn render(
         mi.mesh.draw();
     }
 
-    Self.cursor_shader.draw(
-        environment.cursor_size,
-        environment.cursor_radius,
-        environment.cursor_width,
-        .{},
-    );
-
-    // Future audio slider
-    Self.cursor_shader.draw(
-        0.5,
-        0.02,
-        0.5,
-        .{ .y = -0.5 },
-    );
-    Self.cursor_shader.draw(
-        0.5,
-        0.05,
-        0.0,
-        .{ .y = -0.5 },
-    );
+    for (Self.ui_infos.slice()) |*ui| {
+        switch (ui.element) {
+            .Texture => {},
+            .Shape => |shape| {
+                Self.cursor_shader.draw(
+                    shape.size,
+                    shape.radius,
+                    shape.width,
+                    .{},
+                );
+            },
+        }
+    }
 }

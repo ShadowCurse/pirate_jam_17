@@ -8,6 +8,7 @@ cp -r resources/shaders wasm/resources
 cp -r resources/levels wasm/resources
 cp -r resources/models wasm/resources
 cp -r resources/soundtracks wasm/resources
+cp -r resources/textures wasm/resources
 cd wasm
 
 emcc \

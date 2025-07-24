@@ -138,25 +138,6 @@ pub const Level = struct {
         }
     }
 
-    pub fn cursor_animate(self: *Self, dt: f32) void {
-        const MAX_SIZE = 0.01;
-        const MIN_SIZE = 0.0;
-        if (self.looking_at_pickable_object)
-            self.environment.cursor_size = math.exp_decay(
-                self.environment.cursor_size,
-                MAX_SIZE,
-                18.0,
-                dt,
-            )
-        else
-            self.environment.cursor_size = math.exp_decay(
-                self.environment.cursor_size,
-                MIN_SIZE,
-                18.0,
-                dt,
-            );
-    }
-
     pub fn open_doors(self: *Self) void {
         for (self.objects.items) |*object| {
             if (object.model != .DoorDoor) continue;
