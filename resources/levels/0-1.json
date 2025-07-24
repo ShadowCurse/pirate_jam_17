@@ -2,6 +2,7 @@
     "objects": [
         {
             "model": "Floor",
+            "tag": "None",
             "position": {
                 "x": 0e0,
                 "y": 0e0,
@@ -10,7 +11,6 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 0e0,
-            "target_rotation_z": null,
             "scale": {
                 "x": 1e1,
                 "y": 1e1,
@@ -19,15 +19,15 @@
         },
         {
             "model": "Box",
+            "tag": "CorrectBox",
             "position": {
-                "x": 0e0,
+                "x": -1.600000023841858e0,
                 "y": 0e0,
                 "z": 0e0
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 0e0,
-            "target_rotation_z": null,
             "scale": {
                 "x": 1e0,
                 "y": 1e0,
@@ -36,6 +36,7 @@
         },
         {
             "model": "Wall",
+            "tag": "None",
             "position": {
                 "x": -4.840000152587891e0,
                 "y": 0e0,
@@ -44,7 +45,6 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 0e0,
-            "target_rotation_z": null,
             "scale": {
                 "x": 1e0,
                 "y": 1e0,
@@ -53,6 +53,7 @@
         },
         {
             "model": "Wall",
+            "tag": "None",
             "position": {
                 "x": 0e0,
                 "y": 5e0,
@@ -61,7 +62,6 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 1.5700000524520874e0,
-            "target_rotation_z": null,
             "scale": {
                 "x": 1e0,
                 "y": 1e0,
@@ -70,6 +70,7 @@
         },
         {
             "model": "Box",
+            "tag": "None",
             "position": {
                 "x": 1.600000023841858e0,
                 "y": 0e0,
@@ -78,7 +79,6 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 0e0,
-            "target_rotation_z": null,
             "scale": {
                 "x": 1e0,
                 "y": 1e0,
@@ -87,15 +87,15 @@
         },
         {
             "model": "Platform",
+            "tag": "None",
             "position": {
-                "x": -1.5099999904632568e0,
+                "x": 0e0,
                 "y": 1.850000023841858e0,
                 "z": 0e0
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 0e0,
-            "target_rotation_z": null,
             "scale": {
                 "x": 1e0,
                 "y": 1e0,
@@ -104,15 +104,15 @@
         },
         {
             "model": "DoorInnerLight",
+            "tag": "None",
             "position": {
-                "x": -1.5e0,
+                "x": 0e0,
                 "y": 4e0,
                 "z": 0e0
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0,
-            "target_rotation_z": null,
+            "rotation_z": 0e0,
             "scale": {
                 "x": 1e0,
                 "y": 1e0,
@@ -121,15 +121,15 @@
         },
         {
             "model": "DoorFrame",
+            "tag": "None",
             "position": {
-                "x": -1.5e0,
+                "x": 0e0,
                 "y": 4e0,
                 "z": 0e0
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 1.5700000524520874e0,
-            "target_rotation_z": null,
             "scale": {
                 "x": 1e0,
                 "y": 1e0,
@@ -138,15 +138,117 @@
         },
         {
             "model": "DoorDoor",
+            "tag": "ExitDoor",
             "position": {
-                "x": -1.5e0,
+                "x": 0e0,
                 "y": 4e0,
                 "z": 0e0
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 1.5700000524520874e0,
-            "target_rotation_z": null,
+            "scale": {
+                "x": 1e0,
+                "y": 1e0,
+                "z": 1e0
+            }
+        },
+        {
+            "model": "Wall",
+            "tag": "None",
+            "position": {
+                "x": 5e0,
+                "y": 0e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": {
+                "x": 1e0,
+                "y": 1e0,
+                "z": 1e0
+            }
+        },
+        {
+            "model": "Wall",
+            "tag": "None",
+            "position": {
+                "x": 0e0,
+                "y": -5e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 1.5700000524520874e0,
+            "scale": {
+                "x": 1e0,
+                "y": 1e0,
+                "z": 1e0
+            }
+        },
+        {
+            "model": "DoorDoor",
+            "tag": "EntranceDoor",
+            "position": {
+                "x": 0e0,
+                "y": -4e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 1.5700000524520874e0,
+            "scale": {
+                "x": 1e0,
+                "y": 1e0,
+                "z": 1e0
+            }
+        },
+        {
+            "model": "DoorFrame",
+            "tag": "None",
+            "position": {
+                "x": 0e0,
+                "y": -4e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 1.5700000524520874e0,
+            "scale": {
+                "x": 1e0,
+                "y": 1e0,
+                "z": 1e0
+            }
+        },
+        {
+            "model": "DoorInnerLight",
+            "tag": "None",
+            "position": {
+                "x": 0e0,
+                "y": -4e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": {
+                "x": 1e0,
+                "y": 1e0,
+                "z": 1e0
+            }
+        },
+        {
+            "model": "Box",
+            "tag": "None",
+            "position": {
+                "x": 0e0,
+                "y": 0e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
             "scale": {
                 "x": 1e0,
                 "y": 1e0,
@@ -157,7 +259,7 @@
     "environment": {
         "lights_position": [
             {
-                "x": -1.5e0,
+                "x": 0e0,
                 "y": 4e0,
                 "z": 1.190000057220459e0
             },
@@ -179,9 +281,9 @@
         ],
         "lights_color": [
             {
-                "r": 8.823537826538086e-2,
+                "r": 1e0,
                 "g": 1e0,
-                "b": 0e0
+                "b": 1e0
             },
             {
                 "r": 0e0,
@@ -209,8 +311,8 @@
             "g": 1e0,
             "b": 1e0
         },
-        "shadow_map_width": 1e1,
-        "shadow_map_height": 1e1,
+        "shadow_map_width": 2e1,
+        "shadow_map_height": 2e1,
         "shadow_map_depth": 5e1
     }
 }

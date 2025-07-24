@@ -65,6 +65,7 @@ pub const Level = struct {
     holding_object: ?u32 = null,
     put_down_object: ?u32 = null,
     finished: bool = false,
+    solved: bool = false,
 
     // Cursor
     looking_at_pickable_object: bool = false,
@@ -74,13 +75,19 @@ pub const Level = struct {
 
     pub const Object = struct {
         model: Assets.ModelType,
+        tag: Object.Tag = .None,
         position: math.Vec3 = .{},
         rotation_x: f32 = 0.0,
         rotation_y: f32 = 0.0,
         rotation_z: f32 = 0.0,
-        // used for doors animation
-        target_rotation_z: ?f32 = null,
         scale: math.Vec3 = .ONE,
+
+        pub const Tag = enum {
+            None,
+            EntranceDoor,
+            ExitDoor,
+            CorrectBox,
+        };
 
         fn transform(self: *const Object) math.Mat4 {
             const rotation = math.Quat.from_axis_angle(.X, self.rotation_x)
@@ -140,7 +147,7 @@ pub const Level = struct {
 
     pub fn open_doors(self: *Self) void {
         for (self.objects.items) |*object| {
-            if (object.model != .DoorDoor) continue;
+            if (object.tag != .ExitDoor) continue;
             Audio.play(.Door, &object.position);
             Animations.add(
                 .{
@@ -157,7 +164,7 @@ pub const Level = struct {
 
     pub fn close_doors(self: *Self) void {
         for (self.objects.items) |*object| {
-            if (object.model != .DoorDoor) continue;
+            if (object.tag != .ExitDoor) continue;
             Audio.play(.Door, &object.position);
             Animations.add(
                 .{
@@ -174,7 +181,7 @@ pub const Level = struct {
 
     pub fn player_in_the_door(self: *Self, camera: *const Camera) void {
         for (self.objects.items) |*object| {
-            if (object.model != .DoorFrame) continue;
+            if (object.tag != .ExitDoor) continue;
             const distance_to_object = camera.position.xy()
                 .sub(object.position.xy()).len();
             if (distance_to_object < 0.26 and !self.finished) {
@@ -388,17 +395,20 @@ pub const Level = struct {
         r1.rotation = object.rotation_z;
         const r1_position = object.position.xy();
 
+        if (object.tag != .CorrectBox) return;
+
         for (self.objects.items) |*o| {
             if (o.model != .Platform) continue;
 
             const r2 = Assets.aabbs.get(o.model);
             const r2_position = o.position.xy();
-            if (physics.rectangle_rectangle_intersection(
+            if (!self.solved and physics.rectangle_rectangle_intersection(
                 r1,
                 r1_position,
                 r2,
                 r2_position,
             ) == .Full) {
+                self.solved = true;
                 Audio.play(.Success, null);
                 self.open_doors();
             }

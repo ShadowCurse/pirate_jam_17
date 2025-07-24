@@ -258,7 +258,7 @@ pub fn init() void {
         .position = .{ .y = -5.0, .z = 5.0 },
     };
     player_camera = .{
-        .position = .{ .y = -2.0, .z = 1.0 },
+        .position = .{ .y = -1.0, .z = 1.0 },
         .friction = 12.0,
         .speed = 50.0,
     };
