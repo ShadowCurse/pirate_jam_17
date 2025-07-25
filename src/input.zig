@@ -251,6 +251,7 @@ pub const KeyStates = std.EnumArray(Keys, KeyState);
 
 var keys: KeyStates = .initFill(.{});
 pub var mouse_motion: math.Vec2 = .{};
+pub var mouse_sense: f32 = 1.0;
 
 pub fn was_pressed(key: Keys) bool {
     if (Platform.imgui_wants_to_handle_events())

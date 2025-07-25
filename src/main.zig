@@ -87,7 +87,6 @@ pub const Camera = struct {
     acceleration: math.Vec3 = .{},
     friction: f32 = 0.1,
     speed: f32 = 5.0,
-    sensitivity: f32 = 1.0,
 
     active: bool = false,
 
@@ -117,8 +116,8 @@ pub const Camera = struct {
             -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.S)))) +
             1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.W))));
 
-        self.yaw -= Input.mouse_motion.x * self.sensitivity * dt;
-        self.pitch -= Input.mouse_motion.y * self.sensitivity * dt;
+        self.yaw -= Input.mouse_motion.x * Input.mouse_sense * dt;
+        self.pitch -= Input.mouse_motion.y * Input.mouse_sense * dt;
         if (math.PI / 2.0 < self.pitch) {
             self.pitch = math.PI / 2.0;
         }
@@ -186,8 +185,8 @@ fn free_camera_move(camera: *Camera, dt: f32) void {
         -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.S)))) +
         1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.W))));
 
-    camera.yaw -= Input.mouse_motion.x * camera.sensitivity * dt;
-    camera.pitch -= Input.mouse_motion.y * camera.sensitivity * dt;
+    camera.yaw -= Input.mouse_motion.x * Input.mouse_sense * dt;
+    camera.pitch -= Input.mouse_motion.y * Input.mouse_sense * dt;
     if (math.PI / 2.0 < camera.pitch) {
         camera.pitch = math.PI / 2.0;
     }
@@ -202,8 +201,8 @@ fn free_camera_move(camera: *Camera, dt: f32) void {
 }
 
 fn player_camera_move(camera: *Camera, dt: f32) void {
-    camera.yaw -= Input.mouse_motion.x * camera.sensitivity * dt;
-    camera.pitch -= Input.mouse_motion.y * camera.sensitivity * dt;
+    camera.yaw -= Input.mouse_motion.x * Input.mouse_sense * dt;
+    camera.pitch -= Input.mouse_motion.y * Input.mouse_sense * dt;
     if (math.PI / 2.0 < camera.pitch) {
         camera.pitch = math.PI / 2.0;
     }

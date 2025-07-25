@@ -11,26 +11,51 @@ const Input = @import("input.zig");
 
 pub var state: State = .Game;
 pub var blur_strength: f32 = 0.0;
-pub var volume_icon_position: math.Vec2 = .{
-    .x = -0.43,
-    .y = -0.633,
+pub var mouse_sense_slider: Slider = .{
+    .icon_position = .{
+        .x = -0.43,
+        .y = -0.333,
+    },
+    .icon = .{ .size = 0.15 },
+    .slider_position = .{ .y = -0.2 },
+    .slider = .{
+        .size = 0.5,
+        .radius = 0.017,
+        .width = 0.5,
+    },
+    .knob_position = .{
+        .x = 0.25,
+        .y = -0.2,
+    },
+    .knob = .{
+        .size = 0.5,
+        .radius = KNOB_MIN_RADIUS,
+        .width = 0.0,
+    },
 };
-pub var volume_icon: Texture = .{ .size = 0.15 };
-pub var volume_slider_position: math.Vec2 = .{ .y = -0.5 };
-pub var volume_slider: Shape = .{
-    .size = 0.5,
-    .radius = 0.017,
-    .width = 0.5,
+pub var volume_slider: Slider = .{
+    .icon_position = .{
+        .x = -0.43,
+        .y = -0.633,
+    },
+    .icon = .{ .size = 0.15 },
+    .slider_position = .{ .y = -0.5 },
+    .slider = .{
+        .size = 0.5,
+        .radius = 0.017,
+        .width = 0.5,
+    },
+    .knob_position = .{
+        .x = 0.25,
+        .y = -0.5,
+    },
+    .knob = .{
+        .size = 0.5,
+        .radius = KNOB_MIN_RADIUS,
+        .width = 0.0,
+    },
 };
-pub var volume_knob_position: math.Vec2 = .{
-    .x = 0.25,
-    .y = -0.5,
-};
-pub var volume_knob: Shape = .{
-    .size = 0.5,
-    .radius = KNOB_MIN_RADIUS,
-    .width = 0.0,
-};
+
 pub var cursor_position: math.Vec2 = .{};
 pub var cursor: Shape = .{
     .size = 0.05,
@@ -38,7 +63,76 @@ pub var cursor: Shape = .{
     .width = 0.0,
 };
 
-var knob_is_dragged: bool = false;
+pub const Slider = struct {
+    icon_position: math.Vec2,
+    icon: Texture,
+    slider_position: math.Vec2,
+    slider: Shape,
+    knob_position: math.Vec2,
+    knob: Shape,
+    is_dragged: bool = false,
+
+    fn interract(self: *Slider, mouse_clip: math.Vec2, dt: f32) void {
+        const to_knob_len = self.knob_position.sub(mouse_clip).len();
+        if (to_knob_len < self.knob.radius) {
+            self.knob.radius = math.exp_decay(
+                self.knob.radius,
+                KNOB_MID_RADIUS,
+                18.0,
+                dt,
+            );
+
+            if (Input.was_pressed(.LMB)) {
+                self.is_dragged = true;
+            }
+        }
+
+        if (Input.was_released(.LMB)) {
+            self.is_dragged = false;
+        }
+
+        if (self.is_dragged) {
+            self.knob.radius = math.exp_decay(
+                self.knob.radius,
+                KNOB_MAX_RADIUS,
+                18.0,
+                dt,
+            );
+
+            self.knob_position.x = math.exp_decay(
+                self.knob_position.x,
+                mouse_clip.x,
+                18.0,
+                dt,
+            );
+            self.knob_position.x =
+                @min(
+                    @max(
+                        self.knob_position.x,
+                        -self.slider.width / 2.0,
+                    ),
+                    self.slider.width / 2.0,
+                );
+        } else {
+            self.knob.radius = math.exp_decay(
+                self.knob.radius,
+                KNOB_MIN_RADIUS,
+                18.0,
+                dt,
+            );
+        }
+    }
+
+    fn value(self: *const Slider) f32 {
+        return self.knob_position.x / self.slider.width + 0.5;
+    }
+
+    fn draw(self: *const Slider) void {
+        Renderer.draw_ui(.{ .Shape = self.slider }, self.slider_position, blur_strength);
+        Renderer.draw_ui(.{ .Shape = self.knob }, self.knob_position, blur_strength);
+        Renderer.draw_ui(.{ .Texture = self.icon }, self.icon_position, blur_strength);
+    }
+};
 
 pub const State = enum {
     Game,
@@ -66,7 +160,8 @@ const KNOB_MID_RADIUS = 0.05;
 const KNOB_MIN_RADIUS = 0.04;
 
 pub fn init() void {
-    volume_icon.texture = Assests.gpu_textures.getPtr(.SpeakerIcon);
+    mouse_sense_slider.icon.texture = Assests.gpu_textures.getPtr(.MouseIcon);
+    volume_slider.icon.texture = Assests.gpu_textures.getPtr(.SpeakerIcon);
 }
 
 pub fn animate_cursor(visible: bool, dt: f32) void {
@@ -88,6 +183,8 @@ pub fn animate_cursor(visible: bool, dt: f32) void {
 
 fn set_state_game(_: *anyopaque, _: *anyopaque) void {
     state = .Game;
+    mouse_sense_slider.is_dragged = false;
+    volume_slider.is_dragged = false;
 }
 
 pub fn state_game() void {
@@ -138,57 +235,13 @@ pub fn animate_blur(dt: f32) void {
 pub fn interract(dt: f32) void {
     const mouse_clip = Platform.mouse_clip();
 
-    const to_knob_len = volume_knob_position.sub(mouse_clip).len();
-    if (to_knob_len < volume_knob.radius) {
-        volume_knob.radius = math.exp_decay(
-            volume_knob.radius,
-            KNOB_MID_RADIUS,
-            18.0,
-            dt,
-        );
+    mouse_sense_slider.interract(mouse_clip, dt);
+    if (mouse_sense_slider.is_dragged)
+        Input.mouse_sense = mouse_sense_slider.value();
 
-        if (Input.was_pressed(.LMB)) {
-            knob_is_dragged = true;
-        }
-    }
-
-    if (Input.was_released(.LMB)) {
-        knob_is_dragged = false;
-    }
-
-    if (knob_is_dragged) {
-        volume_knob.radius = math.exp_decay(
-            volume_knob.radius,
-            KNOB_MAX_RADIUS,
-            18.0,
-            dt,
-        );
-
-        volume_knob_position.x = math.exp_decay(
-            volume_knob_position.x,
-            mouse_clip.x,
-            18.0,
-            dt,
-        );
-        volume_knob_position.x =
-            @min(
-                @max(
-                    volume_knob_position.x,
-                    -volume_slider.width / 2.0,
-                ),
-                volume_slider.width / 2.0,
-            );
-
-        const volume = volume_knob_position.x / volume_slider.width + 0.5;
-        Audio.global_volume = volume;
-    } else {
-        volume_knob.radius = math.exp_decay(
-            volume_knob.radius,
-            KNOB_MIN_RADIUS,
-            18.0,
-            dt,
-        );
-    }
+    volume_slider.interract(mouse_clip, dt);
+    if (volume_slider.is_dragged)
+        Audio.global_volume = volume_slider.value();
 }
 
 pub fn draw() void {
@@ -196,9 +249,9 @@ pub fn draw() void {
         .Game => Renderer.draw_ui(.{ .Shape = cursor }, cursor_position, 1.0 - blur_strength),
         .Pause => {
             Renderer.draw_ui(.{ .Shape = cursor }, cursor_position, 1.0 - blur_strength);
-            Renderer.draw_ui(.{ .Shape = volume_slider }, volume_slider_position, blur_strength);
-            Renderer.draw_ui(.{ .Shape = volume_knob }, volume_knob_position, blur_strength);
-            Renderer.draw_ui(.{ .Texture = volume_icon }, volume_icon_position, blur_strength);
+
+            mouse_sense_slider.draw();
+            volume_slider.draw();
         },
     }
 }
@@ -207,12 +260,8 @@ pub fn imgui_ui() void {
     const T = struct {
         state: *State = &state,
         blur_strength: *f32 = &blur_strength,
-        volume_icon_position: *math.Vec2 = &volume_icon_position,
-        volume_icon: *Texture = &volume_icon,
-        volume_slider_position: *math.Vec2 = &volume_slider_position,
-        volume_slider: *Shape = &volume_slider,
-        volume_knob_position: *math.Vec2 = &volume_knob_position,
-        volume_knob: *Shape = &volume_knob,
+        mouse_sense_slider: *Slider = &mouse_sense_slider,
+        volume_slider: *Slider = &volume_slider,
         cursor_position: *math.Vec2 = &cursor_position,
         cursor: *Shape = &cursor,
     };

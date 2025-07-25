@@ -74,10 +74,12 @@ pub const Soundtracks = std.EnumArray(SoundtrackType, Audio.Soundtrack);
 pub const DEFAULT_TEXTURES_DIR_PATH = "resources/textures";
 pub const TextureType = enum {
     SpeakerIcon,
+    MouseIcon,
 };
 const TexturePathsType = std.EnumArray(TextureType, [:0]const u8);
 const TEXTURE_PATHS = TexturePathsType.init(.{
     .SpeakerIcon = DEFAULT_TEXTURES_DIR_PATH ++ "/speaker.png",
+    .MouseIcon = DEFAULT_TEXTURES_DIR_PATH ++ "/mouse.png",
 });
 pub const GpuTextures = std.EnumArray(TextureType, gpu.Texture);
 

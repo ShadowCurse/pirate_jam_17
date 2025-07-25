@@ -9,3 +9,4 @@
 - https://kenney.nl/assets/impact-sounds
 ### Icons
 - https://game-icons.net/1x1/delapouite/speaker.html
+- https://game-icons.net/1x1/delapouite/mouse.html
