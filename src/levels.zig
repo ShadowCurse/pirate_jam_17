@@ -36,6 +36,16 @@ pub const Tag = enum {
         return @enumFromInt(t);
     }
 
+    pub fn prev(self: Tag) Tag {
+        var t: u8 = @intFromEnum(self);
+        if (t == 0)
+            return @enumFromInt(t)
+        else {
+            t -= 1;
+            return @enumFromInt(t);
+        }
+    }
+
     pub fn path(self: Tag, scratch_alloc: Allocator) []const u8 {
         return std.fmt.allocPrint(
             scratch_alloc,
@@ -76,6 +86,7 @@ pub const Level = struct {
     started: bool = false,
     starting: bool = false,
     solved: bool = false,
+    correct: bool = false,
     finishing: bool = false,
     finished: bool = false,
 
@@ -500,8 +511,6 @@ pub const Level = struct {
         r1.rotation = object.rotation_z;
         const r1_position = object.position.xy();
 
-        if (!object.modifier.correct_box) return;
-
         for (self.objects.items) |*o| {
             if (o.model != .Platform) continue;
 
@@ -513,6 +522,7 @@ pub const Level = struct {
                 r2,
                 r2_position,
             ) == .Full) {
+                self.correct = object.modifier.correct_box;
                 self.solved = true;
                 Audio.play(.Success, null);
                 self.open_exit_door();

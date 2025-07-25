@@ -323,7 +323,10 @@ pub fn current_camera() *const Camera {
 pub fn move_to_next_level() void {
     var current_level = Levels.levels.getPtr(current_level_tag);
     player_level_start_offset = current_level.player_offset_in_exit_door(&player_camera);
-    current_level_tag = current_level_tag.next();
+    current_level_tag = if (current_level.correct)
+        current_level_tag.next()
+    else
+        current_level_tag.prev();
     current_level = Levels.levels.getPtr(current_level_tag);
     current_level.reset();
 }
