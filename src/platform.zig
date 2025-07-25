@@ -104,11 +104,11 @@ pub fn present() void {
     sdl.assert(@src(), sdl.SDL_GL_SwapWindow(window));
 }
 
-pub fn reset_mouse() void {
-    sdl.SDL_WarpMouseInWindow(window, WINDOW_WIDTH / 2.0, WINDOW_HEIGHT / 2.0);
-}
-
 pub fn hide_mouse(enable: bool) void {
+    // On web this works if canvas is at 0,0, but on itch.io it is not,
+    // so people will have to deal with non relative mode there.
+    if (builtin.os.tag != .emscripten)
+        _ = sdl.SDL_SetWindowRelativeMouseMode(window, enable);
     if (enable) {
         if (!sdl.SDL_HideCursor())
             log.err(@src(), "Cannot hide cursor: {s}", .{sdl.SDL_GetError()});

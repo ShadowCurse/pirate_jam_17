@@ -345,7 +345,6 @@ pub fn update(dt: f32) void {
             if (pause) {
                 Ui.interract(dt);
             } else if (current_level.started) {
-                Platform.reset_mouse();
                 player_camera_move(&player_camera, dt);
                 play_footstep(dt);
 

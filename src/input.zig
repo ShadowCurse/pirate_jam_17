@@ -1,4 +1,6 @@
 const std = @import("std");
+const builtin = @import("builtin");
+
 const log = @import("log.zig");
 const sdl = @import("bindings/sdl.zig");
 const cimgui = @import("bindings/cimgui.zig");
