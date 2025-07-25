@@ -25,8 +25,21 @@ const DEFAULT_LEVEL_DIR_PATH = "resources/levels";
 pub const Tag = enum {
     @"0-1",
     @"0-2",
-    @"1-1",
-    @"1-2",
+
+    pub fn next(self: Tag) Tag {
+        var t: u8 = @intFromEnum(self);
+        t += 1;
+        t %= @typeInfo(Tag).@"enum".fields.len;
+        return @enumFromInt(t);
+    }
+
+    pub fn path(self: Tag, scratch_alloc: Allocator) []const u8 {
+        return std.fmt.allocPrint(
+            scratch_alloc,
+            "{s}/{s}.json",
+            .{ DEFAULT_LEVEL_DIR_PATH, @tagName(self) },
+        ) catch unreachable;
+    }
 };
 
 pub const Levels = std.EnumArray(Tag, Level);
@@ -35,27 +48,17 @@ var scratch: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
 pub var levels: Levels = .initFill(.empty());
 
 pub fn init() void {
-    _ = scratch.reset(.retain_capacity);
-
-    const scratch_alloc = scratch.allocator();
     inline for (0..Levels.len) |i| {
         const tag = Levels.Indexer.keyForIndex(i);
-        const path = std.fmt.allocPrint(
-            scratch_alloc,
-            "{s}/{s}.json",
-            .{ DEFAULT_LEVEL_DIR_PATH, @tagName(tag) },
-        ) catch unreachable;
-
         const level = levels.getPtr(tag);
+        level.tag = tag;
         level.reset();
-        level.load(scratch_alloc, path) catch |e| {
-            log.err(@src(), "Error loading level from path: {s}: {}", .{ path, e });
-        };
     }
 }
 
 pub const Level = struct {
     arena: std.heap.ArenaAllocator = undefined,
+    tag: Tag = undefined,
 
     // Edit
     selected_object: ?u32 = null,
@@ -121,8 +124,15 @@ pub const Level = struct {
     pub fn reset(self: *Self) void {
         var arena = self.arena;
         _ = arena.reset(.retain_capacity);
-        self.* = .{};
-        self.arena = arena;
+        const tag = self.tag;
+        self.* = .{ .arena = arena, .tag = tag };
+
+        _ = scratch.reset(.retain_capacity);
+        const scratch_alloc = scratch.allocator();
+        const path = self.tag.path(scratch_alloc);
+        self.load(scratch_alloc, path) catch |e| {
+            log.err(@src(), "Error loading level from path: {s}: {}", .{ path, e });
+        };
     }
 
     pub fn empty() Self {
@@ -161,34 +171,47 @@ pub const Level = struct {
         }
     }
 
-    pub fn on_entrance_door_open(self: *Self, _: *anyopaque) void {
+    pub fn player_offset_in_exit_door(self: *const Self, camera: *const Camera) math.Vec3 {
+        for (self.objects.items) |*object| {
+            if (object.tag != .ExitDoor) continue;
+            return camera.position.sub(object.position);
+        }
+        log.panic(@src(), "No exit door found", .{});
+    }
+
+    pub fn on_entrance_door_open(self: *Self, _: ?*anyopaque) void {
         self.starting = false;
         self.started = true;
     }
 
-    pub fn start_level(self: *Self, camera: *Camera) void {
+    pub fn start_level(self: *Self, camera: *Camera, player_offset: ?math.Vec3) void {
         if (self.started or self.starting) return;
 
         self.starting = true;
         for (self.objects.items) |*object| {
             if (object.tag != .EntranceDoor) continue;
             camera.position = object.position;
+            if (player_offset) |po|
+                camera.position = camera.position.add(po);
             camera.position.z = 1.0;
         }
         self.open_doors(.EntranceDoor);
 
-        Animations.add(
-            .{
-                .object = .{ .Float = &Ui.blur_strength },
-                .action = .{ .move_f32 = .{
-                    .start = 10.0,
-                    .end = 0.0,
-                } },
-                .duration = DOOR_OPEN_ANIMATION_TIME,
-                .callback_data = self,
-                .callback = @ptrCast(&Self.on_entrance_door_open),
-            },
-        );
+        if (player_offset == null)
+            Animations.add(
+                .{
+                    .object = .{ .Float = &Ui.blur_strength },
+                    .action = .{ .move_f32 = .{
+                        .start = 10.0,
+                        .end = 0.0,
+                    } },
+                    .duration = DOOR_OPEN_ANIMATION_TIME,
+                    .callback_data = self,
+                    .callback = @ptrCast(&Self.on_entrance_door_open),
+                },
+            )
+        else
+            self.on_entrance_door_open(null);
     }
 
     pub fn open_doors(self: *Self, tag: Object.Tag) void {
@@ -592,6 +615,19 @@ pub const Level = struct {
             &open,
             0,
         )) {
+            cimgui.format(null, self);
+
+            _ = cimgui.igSeparatorText("Add");
+            for (std.enums.values(Assets.ModelType)) |v| {
+                const n = std.fmt.allocPrintZ(scratch_alloc, "Add {}", .{v}) catch unreachable;
+                if (cimgui.igButton(n, .{})) {
+                    self.objects.append(
+                        self.arena.allocator(),
+                        .{ .model = v },
+                    ) catch unreachable;
+                }
+            }
+
             _ = cimgui.igSeparatorText("Save/Load");
             const path = std.fmt.allocPrintZ(
                 scratch_alloc,
@@ -605,20 +641,6 @@ pub const Level = struct {
             if (cimgui.igButton("Load level", .{})) {
                 self.load(scratch_alloc, path) catch |e|
                     log.err(@src(), "Cannot load level from {s} due to {}", .{ path, e });
-            }
-
-            cimgui.format("Environment", &self.environment);
-            cimgui.format("Draw light spheres", &self.draw_light_spheres);
-
-            _ = cimgui.igSeparatorText("Add");
-            for (std.enums.values(Assets.ModelType)) |v| {
-                const n = std.fmt.allocPrintZ(scratch_alloc, "Add {}", .{v}) catch unreachable;
-                if (cimgui.igButton(n, .{})) {
-                    self.objects.append(
-                        self.arena.allocator(),
-                        .{ .model = v },
-                    ) catch unreachable;
-                }
             }
         }
 

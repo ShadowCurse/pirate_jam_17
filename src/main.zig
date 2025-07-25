@@ -234,6 +234,7 @@ fn player_camera_move(camera: *Camera, dt: f32) void {
 pub var frame_arena: std.heap.ArenaAllocator = undefined;
 
 pub var current_level_tag: Levels.Tag = .@"0-1";
+pub var player_level_start_offset: ?math.Vec3 = null;
 pub var mode: Mode = .Game;
 pub var pause: bool = false;
 
@@ -309,6 +310,14 @@ pub fn current_camera() *const Camera {
     }
 }
 
+pub fn move_to_next_level() void {
+    var current_level = Levels.levels.getPtr(current_level_tag);
+    player_level_start_offset = current_level.player_offset_in_exit_door(&player_camera);
+    current_level_tag = current_level_tag.next();
+    current_level = Levels.levels.getPtr(current_level_tag);
+    current_level.reset();
+}
+
 pub fn update(dt: f32) void {
     _ = frame_arena.reset(.retain_capacity);
     Renderer.reset();
@@ -327,7 +336,7 @@ pub fn update(dt: f32) void {
     const camera_in_use = switch (mode) {
         .Game => blk: {
             if (!current_level.started) {
-                current_level.start_level(&player_camera);
+                current_level.start_level(&player_camera, player_level_start_offset);
             }
 
             Animations.play(dt);
@@ -358,6 +367,8 @@ pub fn update(dt: f32) void {
                 current_level.player_in_the_door(&player_camera);
 
                 Ui.animate_cursor(current_level.looking_at_pickable_object, dt);
+                if (current_level.finished)
+                    move_to_next_level();
             }
             Ui.animate_blur(dt);
 
