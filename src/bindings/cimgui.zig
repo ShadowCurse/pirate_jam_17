@@ -87,8 +87,21 @@ pub fn format(name: ?[*c]const u8, v: anytype) void {
                         }
                     },
                     .optional => {},
-                    .pointer => {
-                        format(type_name, v.*);
+                    .pointer => |p| {
+                        switch (p.size) {
+                            .one => format(type_name, v.*),
+                            .slice => {
+                                if (cimgui.igTreeNode_Str(type_name)) {
+                                    defer cimgui.igTreePop();
+                                    for (v.*, 0..) |*e, i| {
+                                        cimgui.igPushID_Int(@intCast(i));
+                                        defer cimgui.igPopID();
+                                        format(null, e);
+                                    }
+                                }
+                            },
+                            else => {},
+                        }
                     },
                     else => log.err(
                         @src(),
@@ -104,7 +117,7 @@ pub fn format(name: ?[*c]const u8, v: anytype) void {
 
 fn fmt_simple_type(name: [*c]const u8, v: anytype) bool {
     switch (@TypeOf(v)) {
-        *void => fmt_void(name),
+        *void, *anyopaque => fmt_void(name),
         *bool => fmt_bool(name, v),
         *u8, *u16, *u32, *u64, *usize => fmt_unsigned(name, v),
         *i8, *i16, *i32, *i64, *isize => fmt_signed(name, v),
