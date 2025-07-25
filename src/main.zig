@@ -363,8 +363,9 @@ pub fn update(dt: f32) void {
 
                 const camera_ray = player_camera.mouse_to_ray(.{});
 
-                current_level.player_pick_up_object(&camera_ray);
-                if (Input.was_pressed(.RMB))
+                if (current_level.holding_object == null)
+                    current_level.player_look_at_object(&camera_ray, Input.was_pressed(.LMB))
+                else if (Input.was_pressed(.LMB))
                     current_level.player_put_down_object();
 
                 current_level.player_move_object(&player_camera, dt);

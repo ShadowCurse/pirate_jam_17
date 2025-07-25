@@ -275,7 +275,7 @@ pub const Level = struct {
         }
     }
 
-    pub fn player_pick_up_object(self: *Self, ray: *const math.Ray) void {
+    pub fn player_look_at_object(self: *Self, ray: *const math.Ray, pickup: bool) void {
         self.looking_at_pickable_object = false;
         if (self.holding_object != null) return;
 
@@ -292,13 +292,15 @@ pub const Level = struct {
                 self.looking_at_pickable_object = true;
                 if (r.t < closest_t) {
                     closest_t = r.t;
-                    if (Input.was_pressed(.LMB)) {
+                    if (pickup) {
                         self.holding_object = @intCast(i);
                         Audio.play(.BoxPickup, null);
                     }
                 }
             }
         }
+        if (self.holding_object != null)
+            self.looking_at_pickable_object = false;
     }
 
     pub fn player_put_down_object(self: *Self) void {
