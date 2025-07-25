@@ -2,17 +2,23 @@
     "objects": [
         {
             "model": "Floor",
-            "tag": "None",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "no_shadow": false,
+                "plays_music": false
+            },
             "material": {
                 "Custom": {
                     "albedo": {
-                        "r": 3.4127142280340195e-2,
-                        "g": 5.882352590560913e-2,
-                        "b": 2.652825601398945e-2,
+                        "r": 5.392158031463623e-2,
+                        "g": 5.392158031463623e-2,
+                        "b": 5.392158031463623e-2,
                         "a": 1e0
                     },
                     "metallic": 0e0,
-                    "roughness": 1e0,
+                    "roughness": 8.999999761581421e-1,
                     "emissive_strength": 0e0
                 }
             },
@@ -23,11 +29,18 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 0e0
+            "rotation_z": 0e0,
+            "scale": 1e0
         },
         {
             "model": "Box",
-            "tag": "CorrectBox",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": true,
+                "no_shadow": false,
+                "plays_music": false
+            },
             "material": {
                 "Custom": {
                     "albedo": {
@@ -48,11 +61,18 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 0e0
+            "rotation_z": 0e0,
+            "scale": 1e0
         },
         {
             "model": "Wall",
-            "tag": "None",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "no_shadow": false,
+                "plays_music": false
+            },
             "material": {
                 "Custom": {
                     "albedo": {
@@ -73,11 +93,18 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 0e0
+            "rotation_z": 0e0,
+            "scale": 1e0
         },
         {
             "model": "Wall",
-            "tag": "None",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "no_shadow": false,
+                "plays_music": false
+            },
             "material": {
                 "Custom": {
                     "albedo": {
@@ -98,11 +125,18 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0
+            "rotation_z": 1.5700000524520874e0,
+            "scale": 1e0
         },
         {
             "model": "Box",
-            "tag": "None",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "no_shadow": false,
+                "plays_music": false
+            },
             "material": {
                 "Original": {}
             },
@@ -113,11 +147,18 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 0e0
+            "rotation_z": 0e0,
+            "scale": 1e0
         },
         {
             "model": "Platform",
-            "tag": "None",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "no_shadow": false,
+                "plays_music": false
+            },
             "material": {
                 "Original": {}
             },
@@ -128,11 +169,18 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 0e0
+            "rotation_z": 0e0,
+            "scale": 1e0
         },
         {
             "model": "DoorInnerLight",
-            "tag": "None",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "no_shadow": false,
+                "plays_music": false
+            },
             "material": {
                 "Original": {}
             },
@@ -143,11 +191,18 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 0e0
+            "rotation_z": 0e0,
+            "scale": 1e0
         },
         {
             "model": "DoorFrame",
-            "tag": "None",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "no_shadow": false,
+                "plays_music": false
+            },
             "material": {
                 "Original": {}
             },
@@ -158,11 +213,18 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0
+            "rotation_z": 1.5700000524520874e0,
+            "scale": 1e0
         },
         {
             "model": "DoorDoor",
-            "tag": "ExitDoor",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": true,
+                "correct_box": false,
+                "no_shadow": false,
+                "plays_music": false
+            },
             "material": {
                 "Original": {}
             },
@@ -173,11 +235,18 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0
+            "rotation_z": 1.5700000524520874e0,
+            "scale": 1e0
         },
         {
             "model": "Wall",
-            "tag": "None",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "no_shadow": false,
+                "plays_music": false
+            },
             "material": {
                 "Custom": {
                     "albedo": {
@@ -198,11 +267,18 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 0e0
+            "rotation_z": 0e0,
+            "scale": 1e0
         },
         {
             "model": "Wall",
-            "tag": "None",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "no_shadow": false,
+                "plays_music": false
+            },
             "material": {
                 "Custom": {
                     "albedo": {
@@ -223,11 +299,18 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0
+            "rotation_z": 1.5700000524520874e0,
+            "scale": 1e0
         },
         {
             "model": "DoorDoor",
-            "tag": "EntranceDoor",
+            "modifier": {
+                "entrance_door": true,
+                "exit_door": false,
+                "correct_box": false,
+                "no_shadow": false,
+                "plays_music": false
+            },
             "material": {
                 "Original": {}
             },
@@ -238,11 +321,18 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0
+            "rotation_z": 1.5700000524520874e0,
+            "scale": 1e0
         },
         {
             "model": "DoorFrame",
-            "tag": "None",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "no_shadow": false,
+                "plays_music": false
+            },
             "material": {
                 "Original": {}
             },
@@ -253,11 +343,18 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0
+            "rotation_z": 1.5700000524520874e0,
+            "scale": 1e0
         },
         {
             "model": "DoorInnerLight",
-            "tag": "None",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "no_shadow": false,
+                "plays_music": false
+            },
             "material": {
                 "Original": {}
             },
@@ -268,11 +365,18 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 0e0
+            "rotation_z": 0e0,
+            "scale": 1e0
         },
         {
             "model": "Box",
-            "tag": "None",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "no_shadow": false,
+                "plays_music": false
+            },
             "material": {
                 "Original": {}
             },
@@ -283,7 +387,8 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 0e0
+            "rotation_z": 0e0,
+            "scale": 1e0
         }
     ],
     "environment": {
@@ -294,19 +399,19 @@
                 "z": 1e0
             },
             {
-                "x": 1e0,
-                "y": 1e0,
-                "z": 1e0
-            },
-            {
-                "x": 1e0,
-                "y": -1e0,
+                "x": 0e0,
+                "y": -4e0,
                 "z": 1e0
             },
             {
                 "x": 0e0,
-                "y": -4e0,
-                "z": 1e0
+                "y": 0e0,
+                "z": 0e0
+            },
+            {
+                "x": 0e0,
+                "y": 0e0,
+                "z": 0e0
             }
         ],
         "lights_color": [
@@ -316,19 +421,19 @@
                 "b": 1e0
             },
             {
-                "r": 0e0,
+                "r": 1e0,
                 "g": 1e0,
+                "b": 1e0
+            },
+            {
+                "r": 0e0,
+                "g": 0e0,
                 "b": 0e0
             },
             {
                 "r": 0e0,
                 "g": 0e0,
-                "b": 1e0
-            },
-            {
-                "r": 1e0,
-                "g": 1e0,
-                "b": 1e0
+                "b": 0e0
             }
         ],
         "direct_light_direction": {

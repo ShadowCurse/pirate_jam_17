@@ -12,9 +12,9 @@
             "material": {
                 "Custom": {
                     "albedo": {
-                        "r": 2.941175550222397e-2,
-                        "g": 8.333331346511841e-2,
-                        "b": 0e0,
+                        "r": 3.4127142280340195e-2,
+                        "g": 5.882352590560913e-2,
+                        "b": 2.652825601398945e-2,
                         "a": 1e0
                     },
                     "metallic": 0e0,
@@ -37,7 +37,7 @@
             "modifier": {
                 "entrance_door": false,
                 "exit_door": false,
-                "correct_box": false,
+                "correct_box": true,
                 "no_shadow": false,
                 "plays_music": false
             },
@@ -45,7 +45,7 @@
                 "Custom": {
                     "albedo": {
                         "r": 5.764706134796143e-1,
-                        "g": 1.002008467912674e-1,
+                        "g": 1.8085351213812828e-2,
                         "b": 1.8085351213812828e-2,
                         "a": 1e0
                     },
@@ -74,7 +74,17 @@
                 "plays_music": false
             },
             "material": {
-                "Original": {}
+                "Custom": {
+                    "albedo": {
+                        "r": 9.019608050584793e-2,
+                        "g": 9.019608050584793e-2,
+                        "b": 9.019608050584793e-2,
+                        "a": 1e0
+                    },
+                    "metallic": 5e-1,
+                    "roughness": 1e0,
+                    "emissive_strength": 0e0
+                }
             },
             "position": {
                 "x": -4.840000152587891e0,
@@ -104,7 +114,7 @@
                         "a": 1e0
                     },
                     "metallic": 5e-1,
-                    "roughness": 5e-1,
+                    "roughness": 1e0,
                     "emissive_strength": 0e0
                 }
             },
@@ -128,17 +138,7 @@
                 "plays_music": false
             },
             "material": {
-                "Custom": {
-                    "albedo": {
-                        "r": 1.960785686969757e-2,
-                        "g": 2.4890436232089996e-1,
-                        "b": 5.764706134796143e-1,
-                        "a": 1e0
-                    },
-                    "metallic": 0e0,
-                    "roughness": 5e-1,
-                    "emissive_strength": 0e0
-                }
+                "Original": {}
             },
             "position": {
                 "x": 1.600000023841858e0,
@@ -248,7 +248,17 @@
                 "plays_music": false
             },
             "material": {
-                "Original": {}
+                "Custom": {
+                    "albedo": {
+                        "r": 9.019608050584793e-2,
+                        "g": 9.019608050584793e-2,
+                        "b": 9.019608050584793e-2,
+                        "a": 1e0
+                    },
+                    "metallic": 5e-1,
+                    "roughness": 1e0,
+                    "emissive_strength": 0e0
+                }
             },
             "position": {
                 "x": 5e0,
@@ -270,7 +280,17 @@
                 "plays_music": false
             },
             "material": {
-                "Original": {}
+                "Custom": {
+                    "albedo": {
+                        "r": 9.019608050584793e-2,
+                        "g": 9.019608050584793e-2,
+                        "b": 9.019608050584793e-2,
+                        "a": 1e0
+                    },
+                    "metallic": 5e-1,
+                    "roughness": 1e0,
+                    "emissive_strength": 0e0
+                }
             },
             "position": {
                 "x": 0e0,
@@ -353,22 +373,12 @@
             "modifier": {
                 "entrance_door": false,
                 "exit_door": false,
-                "correct_box": true,
+                "correct_box": false,
                 "no_shadow": false,
                 "plays_music": false
             },
             "material": {
-                "Custom": {
-                    "albedo": {
-                        "r": 1.9607843831181526e-2,
-                        "g": 5.764706134796143e-1,
-                        "b": 5.098039284348488e-2,
-                        "a": 1e0
-                    },
-                    "metallic": 0e0,
-                    "roughness": 5e-1,
-                    "emissive_strength": 0e0
-                }
+                "Original": {}
             },
             "position": {
                 "x": 0e0,

@@ -240,7 +240,7 @@ pub var frame_arena: std.heap.ArenaAllocator = undefined;
 
 pub var current_level_tag: Levels.Tag = .@"0-1";
 pub var player_level_start_offset: ?math.Vec3 = null;
-pub var mode: Mode = .Game;
+pub var mode: Mode = .Edit;
 pub var pause: bool = false;
 
 pub var free_camera: Camera = .{};
@@ -267,8 +267,6 @@ pub fn init() void {
         .friction = 12.0,
         .speed = 50.0,
     };
-
-    Platform.hide_mouse(true);
 }
 
 fn play_footstep(dt: f32) void {

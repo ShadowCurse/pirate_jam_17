@@ -25,6 +25,9 @@ const DEFAULT_LEVEL_DIR_PATH = "resources/levels";
 pub const Tag = enum {
     @"0-1",
     @"0-2",
+    @"0-3",
+    @"0-4",
+    @"0-5",
 
     pub fn next(self: Tag) Tag {
         var t: u8 = @intFromEnum(self);
@@ -84,12 +87,13 @@ pub const Level = struct {
 
     pub const Object = struct {
         model: Assets.ModelType,
-        tag: Object.Tag = .None,
+        modifier: Object.Modifier = .{},
         material: Object.Material = .Original,
         position: math.Vec3 = .{},
         rotation_x: f32 = 0.0,
         rotation_y: f32 = 0.0,
         rotation_z: f32 = 0.0,
+        scale: f32 = 1.0,
 
         pub const MaterialTag = enum {
             Original,
@@ -101,11 +105,12 @@ pub const Level = struct {
             Custom: Mesh.Material,
         };
 
-        pub const Tag = enum {
-            None,
-            EntranceDoor,
-            ExitDoor,
-            CorrectBox,
+        pub const Modifier = struct {
+            entrance_door: bool = false,
+            exit_door: bool = false,
+            correct_box: bool = false,
+            no_shadow: bool = false,
+            plays_music: bool = false,
         };
 
         fn transform(self: *const Object) math.Mat4 {
@@ -113,7 +118,10 @@ pub const Level = struct {
                 .mul(math.Quat.from_axis_angle(.Y, self.rotation_y))
                 .mul(math.Quat.from_axis_angle(.Z, self.rotation_z))
                 .to_mat4();
-            return math.Mat4.IDENDITY.translate(self.position).mul(rotation);
+            return math.Mat4.IDENDITY
+                .translate(self.position)
+                .scale(math.vec3(self.scale, self.scale, self.scale))
+                .mul(rotation);
         }
     };
 
@@ -173,7 +181,7 @@ pub const Level = struct {
 
     pub fn player_offset_in_exit_door(self: *const Self, camera: *const Camera) math.Vec3 {
         for (self.objects.items) |*object| {
-            if (object.tag != .ExitDoor) continue;
+            if (!object.modifier.exit_door) continue;
             return camera.position.sub(object.position);
         }
         log.panic(@src(), "No exit door found", .{});
@@ -189,13 +197,13 @@ pub const Level = struct {
 
         self.starting = true;
         for (self.objects.items) |*object| {
-            if (object.tag != .EntranceDoor) continue;
+            if (!object.modifier.entrance_door) continue;
             camera.position = object.position;
             if (player_offset) |po|
                 camera.position = camera.position.add(po);
             camera.position.z = 1.0;
         }
-        self.open_doors(.EntranceDoor);
+        self.open_entrance_door();
 
         if (player_offset == null)
             Animations.add(
@@ -214,9 +222,26 @@ pub const Level = struct {
             self.on_entrance_door_open(null);
     }
 
-    pub fn open_doors(self: *Self, tag: Object.Tag) void {
+    pub fn open_entrance_door(self: *Self) void {
         for (self.objects.items) |*object| {
-            if (object.tag != tag) continue;
+            if (!object.modifier.entrance_door) continue;
+            Audio.play(.Door, &object.position);
+            Animations.add(
+                .{
+                    .object = .{ .LevelObject = object },
+                    .action = .{ .rotate_z = .{
+                        .start = object.rotation_z,
+                        .end = 0.0,
+                    } },
+                    .duration = DOOR_OPEN_ANIMATION_TIME,
+                },
+            );
+        }
+    }
+
+    pub fn open_exit_door(self: *Self) void {
+        for (self.objects.items) |*object| {
+            if (!object.modifier.exit_door) continue;
             Audio.play(.Door, &object.position);
             Animations.add(
                 .{
@@ -237,9 +262,9 @@ pub const Level = struct {
         log.info(@src(), "Level finished", .{});
     }
 
-    pub fn close_doors(self: *Self) void {
+    pub fn close_door(self: *Self) void {
         for (self.objects.items) |*object| {
-            if (object.tag != .ExitDoor) continue;
+            if (!object.modifier.exit_door) continue;
             Audio.play(.Door, &object.position);
             Animations.add(
                 .{
@@ -260,15 +285,15 @@ pub const Level = struct {
         if (!self.solved or self.finished) return;
 
         for (self.objects.items) |*object| {
-            if (object.tag != .ExitDoor) continue;
+            if (!object.modifier.exit_door) continue;
             const distance_to_object = camera.position.xy()
                 .sub(object.position.xy()).len();
             if (distance_to_object < 0.26 and !self.finishing) {
-                self.close_doors();
+                self.close_door();
                 self.finishing = true;
                 log.info(@src(), "Level finishing", .{});
             } else if (0.26 < distance_to_object and self.finishing) {
-                self.open_doors(.ExitDoor);
+                self.open_exit_door();
                 self.finishing = false;
                 log.info(@src(), "Level un finishing", .{});
             }
@@ -476,7 +501,7 @@ pub const Level = struct {
         r1.rotation = object.rotation_z;
         const r1_position = object.position.xy();
 
-        if (object.tag != .CorrectBox) return;
+        if (!object.modifier.correct_box) return;
 
         for (self.objects.items) |*o| {
             if (o.model != .Platform) continue;
@@ -491,7 +516,7 @@ pub const Level = struct {
             ) == .Full) {
                 self.solved = true;
                 Audio.play(.Success, null);
-                self.open_doors(.ExitDoor);
+                self.open_exit_door();
             }
         }
     }
