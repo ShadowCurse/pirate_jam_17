@@ -207,6 +207,13 @@ fn free_camera_move(camera: *Camera, dt: f32) void {
 
 fn player_camera_move(camera: *Camera, dt: f32) void {
     camera.yaw -= Input.mouse_motion.x * Input.mouse_sense * dt;
+    if (math.PI < camera.yaw) {
+        camera.yaw -= math.PI * 2.0;
+    }
+    if (camera.yaw < -math.PI) {
+        camera.yaw += math.PI * 2.0;
+    }
+
     camera.pitch -= Input.mouse_motion.y * Input.mouse_sense * dt;
     if (math.PI / 2.0 < camera.pitch) {
         camera.pitch = math.PI / 2.0;
