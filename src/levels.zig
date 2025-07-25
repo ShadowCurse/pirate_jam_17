@@ -109,7 +109,6 @@ pub const Level = struct {
             entrance_door: bool = false,
             exit_door: bool = false,
             correct_box: bool = false,
-            no_shadow: bool = false,
             plays_music: bool = false,
         };
 

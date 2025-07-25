@@ -6,7 +6,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -19,7 +18,8 @@
                     },
                     "metallic": 0e0,
                     "roughness": 8.999999761581421e-1,
-                    "emissive_strength": 0e0
+                    "emissive_strength": 0e0,
+                    "no_shadow": false
                 }
             },
             "position": {
@@ -38,7 +38,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": true,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -51,7 +50,8 @@
                     },
                     "metallic": 0e0,
                     "roughness": 5e-1,
-                    "emissive_strength": 0e0
+                    "emissive_strength": 0e0,
+                    "no_shadow": false
                 }
             },
             "position": {
@@ -70,7 +70,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -83,7 +82,8 @@
                     },
                     "metallic": 5e-1,
                     "roughness": 1e0,
-                    "emissive_strength": 0e0
+                    "emissive_strength": 0e0,
+                    "no_shadow": false
                 }
             },
             "position": {
@@ -102,7 +102,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -115,7 +114,8 @@
                     },
                     "metallic": 5e-1,
                     "roughness": 1e0,
-                    "emissive_strength": 0e0
+                    "emissive_strength": 0e0,
+                    "no_shadow": false
                 }
             },
             "position": {
@@ -134,7 +134,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -156,7 +155,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -178,7 +176,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -200,7 +197,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -222,7 +218,6 @@
                 "entrance_door": false,
                 "exit_door": true,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -244,7 +239,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -257,7 +251,8 @@
                     },
                     "metallic": 5e-1,
                     "roughness": 1e0,
-                    "emissive_strength": 0e0
+                    "emissive_strength": 0e0,
+                    "no_shadow": false
                 }
             },
             "position": {
@@ -276,7 +271,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -289,7 +283,8 @@
                     },
                     "metallic": 5e-1,
                     "roughness": 1e0,
-                    "emissive_strength": 0e0
+                    "emissive_strength": 0e0,
+                    "no_shadow": false
                 }
             },
             "position": {
@@ -308,7 +303,6 @@
                 "entrance_door": true,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -330,7 +324,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -352,7 +345,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -374,7 +366,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {

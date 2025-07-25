@@ -6,7 +6,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -38,7 +37,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -60,7 +58,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -92,7 +89,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -124,7 +120,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -146,7 +141,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -168,7 +162,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -190,7 +183,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -212,7 +204,6 @@
                 "entrance_door": false,
                 "exit_door": true,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -234,7 +225,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -266,7 +256,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -298,7 +287,6 @@
                 "entrance_door": true,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -320,7 +308,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -342,7 +329,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {
@@ -364,7 +350,6 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": true,
-                "no_shadow": false,
                 "plays_music": false
             },
             "material": {

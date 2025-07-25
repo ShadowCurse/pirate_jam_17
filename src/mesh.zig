@@ -9,6 +9,7 @@ pub const Material = struct {
     metallic: f32 = 0.5,
     roughness: f32 = 0.5,
     emissive_strength: f32 = 0.0,
+    no_shadow: bool = false,
 };
 
 const Self = @This();

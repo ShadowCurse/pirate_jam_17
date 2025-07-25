@@ -205,6 +205,7 @@ pub fn render(
     Self.shadow_map_shader.use();
     Self.shadow_map_shader.set_params(environment);
     for (Self.mesh_infos.slice()) |*mi| {
+        if (mi.material.no_shadow) continue;
         Self.shadow_map_shader.set_mesh_params(&mi.model);
         mi.mesh.draw();
     }
@@ -232,6 +233,7 @@ pub fn render(
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT);
             Self.point_shadow_map_shader.set_face_view(view);
             for (Self.mesh_infos.slice()) |*mi| {
+                if (mi.material.no_shadow) continue;
                 Self.point_shadow_map_shader.set_mesh_params(&mi.model);
                 mi.mesh.draw();
             }
