@@ -99,6 +99,11 @@ pub const Camera = struct {
         return self.rotation().rotate_vec3(.Z);
     }
 
+    pub fn forward_xy(self: *const Self) math.Vec3 {
+        const r_yaw = math.Quat.from_axis_angle(.Z, self.yaw);
+        return r_yaw.mul(Self.ORIENTATION).rotate_vec3(.Z);
+    }
+
     pub fn up(self: *const Self) math.Vec3 {
         return self.rotation().rotate_vec3(.NEG_Y);
     }

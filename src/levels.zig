@@ -257,7 +257,7 @@ pub const Level = struct {
     }
 
     pub fn player_in_the_door(self: *Self, camera: *const Camera) void {
-        if (self.finished) return;
+        if (!self.solved or self.finished) return;
 
         for (self.objects.items) |*object| {
             if (object.tag != .ExitDoor) continue;
@@ -328,8 +328,8 @@ pub const Level = struct {
             const object = &self.objects.items[ho];
             const new_position =
                 camera.position
-                    .add(camera.forward().xy().extend(0.0))
-                    .add(.{ .z = -0.5 });
+                    .add(camera.forward_xy().mul_f32(0.5))
+                    .add(.{ .z = -0.7 });
             object.position = object.position.exp_decay(new_position, 14.0, dt);
             object.rotation_z = math.exp_decay(object.rotation_z, camera.yaw, 14.0, dt);
         }

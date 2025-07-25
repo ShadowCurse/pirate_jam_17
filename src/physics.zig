@@ -85,11 +85,14 @@ pub fn circle_rectangle_collision(
 
     const px_to_circle_v2 = circle_v2.sub(px);
     if (px_to_circle_v2.len_squared() < circle.radius * circle.radius) {
-        // const collision_position = rectangle_position.add(px);
         const collision_position = rectangle_position
             .add(rectangle_x_axis.mul_f32(px.x))
             .add(rectangle_y_axis.mul_f32(px.y));
-        const collision_normal = circle_position.sub(collision_position).normalize();
+        const to_circle = circle_position.sub(collision_position);
+        const collision_normal = if (to_circle.len_squared() != 0.0)
+            to_circle.normalize()
+        else
+            math.Vec2{};
         return .{
             .position = collision_position,
             .normal = collision_normal,
