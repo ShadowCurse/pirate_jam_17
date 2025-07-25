@@ -53,8 +53,8 @@ pub const Environment = struct {
     lights_color: [NUM_LIGHTS]math.Color3 = .{math.Color3{}} ** NUM_LIGHTS,
     direct_light_direction: math.Vec3 = .{},
     direct_light_color: math.Color3 = .{},
-    shadow_map_width: f32 = 10.0,
-    shadow_map_height: f32 = 10.0,
+    shadow_map_width: f32 = 20.0,
+    shadow_map_height: f32 = 20.0,
     shadow_map_depth: f32 = 50.0,
 
     pub fn shadow_map_view(e: *const Environment) math.Mat4 {
