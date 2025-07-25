@@ -77,7 +77,7 @@ float direct_shadow(vec4 light_space_position, vec3 normal, vec3 to_light) {
 #endif
 
   float curr_depth = projection.z;
-  float bias = max(0.005 * (1.0 - dot(normal, to_light)), 0.001);
+  float bias = max(0.010 * (1.0 - dot(normal, to_light)), 0.002);
 
   float shadow = 0.0;
   vec2 texel_size = vec2(1.0) / vec2(textureSize(direct_light_shadow, 0));
