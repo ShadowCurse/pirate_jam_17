@@ -7,6 +7,7 @@ pkgs.mkShell {
   EM_CACHE="/home/antaraz/.emscripten_cache";
 
   buildInputs = with pkgs; [
+    zip
     sdl3
     libGL
     pkg-config

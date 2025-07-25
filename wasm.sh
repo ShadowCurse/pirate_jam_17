@@ -34,3 +34,4 @@ emcc \
   -o \
   pirate_jam_17.js
 
+ zip -r ../wasm.zip .
