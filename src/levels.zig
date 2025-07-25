@@ -64,7 +64,7 @@ pub const Level = struct {
     selected_object: ?u32 = null,
     selected_light: ?u32 = null,
     selected_t: f32 = 0.0,
-    draw_light_spheres: bool = true,
+    draw_light_spheres: bool = false,
 
     // Player
     holding_object: ?u32 = null,
