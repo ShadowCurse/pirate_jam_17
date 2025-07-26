@@ -83,10 +83,34 @@ const TEXTURE_PATHS = TexturePathsType.init(.{
 });
 pub const GpuTextures = std.EnumArray(TextureType, gpu.Texture);
 
+pub const DEFAULT_SKYBOXES_DIR_PATH = "resources/skyboxes";
+pub const SkyboxType = enum {
+    Default,
+};
+const SkyboxPathsType = std.EnumArray(SkyboxType, [6][:0]const u8);
+const SKYBOX_PATHS = SkyboxPathsType.init(.{
+    // left
+    // right
+    // top
+    // bottom
+    // back
+    // front
+    .Default = .{
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/default/cubemap_0.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/default/cubemap_1.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/default/cubemap_2.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/default/cubemap_3.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/default/cubemap_4.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/default/cubemap_5.png",
+    },
+});
+pub const GpuSkyboxes = std.EnumArray(SkyboxType, gpu.Skybox);
+
 var arena: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
 var scratch: std.heap.ArenaAllocator = .init(std.heap.page_allocator);
 pub var gpu_meshes: GpuMeshes = undefined;
 pub var gpu_textures: GpuTextures = undefined;
+pub var gpu_skyboxes: GpuSkyboxes = undefined;
 pub var materials: Materials = undefined;
 pub var meshes: Meshes = undefined;
 pub var aabbs: AABBs = undefined;
@@ -133,6 +157,15 @@ pub fn init() void {
 
         load_texture(path, texture_type) catch |e| {
             log.panic(@src(), "Error loading texture from path: {s}: {}", .{ path, e });
+        };
+    }
+
+    for (0..SkyboxPathsType.len) |i| {
+        const skybox_type = SkyboxPathsType.Indexer.keyForIndex(i);
+        const paths = &SKYBOX_PATHS.values[i];
+
+        load_skybox(paths, skybox_type) catch |e| {
+            log.panic(@src(), "Error loading skybox from path: {s}: {}", .{ paths, e });
         };
     }
 }
@@ -403,4 +436,54 @@ pub fn load_texture(
         return;
     }
     return error.CannotLoadTexture;
+}
+
+pub fn load_skybox(
+    paths: *const [6][:0]const u8,
+    skybox_type: SkyboxType,
+) !void {
+    log.info(@src(), "Loading skybox of type {any}", .{skybox_type});
+
+    var files: [6]Platform.FileMem = undefined;
+    for (&files, paths) |*file, path| {
+        log.info(@src(), "Loading skybox face from path: {s}", .{path});
+        file.* = try .init(path);
+    }
+    defer for (&files) |*file|
+        file.deinit();
+
+    var x: i32 = undefined;
+    var y: i32 = undefined;
+    var c: i32 = undefined;
+    var images: [6][*]u8 = undefined;
+    for (&files, &images) |*file, *image| {
+        if (@as(?[*]u8, stb.stbi_load_from_memory(
+            file.mem.ptr,
+            @intCast(file.mem.len),
+            &x,
+            &y,
+            &c,
+            stb.STBI_rgb,
+        ))) |stb_image| {
+            image.* = stb_image;
+
+            // const channels: u32 = @intCast(c);
+            // log.assert(
+            //     @src(),
+            //     channels == 3,
+            //     "Cannot load skybox texture with {} channels. Need 3.",
+            //     .{channels},
+            // );
+        } else {
+            return error.CannotLoadSkybox;
+        }
+    }
+    defer for (images) |image| stb.stbi_image_free(image);
+
+    const width: u32 = @intCast(x);
+    const height: u32 = @intCast(y);
+
+    const skybox = gpu_skyboxes.getPtr(skybox_type);
+    skybox.* = .init(&images, width, height);
+    return;
 }

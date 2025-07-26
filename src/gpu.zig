@@ -261,3 +261,40 @@ pub const PointShadowMaps = struct {
         };
     }
 };
+
+pub const Skybox = struct {
+    texture: u32,
+
+    const Self = @This();
+
+    pub fn init(faces: *const [6][*]u8, width: u32, height: u32) Self {
+        var texture: u32 = undefined;
+        gl.glGenTextures(1, &texture);
+        gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, texture);
+        for (faces, 0..) |face, i| {
+            const index =
+                @as(u32, @intCast(gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X)) + @as(u32, @intCast(i));
+            gl.glTexImage2D(
+                index,
+                0,
+                gl.GL_RGB,
+                @intCast(width),
+                @intCast(height),
+                0,
+                gl.GL_RGB,
+                gl.GL_UNSIGNED_BYTE,
+                face,
+            );
+        }
+        gl.glTexParameteri(gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR);
+        gl.glTexParameteri(gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR);
+
+        gl.glTexParameteri(gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE);
+        gl.glTexParameteri(gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE);
+        gl.glTexParameteri(gl.GL_TEXTURE_CUBE_MAP, gl.GL_TEXTURE_WRAP_R, gl.GL_CLAMP_TO_EDGE);
+
+        return .{
+            .texture = texture,
+        };
+    }
+};

@@ -315,7 +315,7 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0,
+            "rotation_z": 1.456737518310547e-4,
             "scale": 1e0
         },
         {
@@ -439,6 +439,9 @@
         },
         "shadow_map_width": 2e1,
         "shadow_map_height": 2e1,
-        "shadow_map_depth": 5e1
+        "shadow_map_depth": 5e1,
+        "skybox_rotation_x": 0e0,
+        "skybox_rotation_y": 0e0,
+        "skybox_rotation_z": 3.479999542236328e0
     }
 }

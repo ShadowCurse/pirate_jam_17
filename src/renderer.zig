@@ -7,6 +7,7 @@ const shaders = @import("shaders.zig");
 const cimgui = @import("bindings/cimgui.zig");
 
 const Platform = @import("platform.zig");
+const Assets = @import("assets.zig");
 const Ui = @import("ui.zig");
 
 const Camera = @import("root").Camera;
@@ -29,6 +30,9 @@ var ui_texture_shader: shaders.UiTextureShader = undefined;
 var ui_infos: std.BoundedArray(RenderUiInfo, 8) = .{};
 
 var post_processing_shader: shaders.PostProcessingShader = undefined;
+
+var skybox_shader: shaders.SkyboxShader = undefined;
+var current_skybox: ?Assets.SkyboxType = null;
 
 const RenderMeshInfo = struct {
     mesh: *const gpu.Mesh,
@@ -56,6 +60,9 @@ pub const Environment = struct {
     shadow_map_width: f32 = 20.0,
     shadow_map_height: f32 = 20.0,
     shadow_map_depth: f32 = 50.0,
+    skybox_rotation_x: f32 = 0.0,
+    skybox_rotation_y: f32 = 0.0,
+    skybox_rotation_z: f32 = 0.0,
 
     pub fn shadow_map_view(e: *const Environment) math.Mat4 {
         return math.Mat4.look_at(
@@ -127,11 +134,13 @@ pub fn init() void {
     Self.ui_shape_shader = .init();
     Self.ui_texture_shader = .init();
     Self.post_processing_shader = .init();
+    Self.skybox_shader = .init();
 }
 
 pub fn reset() void {
     Self.mesh_infos.clear();
     Self.ui_infos.clear();
+    Self.current_skybox = null;
 }
 
 pub fn clear_current_buffers() void {
@@ -164,6 +173,10 @@ pub fn draw_ui(element: UiElement, position: math.Vec2, transparency: f32) void 
     Self.ui_infos.append(info) catch {
         log.warn(@src(), "Cannot add more ui elements to draw queue", .{});
     };
+}
+
+pub fn draw_skybox(skybox_type: Assets.SkyboxType) void {
+    Self.current_skybox = skybox_type;
 }
 
 fn prepare_shadow_map_context() void {
@@ -256,6 +269,21 @@ pub fn render(
     for (Self.mesh_infos.slice()) |*mi| {
         Self.mesh_shader.set_mesh_params(&mi.model, &mi.material);
         mi.mesh.draw();
+    }
+
+    // Skybox needs this rotation, otherwise it is sideways.
+    const skybox_rotation = math.Quat.from_axis_angle(.X, std.math.pi / 2.0)
+        .mul(math.Quat.from_axis_angle(.X, environment.skybox_rotation_x))
+        .mul(math.Quat.from_axis_angle(.Z, environment.skybox_rotation_y))
+        .mul(math.Quat.from_axis_angle(.Y, environment.skybox_rotation_z));
+    const skybox_view = view.mul(skybox_rotation.to_mat4());
+    if (Self.current_skybox) |cs| {
+        const skybox = Assets.gpu_skyboxes.getPtr(cs);
+        Self.skybox_shader.draw(
+            skybox.texture,
+            &skybox_view,
+            &projection,
+        );
     }
 
     prepare_post_processing_context();

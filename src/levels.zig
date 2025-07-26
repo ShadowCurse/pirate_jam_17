@@ -557,6 +557,8 @@ pub const Level = struct {
     }
 
     pub fn draw(self: *Self, dt: f32) void {
+        Renderer.draw_skybox(.Default);
+
         self.selected_t += dt;
         for (self.objects.items, 0..) |*object, i| {
             const material = switch (object.material) {

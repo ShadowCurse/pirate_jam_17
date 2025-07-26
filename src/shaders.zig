@@ -562,3 +562,39 @@ pub const PostProcessingShader = struct {
         gl.glDrawArrays(gl.GL_TRIANGLES, 0, 6);
     }
 };
+
+pub const SkyboxShader = struct {
+    shader: Shader,
+
+    view: i32,
+    projection: i32,
+
+    const Self = @This();
+
+    pub fn init() Self {
+        const shader = Shader.init(
+            "resources/shaders/skybox.vert",
+            "resources/shaders/skybox.frag",
+        );
+
+        return .{
+            .shader = shader,
+            .view = shader.get_uniform_location("view"),
+            .projection = shader.get_uniform_location("projection"),
+        };
+    }
+
+    pub fn draw(
+        self: *const Self,
+        texture: u32,
+        view: *const math.Mat4,
+        projection: *const math.Mat4,
+    ) void {
+        self.shader.use();
+        gl.glUniformMatrix4fv(self.view, 1, gl.GL_FALSE, @ptrCast(view));
+        gl.glUniformMatrix4fv(self.projection, 1, gl.GL_FALSE, @ptrCast(projection));
+        gl.glActiveTexture(gl.GL_TEXTURE0);
+        gl.glBindTexture(gl.GL_TEXTURE_2D, texture);
+        gl.glDrawArrays(gl.GL_TRIANGLES, 0, 36);
+    }
+};
