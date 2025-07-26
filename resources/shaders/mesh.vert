@@ -20,7 +20,6 @@ uniform mat4 shadow_map_view;
 uniform mat4 shadow_map_projection;
 
 void main() {
-    vec2 _uv = vec2(in_uv_x, in_uv_y);
     vec4 world_position = model * vec4(in_position, 1.0);
     gl_Position = projection * view * world_position;
     vert_position = world_position.xyz;
