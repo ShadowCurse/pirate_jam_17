@@ -390,15 +390,16 @@ pub const Level = struct {
 
             switch (object.model) {
                 .Wall, .Box => {
-                    var wall_rectangle = Assets.aabbs.get(object.model);
-                    wall_rectangle.rotation = object.rotation_z;
-                    const wall_position = object.position.xy();
+                    var rectangle = Assets.aabbs.get(object.model);
+                    rectangle.rotation = object.rotation_z;
+                    rectangle.size = rectangle.size.mul_f32(object.scale);
+                    const position = object.position.xy();
 
                     if (physics.circle_rectangle_collision(
                         PLAYER_CIRCLE,
                         camera.position.xy(),
-                        wall_rectangle,
-                        wall_position,
+                        rectangle,
+                        position,
                     )) |collision| {
                         camera.position = collision.position
                             .add(collision.normal.mul_f32(PLAYER_CIRCLE.radius))
@@ -508,14 +509,17 @@ pub const Level = struct {
     ) void {
         Audio.play(.BoxPutDown, &object.position);
         var r1 = Assets.aabbs.get(object.model);
+        r1.size = r1.size.mul_f32(object.scale);
         r1.rotation = object.rotation_z;
         const r1_position = object.position.xy();
 
         for (self.objects.items) |*o| {
             if (o.model != .Platform) continue;
 
-            const r2 = Assets.aabbs.get(o.model);
+            var r2 = Assets.aabbs.get(o.model);
+            r2.size = r2.size.mul_f32(o.scale);
             const r2_position = o.position.xy();
+
             if (!self.solved and physics.rectangle_rectangle_intersection(
                 r1,
                 r1_position,
@@ -537,12 +541,14 @@ pub const Level = struct {
 
             var r1 = Assets.aabbs.get(object.model);
             r1.rotation = object.rotation_z;
+            r1.size = r1.size.mul_f32(object.scale);
             const r1_position = object.position.xy();
 
             for (self.objects.items, 0..) |*o, i| {
                 if (o.model != .Box or i == ho) continue;
 
-                const r2 = Assets.aabbs.get(o.model);
+                var r2 = Assets.aabbs.get(o.model);
+                r2.size = r2.size.mul_f32(o.scale);
                 const r2_position = o.position.xy();
                 const result = physics.rectangle_rectangle_intersection(
                     r1,
