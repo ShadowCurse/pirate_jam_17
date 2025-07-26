@@ -368,6 +368,11 @@ pub const Level = struct {
                     .add(camera.forward_xy().mul_f32(0.5))
                     .add(.{ .z = -0.7 });
             object.position = object.position.exp_decay(new_position, 14.0, dt);
+            const diff = object.rotation_z - camera.yaw;
+            if (std.math.pi < diff)
+                object.rotation_z -= std.math.pi * 2.0
+            else if (diff < -std.math.pi)
+                object.rotation_z += std.math.pi * 2.0;
             object.rotation_z = math.exp_decay(object.rotation_z, camera.yaw, 14.0, dt);
         }
     }

@@ -112,34 +112,6 @@ pub const Camera = struct {
         return self.rotation().rotate_vec3(.NEG_Y);
     }
 
-    pub fn move(self: *Camera, dt: f32) void {
-        self.active = Input.is_pressed(.WHEEL);
-        if (!self.active) return;
-        self.velocity.x =
-            -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.A)))) +
-            1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.D))));
-        self.velocity.y =
-            -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.SPACE)))) +
-            1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.LCTRL))));
-        self.velocity.z =
-            -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.S)))) +
-            1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.W))));
-
-        self.yaw -= Input.mouse_motion.x * Input.mouse_sense * dt;
-        self.pitch -= Input.mouse_motion.y * Input.mouse_sense * dt;
-        if (math.PI / 2.0 < self.pitch) {
-            self.pitch = math.PI / 2.0;
-        }
-        if (self.pitch < -math.PI / 2.0) {
-            self.pitch = -math.PI / 2.0;
-        }
-
-        const r = self.rotation();
-        const velocity = self.velocity.mul_f32(self.speed * dt);
-        const delta = r.rotate_vec3(velocity);
-        self.position = self.position.add(delta);
-    }
-
     pub fn transform(self: *const Self) math.Mat4 {
         return self.rotation_matrix().translate(self.position);
     }
