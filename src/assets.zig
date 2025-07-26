@@ -86,6 +86,8 @@ pub const GpuTextures = std.EnumArray(TextureType, gpu.Texture);
 pub const DEFAULT_SKYBOXES_DIR_PATH = "resources/skyboxes";
 pub const SkyboxType = enum {
     Default,
+    Grey,
+    Purple,
 };
 const SkyboxPathsType = std.EnumArray(SkyboxType, [6][:0]const u8);
 const SKYBOX_PATHS = SkyboxPathsType.init(.{
@@ -102,6 +104,22 @@ const SKYBOX_PATHS = SkyboxPathsType.init(.{
         DEFAULT_SKYBOXES_DIR_PATH ++ "/default/cubemap_3.png",
         DEFAULT_SKYBOXES_DIR_PATH ++ "/default/cubemap_4.png",
         DEFAULT_SKYBOXES_DIR_PATH ++ "/default/cubemap_5.png",
+    },
+    .Grey = .{
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/grey/cubemap_0.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/grey/cubemap_1.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/grey/cubemap_2.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/grey/cubemap_3.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/grey/cubemap_4.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/grey/cubemap_5.png",
+    },
+    .Purple = .{
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/purple/cubemap_0.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/purple/cubemap_1.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/purple/cubemap_2.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/purple/cubemap_3.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/purple/cubemap_4.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/purple/cubemap_5.png",
     },
 });
 pub const GpuSkyboxes = std.EnumArray(SkyboxType, gpu.Skybox);
@@ -144,7 +162,7 @@ pub fn init() void {
 
     for (0..SoundtrackPathsType.len) |i| {
         const soundtrack_type = SoundtrackPathsType.Indexer.keyForIndex(i);
-        const path = SOUNDTRACK_PATHS.values[i];
+        const path = SOUNDTRACK_PATHS.get(soundtrack_type);
 
         load_soundtrack(path, arena_alloc, soundtrack_type) catch |e| {
             log.panic(@src(), "Error loading soundtrack from path: {s}: {}", .{ path, e });
@@ -153,7 +171,7 @@ pub fn init() void {
 
     for (0..TexturePathsType.len) |i| {
         const texture_type = TexturePathsType.Indexer.keyForIndex(i);
-        const path = TEXTURE_PATHS.values[i];
+        const path = TEXTURE_PATHS.get(texture_type);
 
         load_texture(path, texture_type) catch |e| {
             log.panic(@src(), "Error loading texture from path: {s}: {}", .{ path, e });
@@ -162,7 +180,7 @@ pub fn init() void {
 
     for (0..SkyboxPathsType.len) |i| {
         const skybox_type = SkyboxPathsType.Indexer.keyForIndex(i);
-        const paths = &SKYBOX_PATHS.values[i];
+        const paths = SKYBOX_PATHS.getPtrConst(skybox_type);
 
         load_skybox(paths, skybox_type) catch |e| {
             log.panic(@src(), "Error loading skybox from path: {s}: {}", .{ paths, e });
@@ -466,14 +484,6 @@ pub fn load_skybox(
             stb.STBI_rgb,
         ))) |stb_image| {
             image.* = stb_image;
-
-            // const channels: u32 = @intCast(c);
-            // log.assert(
-            //     @src(),
-            //     channels == 3,
-            //     "Cannot load skybox texture with {} channels. Need 3.",
-            //     .{channels},
-            // );
         } else {
             return error.CannotLoadSkybox;
         }

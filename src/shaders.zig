@@ -594,7 +594,7 @@ pub const SkyboxShader = struct {
         gl.glUniformMatrix4fv(self.view, 1, gl.GL_FALSE, @ptrCast(view));
         gl.glUniformMatrix4fv(self.projection, 1, gl.GL_FALSE, @ptrCast(projection));
         gl.glActiveTexture(gl.GL_TEXTURE0);
-        gl.glBindTexture(gl.GL_TEXTURE_2D, texture);
+        gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, texture);
         gl.glDrawArrays(gl.GL_TRIANGLES, 0, 36);
     }
 };

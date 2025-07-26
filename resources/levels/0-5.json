@@ -171,8 +171,8 @@
             "material": {
                 "Custom": {
                     "albedo": {
-                        "r": 3.5294103622436523e-1,
-                        "g": 0e0,
+                        "r": 0e0,
+                        "g": 2.9412031173706055e-2,
                         "b": 1e0,
                         "a": 1e0
                     },
@@ -461,17 +461,21 @@
             }
         ],
         "direct_light_direction": {
-            "x": 5.000000074505806e-2,
-            "y": 1.850000023841858e0,
-            "z": -1.2999999523162842e0
+            "x": 4.399999976158142e-1,
+            "y": -1e0,
+            "z": -2.5999999046325684e0
         },
         "direct_light_color": {
-            "r": 1e0,
-            "g": 1e0,
-            "b": 1e0
+            "r": 8.86676087975502e-2,
+            "g": 0e0,
+            "b": 2.0098036527633667e-1
         },
         "shadow_map_width": 2e1,
         "shadow_map_height": 2e1,
-        "shadow_map_depth": 5e1
+        "shadow_map_depth": 5e1,
+        "skybox": "Purple",
+        "skybox_rotation_x": 0e0,
+        "skybox_rotation_y": 0e0,
+        "skybox_rotation_z": 0e0
     }
 }
