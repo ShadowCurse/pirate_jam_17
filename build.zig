@@ -7,6 +7,10 @@ pub fn build(b: *std.Build) !void {
     var env_map = try std.process.getEnvMap(b.allocator);
     defer env_map.deinit();
 
+    const unibuild = b.option(bool, "no_sound", "Compile without sound") orelse false;
+    const options = b.addOptions();
+    options.addOption(bool, "no_sound", unibuild);
+
     const c_lib = build_c_libc(b, target, &env_map);
 
     const artifact = if (target.result.os.tag == .emscripten) blk: {
@@ -46,6 +50,7 @@ pub fn build(b: *std.Build) !void {
         exe.linkSystemLibrary("GL");
         break :blk exe;
     };
+    artifact.root_module.addOptions("options", options);
     artifact.addIncludePath(.{ .cwd_relative = env_map.get("SDL3_INCLUDE_PATH").? });
     artifact.addIncludePath(.{ .cwd_relative = env_map.get("LIBGL_INCLUDE_PATH").? });
     artifact.addIncludePath(b.path("thirdparty/cimgui"));

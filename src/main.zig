@@ -1,5 +1,6 @@
 const std = @import("std");
 const builtin = @import("builtin");
+const options = @import("options");
 
 const Allocator = std.mem.Allocator;
 
@@ -47,7 +48,10 @@ pub const PLAYER_CIRCLE: physics.Circle = .{ .radius = 0.12 };
 
 pub fn main() void {
     Platform.init();
+
+    if (!options.no_sound)
     Audio.init();
+
     Renderer.init();
     Assets.init();
     Levels.init();

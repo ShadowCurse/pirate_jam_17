@@ -1,5 +1,6 @@
 const std = @import("std");
 const builtin = @import("builtin");
+const options = @import("options");
 const log = @import("log.zig");
 const sdl = @import("bindings/sdl.zig");
 const gl = @import("bindings/gl.zig");
@@ -20,7 +21,10 @@ pub var sdl_events: []const sdl.SDL_Event = &.{};
 pub var mouse_position: math.Vec2 = .{};
 
 pub fn init() void {
-    sdl.assert(@src(), sdl.SDL_Init(sdl.SDL_INIT_VIDEO | sdl.SDL_INIT_AUDIO));
+    if (options.no_sound)
+        sdl.assert(@src(), sdl.SDL_Init(sdl.SDL_INIT_VIDEO))
+    else
+        sdl.assert(@src(), sdl.SDL_Init(sdl.SDL_INIT_VIDEO | sdl.SDL_INIT_AUDIO));
 
     // for 24bit depth
     sdl.assert(@src(), sdl.SDL_GL_SetAttribute(sdl.SDL_GL_DEPTH_SIZE, 24));
