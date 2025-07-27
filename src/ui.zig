@@ -13,10 +13,10 @@ pub var state: State = .Game;
 pub var blur_strength: f32 = 0.0;
 pub var mouse_sense_slider: Slider = .{
     .icon_position = .{
-        .x = -0.43,
-        .y = -0.333,
+        .x = -0.36,
+        .y = -0.18,
     },
-    .icon = .{ .size = 0.15 },
+    .icon = .{ .size = 0.1 },
     .slider_position = .{ .y = -0.2 },
     .slider = .{
         .size = 0.5,
@@ -35,10 +35,10 @@ pub var mouse_sense_slider: Slider = .{
 };
 pub var volume_slider: Slider = .{
     .icon_position = .{
-        .x = -0.43,
-        .y = -0.633,
+        .x = -0.36,
+        .y = -0.5,
     },
-    .icon = .{ .size = 0.15 },
+    .icon = .{ .size = 0.1 },
     .slider_position = .{ .y = -0.5 },
     .slider = .{
         .size = 0.5,
