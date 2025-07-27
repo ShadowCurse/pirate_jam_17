@@ -231,6 +231,8 @@ pub const MeshShader = struct {
         gl.glUniformMatrix4fv(self.view, 1, gl.GL_FALSE, @ptrCast(camera_view));
         gl.glUniformMatrix4fv(self.projection, 1, gl.GL_FALSE, @ptrCast(camera_projection));
 
+        gl.glUniform1f(self.ao, environment.ao);
+
         const shadow_map_view = environment.shadow_map_view();
         const shadow_map_projection = environment.shadow_map_projection();
         gl.glUniformMatrix4fv(
@@ -300,7 +302,6 @@ pub const MeshShader = struct {
         gl.glUniform3f(self.albedo, material.albedo.r, material.albedo.g, material.albedo.b);
         gl.glUniform1f(self.metallic, material.metallic);
         gl.glUniform1f(self.roughness, material.roughness);
-        gl.glUniform1f(self.ao, 0.03);
         gl.glUniform1f(self.emissive_strength, material.emissive_strength);
         gl.glUniform1f(self.uv_scale, material.uv_scale);
 

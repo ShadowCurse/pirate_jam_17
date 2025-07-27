@@ -52,6 +52,7 @@ const RenderUiInfo = struct {
 
 pub const NUM_LIGHTS = 4;
 pub const Environment = struct {
+    ao: f32 = 0.03,
     lights_position: [NUM_LIGHTS]math.Vec3 = .{math.Vec3{}} ** NUM_LIGHTS,
     lights_color: [NUM_LIGHTS]math.Color3 = .{math.Color3{}} ** NUM_LIGHTS,
     direct_light_direction: math.Vec3 = .{},
