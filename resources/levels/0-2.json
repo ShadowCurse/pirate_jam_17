@@ -18,7 +18,13 @@
                     },
                     "metallic": 0e0,
                     "roughness": 1e0,
-                    "emissive_strength": 0e0
+                    "emissive_strength": 0e0,
+                    "uv_scale": 1e1,
+                    "no_shadow": false,
+                    "albedo_texture": "ConcreteAlbedo",
+                    "metallic_texture": "ConcreteMetallic",
+                    "roughness_texture": "ConcreteRoughness",
+                    "normal_texture": "ConcreteNormal"
                 }
             },
             "position": {
@@ -71,7 +77,23 @@
                 "plays_music": false
             },
             "material": {
-                "Original": {}
+                "Custom": {
+                    "albedo": {
+                        "r": 9.019608050584793e-2,
+                        "g": 9.019608050584793e-2,
+                        "b": 9.019608050584793e-2,
+                        "a": 1e0
+                    },
+                    "metallic": 5e-1,
+                    "roughness": 1e0,
+                    "emissive_strength": 0e0,
+                    "uv_scale": 5e0,
+                    "no_shadow": false,
+                    "albedo_texture": "ConcreteAlbedo",
+                    "metallic_texture": "ConcreteMetallic",
+                    "roughness_texture": "ConcreteRoughness",
+                    "normal_texture": "ConcreteNormal"
+                }
             },
             "position": {
                 "x": -4.840000152587891e0,
@@ -101,7 +123,13 @@
                     },
                     "metallic": 5e-1,
                     "roughness": 5e-1,
-                    "emissive_strength": 0e0
+                    "emissive_strength": 0e0,
+                    "uv_scale": 5e0,
+                    "no_shadow": false,
+                    "albedo_texture": "ConcreteAlbedo",
+                    "metallic_texture": "ConcreteMetallic",
+                    "roughness_texture": "ConcreteRoughness",
+                    "normal_texture": "ConcreteNormal"
                 }
             },
             "position": {
@@ -238,7 +266,23 @@
                 "plays_music": false
             },
             "material": {
-                "Original": {}
+                "Custom": {
+                    "albedo": {
+                        "r": 9.019608050584793e-2,
+                        "g": 9.019608050584793e-2,
+                        "b": 9.019608050584793e-2,
+                        "a": 1e0
+                    },
+                    "metallic": 5e-1,
+                    "roughness": 1e0,
+                    "emissive_strength": 0e0,
+                    "uv_scale": 5e0,
+                    "no_shadow": false,
+                    "albedo_texture": "ConcreteAlbedo",
+                    "metallic_texture": "ConcreteMetallic",
+                    "roughness_texture": "ConcreteRoughness",
+                    "normal_texture": "ConcreteNormal"
+                }
             },
             "position": {
                 "x": 5e0,
@@ -259,7 +303,23 @@
                 "plays_music": false
             },
             "material": {
-                "Original": {}
+                "Custom": {
+                    "albedo": {
+                        "r": 9.019608050584793e-2,
+                        "g": 9.019608050584793e-2,
+                        "b": 9.019608050584793e-2,
+                        "a": 1e0
+                    },
+                    "metallic": 5e-1,
+                    "roughness": 1e0,
+                    "emissive_strength": 0e0,
+                    "uv_scale": 5e0,
+                    "no_shadow": false,
+                    "albedo_texture": "ConcreteAlbedo",
+                    "metallic_texture": "ConcreteMetallic",
+                    "roughness_texture": "ConcreteRoughness",
+                    "normal_texture": "ConcreteNormal"
+                }
             },
             "position": {
                 "x": 0e0,

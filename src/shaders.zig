@@ -156,6 +156,7 @@ pub const MeshShader = struct {
     roughness: i32,
     ao: i32,
     emissive_strength: i32,
+    uv_scale: i32,
     use_textures: i32,
     albedo_texture: i32,
     metallic_texture: i32,
@@ -198,6 +199,7 @@ pub const MeshShader = struct {
             .roughness = shader.get_uniform_location("flat_roughness"),
             .ao = shader.get_uniform_location("ao"),
             .emissive_strength = shader.get_uniform_location("emissive_strength"),
+            .uv_scale = shader.get_uniform_location("uv_scale"),
             .use_textures = shader.get_uniform_location("use_textures"),
             .albedo_texture = shader.get_uniform_location("albedo_texture"),
             .metallic_texture = shader.get_uniform_location("metallic_texture"),
@@ -300,6 +302,7 @@ pub const MeshShader = struct {
         gl.glUniform1f(self.roughness, material.roughness);
         gl.glUniform1f(self.ao, 0.03);
         gl.glUniform1f(self.emissive_strength, material.emissive_strength);
+        gl.glUniform1f(self.uv_scale, material.uv_scale);
 
         var use_textures: i32 = 0;
         if (material.albedo_texture) |at| {

@@ -19,7 +19,12 @@
                     "metallic": 0e0,
                     "roughness": 8.999999761581421e-1,
                     "emissive_strength": 0e0,
-                    "no_shadow": false
+                    "uv_scale": 1e1,
+                    "no_shadow": false,
+                    "albedo_texture": "ConcreteAlbedo",
+                    "metallic_texture": "ConcreteMetallic",
+                    "roughness_texture": "ConcreteRoughness",
+                    "normal_texture": "ConcreteNormal"
                 }
             },
             "position": {
@@ -51,7 +56,12 @@
                     "metallic": 0e0,
                     "roughness": 5e-1,
                     "emissive_strength": 0e0,
-                    "no_shadow": false
+                    "uv_scale": 1e0,
+                    "no_shadow": false,
+                    "albedo_texture": null,
+                    "metallic_texture": null,
+                    "roughness_texture": null,
+                    "normal_texture": null
                 }
             },
             "position": {
@@ -83,7 +93,12 @@
                     "metallic": 5e-1,
                     "roughness": 1e0,
                     "emissive_strength": 0e0,
-                    "no_shadow": false
+                    "uv_scale": 5e0,
+                    "no_shadow": false,
+                    "albedo_texture": "ConcreteAlbedo",
+                    "metallic_texture": "ConcreteMetallic",
+                    "roughness_texture": "ConcreteRoughness",
+                    "normal_texture": "ConcreteNormal"
                 }
             },
             "position": {
@@ -115,7 +130,12 @@
                     "metallic": 5e-1,
                     "roughness": 1e0,
                     "emissive_strength": 0e0,
-                    "no_shadow": false
+                    "uv_scale": 5e0,
+                    "no_shadow": false,
+                    "albedo_texture": "ConcreteAlbedo",
+                    "metallic_texture": "ConcreteMetallic",
+                    "roughness_texture": "ConcreteRoughness",
+                    "normal_texture": "ConcreteNormal"
                 }
             },
             "position": {
@@ -252,7 +272,12 @@
                     "metallic": 5e-1,
                     "roughness": 1e0,
                     "emissive_strength": 0e0,
-                    "no_shadow": false
+                    "uv_scale": 5e0,
+                    "no_shadow": false,
+                    "albedo_texture": "ConcreteAlbedo",
+                    "metallic_texture": "ConcreteMetallic",
+                    "roughness_texture": "ConcreteRoughness",
+                    "normal_texture": "ConcreteNormal"
                 }
             },
             "position": {
@@ -284,7 +309,12 @@
                     "metallic": 5e-1,
                     "roughness": 1e0,
                     "emissive_strength": 0e0,
-                    "no_shadow": false
+                    "uv_scale": 5e0,
+                    "no_shadow": false,
+                    "albedo_texture": "ConcreteAlbedo",
+                    "metallic_texture": "ConcreteMetallic",
+                    "roughness_texture": "ConcreteRoughness",
+                    "normal_texture": "ConcreteNormal"
                 }
             },
             "position": {
@@ -440,6 +470,7 @@
         "shadow_map_width": 2e1,
         "shadow_map_height": 2e1,
         "shadow_map_depth": 5e1,
+        "skybox": "Default",
         "skybox_rotation_x": 0e0,
         "skybox_rotation_y": 0e0,
         "skybox_rotation_z": 0e0

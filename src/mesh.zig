@@ -11,6 +11,7 @@ pub const Material = struct {
     metallic: f32 = 0.5,
     roughness: f32 = 0.5,
     emissive_strength: f32 = 0.0,
+    uv_scale: f32 = 1.0,
     no_shadow: bool = false,
     albedo_texture: ?Assets.TextureType = null,
     metallic_texture: ?Assets.TextureType = null,

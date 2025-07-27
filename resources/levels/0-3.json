@@ -18,7 +18,12 @@
                     },
                     "metallic": 0e0,
                     "roughness": 1e0,
-                    "emissive_strength": 0e0
+                    "uv_scale": 1e1,
+                    "no_shadow": false,
+                    "albedo_texture": "ConcreteAlbedo",
+                    "metallic_texture": "ConcreteMetallic",
+                    "roughness_texture": "ConcreteRoughness",
+                    "normal_texture": "ConcreteNormal"
                 }
             },
             "position": {
@@ -70,7 +75,13 @@
                     },
                     "metallic": 5e-1,
                     "roughness": 1e0,
-                    "emissive_strength": 0e0
+                    "emissive_strength": 0e0,
+                    "uv_scale": 5e0,
+                    "no_shadow": false,
+                    "albedo_texture": "ConcreteAlbedo",
+                    "metallic_texture": "ConcreteMetallic",
+                    "roughness_texture": "ConcreteRoughness",
+                    "normal_texture": "ConcreteNormal"
                 }
             },
             "position": {
@@ -94,14 +105,20 @@
             "material": {
                 "Custom": {
                     "albedo": {
-                        "r": 8.823531866073608e-2,
-                        "g": 8.823531866073608e-2,
-                        "b": 8.823531866073608e-2,
+                        "r": 9.019608050584793e-2,
+                        "g": 9.019608050584793e-2,
+                        "b": 9.019608050584793e-2,
                         "a": 1e0
                     },
                     "metallic": 5e-1,
                     "roughness": 1e0,
-                    "emissive_strength": 0e0
+                    "emissive_strength": 0e0,
+                    "uv_scale": 5e0,
+                    "no_shadow": false,
+                    "albedo_texture": "ConcreteAlbedo",
+                    "metallic_texture": "ConcreteMetallic",
+                    "roughness_texture": "ConcreteRoughness",
+                    "normal_texture": "ConcreteNormal"
                 }
             },
             "position": {
@@ -237,7 +254,13 @@
                     },
                     "metallic": 5e-1,
                     "roughness": 1e0,
-                    "emissive_strength": 0e0
+                    "emissive_strength": 0e0,
+                    "uv_scale": 5e0,
+                    "no_shadow": false,
+                    "albedo_texture": "ConcreteAlbedo",
+                    "metallic_texture": "ConcreteMetallic",
+                    "roughness_texture": "ConcreteRoughness",
+                    "normal_texture": "ConcreteNormal"
                 }
             },
             "position": {
@@ -268,7 +291,13 @@
                     },
                     "metallic": 5e-1,
                     "roughness": 1e0,
-                    "emissive_strength": 0e0
+                    "emissive_strength": 0e0,
+                    "uv_scale": 5e0,
+                    "no_shadow": false,
+                    "albedo_texture": "ConcreteAlbedo",
+                    "metallic_texture": "ConcreteMetallic",
+                    "roughness_texture": "ConcreteRoughness",
+                    "normal_texture": "ConcreteNormal"
                 }
             },
             "position": {
