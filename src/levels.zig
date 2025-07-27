@@ -366,7 +366,7 @@ pub const Level = struct {
             const forward = camera.forward_xy().mul_f32(0.6);
             const new_position = camera.position.add(forward);
             object.position = object.position.exp_decay(new_position, 20.0, dt);
-            self.circle_collide(&object.position, 0.1);
+            self.circle_collide(&object.position, 0.25);
             object.position = object.position.add(.{ .z = -0.7 });
 
             const diff = object.rotation_z - camera.yaw;

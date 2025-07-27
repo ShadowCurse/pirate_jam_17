@@ -21,7 +21,7 @@
                     "emissive_strength": 0e0,
                     "uv_scale": 1e1,
                     "no_shadow": false,
-                    "albedo_texture": "ConcreteAlbedo",
+                    "albedo_texture": null,
                     "metallic_texture": "ConcreteMetallic",
                     "roughness_texture": "ConcreteRoughness",
                     "normal_texture": "ConcreteNormal"
@@ -55,7 +55,13 @@
                     },
                     "metallic": 0e0,
                     "roughness": 5e-1,
-                    "emissive_strength": 0e0
+                    "emissive_strength": 0e0,
+                    "uv_scale": 1e0,
+                    "no_shadow": false,
+                    "albedo_texture": null,
+                    "metallic_texture": null,
+                    "roughness_texture": null,
+                    "normal_texture": null
                 }
             },
             "position": {
@@ -96,7 +102,7 @@
                 }
             },
             "position": {
-                "x": -4.840000152587891e0,
+                "x": -5e0,
                 "y": 0e0,
                 "z": 0e0
             },
@@ -160,7 +166,13 @@
                     },
                     "metallic": 0e0,
                     "roughness": 5e-1,
-                    "emissive_strength": 0e0
+                    "emissive_strength": 0e0,
+                    "uv_scale": 1e0,
+                    "no_shadow": false,
+                    "albedo_texture": null,
+                    "metallic_texture": null,
+                    "roughness_texture": null,
+                    "normal_texture": null
                 }
             },
             "position": {
@@ -412,7 +424,13 @@
                     },
                     "metallic": 0e0,
                     "roughness": 5e-1,
-                    "emissive_strength": 0e0
+                    "emissive_strength": 0e0,
+                    "uv_scale": 1e0,
+                    "no_shadow": false,
+                    "albedo_texture": null,
+                    "metallic_texture": null,
+                    "roughness_texture": null,
+                    "normal_texture": null
                 }
             },
             "position": {
@@ -427,6 +445,7 @@
         }
     ],
     "environment": {
+        "ao": 9.999998658895493e-2,
         "lights_position": [
             {
                 "x": 0e0,
@@ -434,19 +453,19 @@
                 "z": 1e0
             },
             {
-                "x": 1e0,
-                "y": 1e0,
-                "z": 1e0
-            },
-            {
-                "x": 1e0,
-                "y": -1e0,
+                "x": 0e0,
+                "y": -4e0,
                 "z": 1e0
             },
             {
                 "x": 0e0,
-                "y": -4e0,
-                "z": 1e0
+                "y": 0e0,
+                "z": 0e0
+            },
+            {
+                "x": 0e0,
+                "y": 0e0,
+                "z": 0e0
             }
         ],
         "lights_color": [
@@ -456,19 +475,19 @@
                 "b": 1e0
             },
             {
-                "r": 0e0,
+                "r": 1e0,
                 "g": 1e0,
+                "b": 1e0
+            },
+            {
+                "r": 0e0,
+                "g": 0e0,
                 "b": 0e0
             },
             {
                 "r": 0e0,
                 "g": 0e0,
-                "b": 1e0
-            },
-            {
-                "r": 1e0,
-                "g": 1e0,
-                "b": 1e0
+                "b": 0e0
             }
         ],
         "direct_light_direction": {
@@ -484,6 +503,7 @@
         "shadow_map_width": 2e1,
         "shadow_map_height": 2e1,
         "shadow_map_depth": 5e1,
+        "skybox": "Default",
         "skybox_rotation_x": 0e0,
         "skybox_rotation_y": 0e0,
         "skybox_rotation_z": 0e0
