@@ -241,7 +241,7 @@ pub const Level = struct {
                     .object = .{ .LevelObject = object },
                     .action = .{ .rotate_z = .{
                         .start = object.rotation_z,
-                        .end = 0.0,
+                        .end = std.math.pi,
                     } },
                     .duration = DOOR_OPEN_ANIMATION_TIME,
                 },
