@@ -146,7 +146,7 @@ void main() {
     }
 
     float roughness = flat_roughness;
-    if ((use_textures & USE_METALLIC_TEXTURE) != 0) {
+    if ((use_textures & USE_ROUNGHNESS_TEXTURE) != 0) {
       roughness += texture(roughness_texture, vert_uv).x;
       roughness /= 2.0;
     }
