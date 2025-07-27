@@ -9,7 +9,7 @@ const physics = @import("physics.zig");
 
 const Game = @import("root");
 const Camera = Game.Camera;
-const PLAYER_CIRCLE = Game.PLAYER_CIRCLE;
+const PLAYER_RADIUS = Game.PLAYER_RADIUS;
 
 const Animations = @import("animations.zig");
 const Platform = @import("platform.zig");
@@ -363,11 +363,12 @@ pub const Level = struct {
     pub fn player_move_object(self: *Self, camera: *const Camera, dt: f32) void {
         if (self.holding_object) |ho| {
             const object = &self.objects.items[ho];
-            const new_position =
-                camera.position
-                    .add(camera.forward_xy().mul_f32(0.5))
-                    .add(.{ .z = -0.7 });
-            object.position = object.position.exp_decay(new_position, 14.0, dt);
+            const forward = camera.forward_xy().mul_f32(0.6);
+            const new_position = camera.position.add(forward);
+            object.position = object.position.exp_decay(new_position, 20.0, dt);
+            self.circle_collide(&object.position, 0.1);
+            object.position = object.position.add(.{ .z = -0.7 });
+
             const diff = object.rotation_z - camera.yaw;
             if (std.math.pi < diff)
                 object.rotation_z -= std.math.pi * 2.0
@@ -378,6 +379,10 @@ pub const Level = struct {
     }
 
     pub fn player_collide(self: *Self, camera: *Camera) void {
+        self.circle_collide(&camera.position, PLAYER_RADIUS);
+    }
+
+    pub fn circle_collide(self: *Self, position: *math.Vec3, radius: f32) void {
         // Constants for the door cirlec ring collision.
         const DELTA_DEGREES: f32 = 40.0;
         const DELTA_RADIANS: f32 = std.math.degreesToRadians(DELTA_DEGREES);
@@ -385,39 +390,32 @@ pub const Level = struct {
         const RING_RADIUS = 0.37;
         const RING_PROBE_RADIUS: f32 = 0.01;
 
-        for (self.objects.items, 0..) |*object, i| {
-            if (object.model == .Box) {
-                if (self.holding_object) |ho| {
-                    if (ho == i)
-                        continue;
-                }
-            }
+        const circle = physics.Circle{ .radius = radius };
 
+        for (self.objects.items) |*object| {
             switch (object.model) {
                 .Wall, .Box => {
                     var rectangle = Assets.aabbs.get(object.model);
                     rectangle.rotation = object.rotation_z;
                     rectangle.size = rectangle.size.mul_f32(object.scale);
-                    const position = object.position.xy();
 
                     if (physics.circle_rectangle_collision(
-                        PLAYER_CIRCLE,
-                        camera.position.xy(),
+                        circle,
+                        position.xy(),
                         rectangle,
-                        position,
+                        object.position.xy(),
                     )) |collision| {
-                        camera.position = collision.position
-                            .add(collision.normal.mul_f32(PLAYER_CIRCLE.radius))
+                        position.* = collision.position
+                            .add(collision.normal.mul_f32(circle.radius))
                             .extend(1.0);
                     }
                 },
                 .DoorDoor => {
-                    const distance_to_object = camera.position.xy()
+                    const distance_to_object = position.xy()
                         .sub(object.position.xy()).len();
                     if (RING_RADIUS * 2.0 < distance_to_object) continue;
 
                     const NNN: u32 = @floor((180.0 - 2 * DELTA_DEGREES) / (DELTA_DEGREES / 2));
-                    const position = object.position;
                     for (&[_]f32{
                         object.rotation_z + DELTA_RADIANS,
                         object.rotation_z + DELTA_RADIANS + std.math.pi,
@@ -428,11 +426,11 @@ pub const Level = struct {
                                 starting_rotation - DELTA_RADIANS_HALF * @as(f32, @floatFromInt(n)),
                             );
                             const forward = rotation.rotate_vec3(.NEG_X);
-                            const circle_position = position.add(forward.mul_f32(RING_RADIUS));
-                            const circle: physics.Circle = .{ .radius = RING_PROBE_RADIUS };
+                            const object_position = object.position.add(forward.mul_f32(RING_RADIUS));
+                            const object_circle: physics.Circle = .{ .radius = RING_PROBE_RADIUS };
 
                             // const t = math.Mat4.IDENDITY
-                            //     .translate(circle_position.add(.{ .z = 1.0 }))
+                            //     .translate(object_position.add(.{ .z = 1.0 }))
                             //     .scale(.{
                             //     .x = RING_PROBE_RADIUS,
                             //     .y = RING_PROBE_RADIUS,
@@ -445,25 +443,24 @@ pub const Level = struct {
                             // );
 
                             if (physics.circle_circle_collision(
-                                PLAYER_CIRCLE,
-                                camera.position.xy(),
                                 circle,
-                                circle_position.xy(),
+                                position.xy(),
+                                object_circle,
+                                object_position.xy(),
                             )) |collision| {
-                                camera.position = collision.position
-                                    .add(collision.normal.mul_f32(PLAYER_CIRCLE.radius))
+                                position.* = collision.position
+                                    .add(collision.normal.mul_f32(circle.radius))
                                     .extend(1.0);
                             }
                         }
                     }
                 },
                 .DoorFrame => {
-                    const distance_to_object = camera.position.xy()
+                    const distance_to_object = position.xy()
                         .sub(object.position.xy()).len();
                     if (RING_RADIUS * 2.0 < distance_to_object) continue;
 
                     const NNN: u32 = @floor((180.0 - 2 * DELTA_DEGREES) / (DELTA_DEGREES / 2)) + 1;
-                    const position = object.position;
                     for (&[_]f32{
                         object.rotation_z + DELTA_RADIANS,
                         object.rotation_z + DELTA_RADIANS + std.math.pi,
@@ -474,11 +471,11 @@ pub const Level = struct {
                                 starting_rotation + DELTA_RADIANS_HALF * @as(f32, @floatFromInt(n)),
                             );
                             const forward = rotation.rotate_vec3(.NEG_X);
-                            const circle_position = position.add(forward.mul_f32(RING_RADIUS));
-                            const circle: physics.Circle = .{ .radius = RING_PROBE_RADIUS };
+                            const object_position = object.position.add(forward.mul_f32(RING_RADIUS));
+                            const object_circle: physics.Circle = .{ .radius = RING_PROBE_RADIUS };
 
                             // const t = math.Mat4.IDENDITY
-                            //     .translate(circle_position.add(.{ .z = 1.0 }))
+                            //     .translate(object_position.add(.{ .z = 1.0 }))
                             //     .scale(.{
                             //     .x = RING_PROBE_RADIUS,
                             //     .y = RING_PROBE_RADIUS,
@@ -491,13 +488,13 @@ pub const Level = struct {
                             // );
 
                             if (physics.circle_circle_collision(
-                                PLAYER_CIRCLE,
-                                camera.position.xy(),
                                 circle,
-                                circle_position.xy(),
+                                position.xy(),
+                                object_circle,
+                                object_position.xy(),
                             )) |collision| {
-                                camera.position = collision.position
-                                    .add(collision.normal.mul_f32(PLAYER_CIRCLE.radius))
+                                position.* = collision.position
+                                    .add(collision.normal.mul_f32(circle.radius))
                                     .extend(1.0);
                             }
                         }

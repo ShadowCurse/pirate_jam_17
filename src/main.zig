@@ -44,13 +44,13 @@ export fn _emscripten_memcpy_js(dest: [*]u8, src: [*]u8, len: usize) void {
     @memcpy(d, s);
 }
 
-pub const PLAYER_CIRCLE: physics.Circle = .{ .radius = 0.12 };
+pub const PLAYER_RADIUS = 0.12;
 
 pub fn main() void {
     Platform.init();
 
     if (!options.no_sound)
-    Audio.init();
+        Audio.init();
 
     Renderer.init();
     Assets.init();
