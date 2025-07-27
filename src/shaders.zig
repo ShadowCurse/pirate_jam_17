@@ -146,16 +146,16 @@ pub const MeshShader = struct {
     shadow_map_view: i32,
     shadow_map_projection: i32,
 
-    camera_pos: i32,
-    lights_pos: i32,
-    lights_color: i32,
+    camera_position: i32,
+    light_positions: i32,
+    light_colors: i32,
     direct_light_direction: i32,
     direct_light_color: i32,
     albedo: i32,
     metallic: i32,
     roughness: i32,
     ao: i32,
-    emissive: i32,
+    emissive_strength: i32,
     use_textures: i32,
     albedo_texture: i32,
     metallic_texture: i32,
@@ -188,16 +188,16 @@ pub const MeshShader = struct {
             .model = shader.get_uniform_location("model"),
             .shadow_map_view = shader.get_uniform_location("shadow_map_view"),
             .shadow_map_projection = shader.get_uniform_location("shadow_map_projection"),
-            .camera_pos = shader.get_uniform_location("camera_pos"),
-            .lights_pos = shader.get_uniform_location("lights_pos"),
-            .lights_color = shader.get_uniform_location("lights_color"),
+            .camera_position = shader.get_uniform_location("camera_position"),
+            .light_positions = shader.get_uniform_location("light_positions"),
+            .light_colors = shader.get_uniform_location("light_colors"),
             .direct_light_direction = shader.get_uniform_location("direct_light_direction"),
             .direct_light_color = shader.get_uniform_location("direct_light_color"),
             .albedo = shader.get_uniform_location("flat_albedo"),
             .metallic = shader.get_uniform_location("flat_metallic"),
             .roughness = shader.get_uniform_location("flat_roughness"),
             .ao = shader.get_uniform_location("ao"),
-            .emissive = shader.get_uniform_location("emissive"),
+            .emissive_strength = shader.get_uniform_location("emissive_strength"),
             .use_textures = shader.get_uniform_location("use_textures"),
             .albedo_texture = shader.get_uniform_location("albedo_texture"),
             .metallic_texture = shader.get_uniform_location("metallic_texture"),
@@ -244,14 +244,19 @@ pub const MeshShader = struct {
             @ptrCast(&shadow_map_projection),
         );
 
-        gl.glUniform3f(self.camera_pos, camera_position.x, camera_position.y, camera_position.z);
+        gl.glUniform3f(
+            self.camera_position,
+            camera_position.x,
+            camera_position.y,
+            camera_position.z,
+        );
         gl.glUniform3fv(
-            self.lights_pos,
+            self.light_positions,
             environment.lights_position.len,
             @ptrCast(&environment.lights_position),
         );
         gl.glUniform3fv(
-            self.lights_color,
+            self.light_colors,
             environment.lights_color.len,
             @ptrCast(&environment.lights_color),
         );
@@ -294,7 +299,7 @@ pub const MeshShader = struct {
         gl.glUniform1f(self.metallic, material.metallic);
         gl.glUniform1f(self.roughness, material.roughness);
         gl.glUniform1f(self.ao, 0.03);
-        gl.glUniform1f(self.emissive, material.emissive_strength);
+        gl.glUniform1f(self.emissive_strength, material.emissive_strength);
 
         var use_textures: i32 = 0;
         if (material.albedo_texture) |at| {
