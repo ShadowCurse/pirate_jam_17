@@ -106,21 +106,30 @@ float direct_shadow(vec4 light_space_position, vec3 normal, vec3 to_light) {
   return shadow;
 }
 
-float point_shadow(vec3 normal, vec3 from_light, int light_index) {
+vec3 point_light_sample_offsets[20] = vec3[](
+   vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1), 
+   vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
+   vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
+   vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
+   vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
+);
+float point_shadow(samplerCube shadow_cube, vec3 normal, vec3 from_light) {
+    float far_plane = 10000.0;
     float curr_depth = length(from_light);
 
-    float closest_depth = 0.0;
-    switch  (light_index) {
-      case 0: closest_depth = texture(point_light_0_shadow, from_light).r; break;
-      case 1: closest_depth = texture(point_light_1_shadow, from_light).r; break;
-      case 2: closest_depth = texture(point_light_2_shadow, from_light).r; break;
-      case 3: closest_depth = texture(point_light_3_shadow, from_light).r; break;
+    float shadow = 0.0;
+    float bias = max(0.010 * (1.0 - dot(normal, from_light)), 0.002);
+    int samples  = 20;
+    float disk_radius = (1.0 + (curr_depth / far_plane)) / 25.0;
+    for(int i = 0; i < samples; ++i) {
+        float closest_depth = 
+          texture(shadow_cube, from_light + point_light_sample_offsets[i] * disk_radius).r;
+        closest_depth *= far_plane;
+        if(curr_depth - bias > closest_depth)
+            shadow += 1.0;
     }
-    // Far parameter of the camera
-    closest_depth *= 10000.0;
-
-    float bias = max(0.005 * (1.0 - dot(normal, from_light)), 0.001);
-    return closest_depth < curr_depth - bias ? 1.0 : 0.0;
+    shadow /= float(samples);  
+    return shadow;
 }
 
 void main() {
@@ -184,7 +193,24 @@ void main() {
         float point_shadow_value = 1.0;
         if (use_shadow_map == 1) {
             vec3 from_light = vert_position - light_positions[i];
-            point_shadow_value = (1.0 - point_shadow(normal, from_light, i));
+            switch  (i) {
+              case 0: 
+                point_shadow_value =
+                  (1.0 - point_shadow(point_light_0_shadow, normal, from_light));
+                break;
+              case 1: 
+                point_shadow_value =
+                  (1.0 - point_shadow(point_light_1_shadow, normal, from_light));
+                break;
+              case 2: 
+                point_shadow_value =
+                  (1.0 - point_shadow(point_light_2_shadow, normal, from_light));
+                break;
+              case 3: 
+                point_shadow_value =
+                  (1.0 - point_shadow(point_light_3_shadow, normal, from_light));
+                break;
+            }
         }
 
         // add to outgoing radiance
