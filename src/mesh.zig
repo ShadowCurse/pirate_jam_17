@@ -1,6 +1,8 @@
 const gl = @import("bindings/gl.zig");
 const math = @import("math.zig");
 
+const Assets = @import("assets.zig");
+
 indices: []const Index,
 vertices: []const Vertex,
 
@@ -10,6 +12,9 @@ pub const Material = struct {
     roughness: f32 = 0.5,
     emissive_strength: f32 = 0.0,
     no_shadow: bool = false,
+    albedo_texture: ?Assets.TextureType = null,
+    metallic_texture: ?Assets.TextureType = null,
+    roughness_texture: ?Assets.TextureType = null,
 };
 
 const Self = @This();

@@ -17,9 +17,9 @@ uniform vec3 light_positions[NUM_LIGHTS];
 uniform vec3 light_colors[NUM_LIGHTS];
 uniform vec3 direct_light_direction;
 uniform vec3 direct_light_color;
-uniform vec3 albedo;
-uniform float metallic;
-uniform float roughness;
+uniform vec3 flat_albedo;
+uniform float flat_metallic;
+uniform float flat_roughness;
 uniform float ao;
 uniform float emissive_strength;
 
@@ -29,6 +29,14 @@ uniform samplerCube point_light_0_shadow;
 uniform samplerCube point_light_1_shadow;
 uniform samplerCube point_light_2_shadow;
 uniform samplerCube point_light_3_shadow;
+
+#define USE_ALBEDO_TEXTURE     1 << 0
+#define USE_METALLIC_TEXTURE   1 << 1
+#define USE_ROUNGHNESS_TEXTURE 1 << 2
+uniform int use_textures;
+uniform sampler2D albedo_texture;
+uniform sampler2D metallic_texture;
+uniform sampler2D roughness_texture;
 
 const float PI = 3.14159265359;
 
@@ -115,6 +123,24 @@ float point_shadow(vec3 normal, vec3 from_light, int light_index) {
 void main() {
     vec3 normal = normalize(vert_normal);
     vec3 to_camera = normalize(camera_position - vert_position);
+
+    vec3 albedo = flat_albedo;
+    if ((use_textures & USE_ALBEDO_TEXTURE) != 0) {
+      albedo += texture(albedo_texture, vert_uv).xyz;
+      albedo /= 2.0;
+    }
+
+    float metallic = flat_metallic;
+    if ((use_textures & USE_METALLIC_TEXTURE) != 0) {
+      metallic += texture(metallic_texture, vert_uv).x;
+      metallic /= 2.0;
+    }
+
+    float roughness = flat_roughness;
+    if ((use_textures & USE_METALLIC_TEXTURE) != 0) {
+      roughness += texture(roughness_texture, vert_uv).x;
+      roughness /= 2.0;
+    }
 
     vec3 base_reflectivity = vec3(0.04); 
     base_reflectivity = mix(base_reflectivity, albedo, metallic);

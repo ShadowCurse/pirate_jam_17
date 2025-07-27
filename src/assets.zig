@@ -75,11 +75,17 @@ pub const DEFAULT_TEXTURES_DIR_PATH = "resources/textures";
 pub const TextureType = enum {
     SpeakerIcon,
     MouseIcon,
+    ConcreteAlbedo,
+    ConcreteMetallic,
+    ConcreteRoughness,
 };
 const TexturePathsType = std.EnumArray(TextureType, [:0]const u8);
 const TEXTURE_PATHS = TexturePathsType.init(.{
     .SpeakerIcon = DEFAULT_TEXTURES_DIR_PATH ++ "/speaker.png",
     .MouseIcon = DEFAULT_TEXTURES_DIR_PATH ++ "/mouse.png",
+    .ConcreteAlbedo = DEFAULT_TEXTURES_DIR_PATH ++ "/concrete_albedo.png",
+    .ConcreteMetallic = DEFAULT_TEXTURES_DIR_PATH ++ "/concrete_metallic.png",
+    .ConcreteRoughness = DEFAULT_TEXTURES_DIR_PATH ++ "/concrete_roughness.png",
 });
 pub const GpuTextures = std.EnumArray(TextureType, gpu.Texture);
 
@@ -440,14 +446,6 @@ pub fn load_texture(
 
         const width: u32 = @intCast(x);
         const height: u32 = @intCast(y);
-        const channels: u32 = @intCast(c);
-
-        log.assert(
-            @src(),
-            channels == 4,
-            "Cannot load texture with {} channels. Need 4.",
-            .{channels},
-        );
 
         const texture = gpu_textures.getPtr(texture_type);
         texture.* = .init(image, width, height);

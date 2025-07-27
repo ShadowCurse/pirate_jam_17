@@ -86,7 +86,29 @@ pub fn format(name: ?[*c]const u8, v: anytype) void {
                             }
                         }
                     },
-                    .optional => {},
+                    .optional => |o| {
+                        _ = cimgui.igSeparatorText(type_name);
+                        if (v.*) |vv| {
+                            // need to make mutable value
+                            var vvv = vv;
+                            format(type_name, &vvv);
+                            v.* = vvv;
+
+                            if (cimgui.igButton("Set to null", .{})) {
+                                v.* = null;
+                            }
+                        } else {
+                            if (cimgui.igButton("Set to default", .{})) {
+                                switch (@typeInfo(o.child)) {
+                                    .@"struct" => v.* = std.mem.zeroes(o.child),
+                                    .@"enum" => v.* = std.mem.zeroes(o.child),
+                                    .@"union" => v.* = std.mem.zeroes(o.child),
+                                    .array => v.* = std.mem.zeroes(o.child),
+                                    else => {},
+                                }
+                            }
+                        }
+                    },
                     .pointer => |p| {
                         switch (p.size) {
                             .one => format(type_name, v.*),
