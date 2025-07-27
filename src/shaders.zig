@@ -160,6 +160,7 @@ pub const MeshShader = struct {
     albedo_texture: i32,
     metallic_texture: i32,
     roughness_texture: i32,
+    normal_texture: i32,
 
     use_shadow_map: i32,
     direct_light_shadow: i32,
@@ -171,6 +172,7 @@ pub const MeshShader = struct {
     const USE_ALBEDO_TEXTURE = 1 << 0;
     const USE_METALLIC_TEXTURE = 1 << 1;
     const USE_ROUNGHNESS_TEXTURE = 1 << 2;
+    const USE_NORMAL_TEXTURE = 1 << 3;
     const Self = @This();
 
     pub fn init() Self {
@@ -200,6 +202,7 @@ pub const MeshShader = struct {
             .albedo_texture = shader.get_uniform_location("albedo_texture"),
             .metallic_texture = shader.get_uniform_location("metallic_texture"),
             .roughness_texture = shader.get_uniform_location("roughness_texture"),
+            .normal_texture = shader.get_uniform_location("normal_texture"),
             .use_shadow_map = shader.get_uniform_location("use_shadow_map"),
             .direct_light_shadow = shader.get_uniform_location("direct_light_shadow"),
             .point_light_0_shadow = shader.get_uniform_location("point_light_0_shadow"),
@@ -314,6 +317,13 @@ pub const MeshShader = struct {
             gl.glActiveTexture(gl.GL_TEXTURE7);
             gl.glBindTexture(gl.GL_TEXTURE_2D, t.texture);
             gl.glUniform1i(self.roughness_texture, 7);
+        }
+        if (material.normal_texture) |at| {
+            use_textures |= USE_NORMAL_TEXTURE;
+            const t = Assets.gpu_textures.getPtrConst(at);
+            gl.glActiveTexture(gl.GL_TEXTURE8);
+            gl.glBindTexture(gl.GL_TEXTURE_2D, t.texture);
+            gl.glUniform1i(self.normal_texture, 8);
         }
 
         gl.glUniform1i(self.use_textures, use_textures);

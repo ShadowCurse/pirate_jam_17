@@ -78,6 +78,7 @@ pub const TextureType = enum {
     ConcreteAlbedo,
     ConcreteMetallic,
     ConcreteRoughness,
+    ConcreteNormal,
 };
 const TexturePathsType = std.EnumArray(TextureType, [:0]const u8);
 const TEXTURE_PATHS = TexturePathsType.init(.{
@@ -86,6 +87,7 @@ const TEXTURE_PATHS = TexturePathsType.init(.{
     .ConcreteAlbedo = DEFAULT_TEXTURES_DIR_PATH ++ "/concrete_albedo.png",
     .ConcreteMetallic = DEFAULT_TEXTURES_DIR_PATH ++ "/concrete_metallic.png",
     .ConcreteRoughness = DEFAULT_TEXTURES_DIR_PATH ++ "/concrete_roughness.png",
+    .ConcreteNormal = DEFAULT_TEXTURES_DIR_PATH ++ "/concrete_normal.png",
 });
 pub const GpuTextures = std.EnumArray(TextureType, gpu.Texture);
 
@@ -319,6 +321,24 @@ pub fn load_model(
 
                 for (vertices[initial_vertex_num..], normals) |*vertex, normal| {
                     vertex.normal = normal;
+                }
+            },
+            cgltf.cgltf_attribute_type_tangent => {
+                const num_components = cgltf.cgltf_num_components(attr.data[0].type);
+                log.info(@src(), "Tangent has components: {}", .{num_components});
+                log.assert(
+                    @src(),
+                    num_components == 4,
+                    "Tangent has {d} componenets insead of {d}",
+                    .{ num_components, @as(u32, 4) },
+                );
+
+                var tangents: []const math.Vec4 = undefined;
+                tangents.ptr = @ptrCast(floats.ptr);
+                tangents.len = floats.len / 4;
+
+                for (vertices[initial_vertex_num..], tangents) |*vertex, tangent| {
+                    vertex.tangent = tangent;
                 }
             },
             cgltf.cgltf_attribute_type_texcoord => {

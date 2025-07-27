@@ -8,6 +8,7 @@ in vec3 vert_normal;
 in vec2 vert_uv;
 in vec4 vert_color;
 in vec4 vert_light_space_position;
+in mat3 tbn_matrix;
 
 out vec4 frag_color;
 
@@ -33,10 +34,12 @@ uniform samplerCube point_light_3_shadow;
 #define USE_ALBEDO_TEXTURE     1 << 0
 #define USE_METALLIC_TEXTURE   1 << 1
 #define USE_ROUNGHNESS_TEXTURE 1 << 2
+#define USE_NORMAL_TEXTURE     1 << 3
 uniform int use_textures;
 uniform sampler2D albedo_texture;
 uniform sampler2D metallic_texture;
 uniform sampler2D roughness_texture;
+uniform sampler2D normal_texture;
 
 const float PI = 3.14159265359;
 
@@ -122,6 +125,12 @@ float point_shadow(vec3 normal, vec3 from_light, int light_index) {
 
 void main() {
     vec3 normal = normalize(vert_normal);
+    if ((use_textures & USE_NORMAL_TEXTURE) != 0) {
+      normal = texture(normal_texture, vert_uv).xyz;
+      normal = normal * 2.0 - 1.0;
+      normal = normalize(tbn_matrix * normal);
+    }
+
     vec3 to_camera = normalize(camera_position - vert_position);
 
     vec3 albedo = flat_albedo;

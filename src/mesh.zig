@@ -15,6 +15,7 @@ pub const Material = struct {
     albedo_texture: ?Assets.TextureType = null,
     metallic_texture: ?Assets.TextureType = null,
     roughness_texture: ?Assets.TextureType = null,
+    normal_texture: ?Assets.TextureType = null,
 };
 
 const Self = @This();
@@ -25,19 +26,28 @@ pub const Vertex = extern struct {
     uv_x: f32 = 0.0,
     normal: math.Vec3 = .{},
     uv_y: f32 = 0.0,
+    tangent: math.Vec4 = .{},
     color: math.Vec4 = .{},
 
     pub fn set_attributes() void {
+        // position
         gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, @sizeOf(Vertex), @ptrFromInt(0));
+        // uv_x
         gl.glVertexAttribPointer(1, 1, gl.GL_FLOAT, gl.GL_FALSE, @sizeOf(Vertex), @ptrFromInt(3 * @sizeOf(f32)));
+        // normal
         gl.glVertexAttribPointer(2, 3, gl.GL_FLOAT, gl.GL_FALSE, @sizeOf(Vertex), @ptrFromInt(4 * @sizeOf(f32)));
+        // uv_y
         gl.glVertexAttribPointer(3, 1, gl.GL_FLOAT, gl.GL_FALSE, @sizeOf(Vertex), @ptrFromInt(7 * @sizeOf(f32)));
+        // tangent
         gl.glVertexAttribPointer(4, 4, gl.GL_FLOAT, gl.GL_FALSE, @sizeOf(Vertex), @ptrFromInt(8 * @sizeOf(f32)));
+        // color
+        gl.glVertexAttribPointer(5, 4, gl.GL_FLOAT, gl.GL_FALSE, @sizeOf(Vertex), @ptrFromInt(12 * @sizeOf(f32)));
         gl.glEnableVertexAttribArray(0);
         gl.glEnableVertexAttribArray(1);
         gl.glEnableVertexAttribArray(2);
         gl.glEnableVertexAttribArray(3);
         gl.glEnableVertexAttribArray(4);
+        gl.glEnableVertexAttribArray(5);
     }
 };
 
