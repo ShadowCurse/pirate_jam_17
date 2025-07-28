@@ -55,6 +55,7 @@ pub const Environment = struct {
     ao: f32 = 0.03,
     lights_position: [NUM_LIGHTS]math.Vec3 = .{math.Vec3{}} ** NUM_LIGHTS,
     lights_color: [NUM_LIGHTS]math.Color3 = .{math.Color3{}} ** NUM_LIGHTS,
+    lights_param: [NUM_LIGHTS]LightParam = .{LightParam{}} ** NUM_LIGHTS,
     direct_light_direction: math.Vec3 = .{},
     direct_light_color: math.Color3 = .{},
     shadow_map_width: f32 = 20.0,
@@ -64,6 +65,12 @@ pub const Environment = struct {
     skybox_rotation_x: f32 = 0.0,
     skybox_rotation_y: f32 = 0.0,
     skybox_rotation_z: f32 = 0.0,
+
+    pub const LightParam = extern struct {
+        constant: f32 = 1.0,
+        linear: f32 = 0.0,
+        quadratic: f32 = 0.0,
+    };
 
     pub fn shadow_map_view(e: *const Environment) math.Mat4 {
         return math.Mat4.look_at(

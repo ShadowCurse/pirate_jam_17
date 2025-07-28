@@ -16,6 +16,7 @@ out vec4 frag_color;
 uniform vec3 camera_position;
 uniform vec3 light_positions[NUM_LIGHTS];
 uniform vec3 light_colors[NUM_LIGHTS];
+uniform vec3 light_params[NUM_LIGHTS];
 uniform vec3 direct_light_direction;
 uniform vec3 direct_light_color;
 uniform vec3 flat_albedo;
@@ -173,9 +174,11 @@ void main() {
         float ndc = max(dot(normal, to_camera), 0.0);
         float ndh = max(dot(half_vector, to_camera), 0.0);
 
-        float distance    = length(light_positions[i] - vert_position);
-        float attenuation = 1.0 / (distance * distance);
-        vec3 radiance     = light_colors[i] * attenuation;
+        float distance = length(light_positions[i] - vert_position);
+        float attenuation = 1.0 / (light_params[i].x +
+                                   light_params[i].y * distance +
+                                   light_params[i].z * distance * distance);
+        vec3 radiance = light_colors[i] * attenuation;
         
         // cook-torrance brdf
         float normalDF = distribution_ggx(normal, half_vector, roughness);

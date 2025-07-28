@@ -149,6 +149,7 @@ pub const MeshShader = struct {
     camera_position: i32,
     light_positions: i32,
     light_colors: i32,
+    light_params: i32,
     direct_light_direction: i32,
     direct_light_color: i32,
     albedo: i32,
@@ -192,6 +193,7 @@ pub const MeshShader = struct {
             .camera_position = shader.get_uniform_location("camera_position"),
             .light_positions = shader.get_uniform_location("light_positions"),
             .light_colors = shader.get_uniform_location("light_colors"),
+            .light_params = shader.get_uniform_location("light_params"),
             .direct_light_direction = shader.get_uniform_location("direct_light_direction"),
             .direct_light_color = shader.get_uniform_location("direct_light_color"),
             .albedo = shader.get_uniform_location("flat_albedo"),
@@ -263,6 +265,11 @@ pub const MeshShader = struct {
             self.light_colors,
             environment.lights_color.len,
             @ptrCast(&environment.lights_color),
+        );
+        gl.glUniform3fv(
+            self.light_params,
+            environment.lights_param.len,
+            @ptrCast(&environment.lights_param),
         );
         gl.glUniform3f(
             self.direct_light_direction,
