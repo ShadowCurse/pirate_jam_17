@@ -323,7 +323,6 @@ pub const Level = struct {
             if (to_object.len() < 2.5)
                 return null;
             to_object = to_object.normalize();
-            log.info(@src(), "{}", .{to_object.dot(forward)});
             if (to_object.dot(forward) < @cos(std.math.pi / 2.0))
                 return &object.position;
         }
@@ -385,10 +384,9 @@ pub const Level = struct {
         if (self.holding_object) |ho| {
             const object = &self.objects.items[ho];
             const forward = camera.forward_xy().mul_f32(0.6);
-            const new_position = camera.position.add(forward);
+            const new_position = camera.position.add(forward).add(.{ .z = -0.7 });
             object.position = object.position.exp_decay(new_position, 20.0, dt);
             self.circle_collide(&object.position, 0.25);
-            object.position = object.position.add(.{ .z = -0.7 });
 
             const diff = object.rotation_z - camera.yaw;
             if (std.math.pi < diff)
@@ -428,7 +426,7 @@ pub const Level = struct {
                     )) |collision| {
                         position.* = collision.position
                             .add(collision.normal.mul_f32(circle.radius))
-                            .extend(1.0);
+                            .extend(position.z);
                     }
                 },
                 .DoorDoor => {
@@ -471,7 +469,7 @@ pub const Level = struct {
                             )) |collision| {
                                 position.* = collision.position
                                     .add(collision.normal.mul_f32(circle.radius))
-                                    .extend(1.0);
+                                    .extend(position.z);
                             }
                         }
                     }
@@ -516,7 +514,7 @@ pub const Level = struct {
                             )) |collision| {
                                 position.* = collision.position
                                     .add(collision.normal.mul_f32(circle.radius))
-                                    .extend(1.0);
+                                    .extend(position.z);
                             }
                         }
                     }
