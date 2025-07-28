@@ -19,7 +19,6 @@ pub var global_volume: f32 = 1.0;
 pub var volumes: SoundtrackVolumes = .init(.{
     .Background = .same(0.2),
     .Door = .{},
-    .Success = .{},
     .Knock = .{},
     .BoxPickup = .same(0.8),
     .BoxPutDown = .same(0.8),

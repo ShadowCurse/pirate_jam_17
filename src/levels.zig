@@ -551,7 +551,6 @@ pub const Level = struct {
             ) == .Full) {
                 self.correct = object.modifier.correct_box;
                 self.solved = true;
-                Audio.play(.Success, null);
                 self.open_exit_door();
             }
         }

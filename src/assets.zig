@@ -49,7 +49,6 @@ pub const DEFAULT_SOUNDTRACKS_DIR_PATH = "resources/soundtracks";
 pub const SoundtrackType = enum {
     Background,
     Door,
-    Success,
     Knock,
     BoxPickup,
     BoxPutDown,
@@ -63,7 +62,6 @@ const SoundtrackPathsType = std.EnumArray(SoundtrackType, [:0]const u8);
 const SOUNDTRACK_PATHS = SoundtrackPathsType.init(.{
     .Background = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/background.ogg",
     .Door = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/door.ogg",
-    .Success = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/success.ogg",
     .Knock = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/knock.ogg",
     .BoxPickup = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/impactSoft_medium_001.ogg",
     .BoxPutDown = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/impactSoft_heavy_001.ogg",
