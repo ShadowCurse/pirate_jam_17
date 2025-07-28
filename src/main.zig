@@ -223,7 +223,7 @@ pub var frame_arena: std.heap.ArenaAllocator = undefined;
 
 pub var current_level_tag: Levels.Tag = .@"0-1";
 pub var player_level_start_offset: ?math.Vec3 = null;
-pub var mode: Mode = .Edit;
+pub var mode: Mode = if (options.shipping) .Game else .Edit;
 pub var pause: bool = false;
 
 pub var free_camera: Camera = .{};
@@ -256,6 +256,9 @@ pub fn init() void {
         .friction = 12.0,
         .speed = 50.0,
     };
+
+    if (options.shipping)
+        Platform.hide_mouse(true);
 }
 
 fn play_footstep(dt: f32) void {
@@ -317,13 +320,15 @@ pub fn update(dt: f32) void {
     _ = frame_arena.reset(.retain_capacity);
     Renderer.reset();
 
-    if (Input.was_pressed(.@"1")) {
-        mode = .Game;
-        Platform.hide_mouse(true);
-    }
-    if (Input.was_pressed(.@"2")) {
-        mode = .Edit;
-        Platform.hide_mouse(false);
+    if (!options.shipping) {
+        if (Input.was_pressed(.@"1")) {
+            mode = .Game;
+            Platform.hide_mouse(true);
+        }
+        if (Input.was_pressed(.@"2")) {
+            mode = .Edit;
+            Platform.hide_mouse(false);
+        }
     }
 
     const current_level = Levels.levels.getPtr(current_level_tag);

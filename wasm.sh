@@ -1,6 +1,6 @@
 #!/bin/bash
 
-zig build -Dtarget=wasm32-emscripten --sysroot "emsdk/upstream/emscripten" -Doptimize=ReleaseFast 
+zig build -Dshipping -Dtarget=wasm32-emscripten --sysroot "emsdk/upstream/emscripten" -Doptimize=ReleaseFast 
 
 rm -r wasm/resources
 mkdir wasm/resources

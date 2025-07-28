@@ -7,9 +7,11 @@ pub fn build(b: *std.Build) !void {
     var env_map = try std.process.getEnvMap(b.allocator);
     defer env_map.deinit();
 
-    const unibuild = b.option(bool, "no_sound", "Compile without sound") orelse false;
+    const no_sound = b.option(bool, "no_sound", "Compile without sound") orelse false;
+    const shipping = b.option(bool, "shipping", "Compile for shipping") orelse false;
     const options = b.addOptions();
-    options.addOption(bool, "no_sound", unibuild);
+    options.addOption(bool, "no_sound", no_sound);
+    options.addOption(bool, "shipping", shipping);
 
     const c_lib = build_c_libc(b, target, &env_map);
 
