@@ -23,6 +23,8 @@ pub const ModelType = enum {
     DoorDoor,
     DoorFrame,
     DoorInnerLight,
+    LampBody,
+    LampLight,
 };
 const ModelPathsType = std.EnumArray(ModelType, [:0]const u8);
 const MODEL_PATHS = ModelPathsType.init(.{
@@ -34,6 +36,8 @@ const MODEL_PATHS = ModelPathsType.init(.{
     .DoorDoor = DEFAULT_MESHES_DIR_PATH ++ "/door_door.glb",
     .DoorFrame = DEFAULT_MESHES_DIR_PATH ++ "/door_frame.glb",
     .DoorInnerLight = DEFAULT_MESHES_DIR_PATH ++ "/door_inner_light.glb",
+    .LampBody = DEFAULT_MESHES_DIR_PATH ++ "/lamp_body.glb",
+    .LampLight = DEFAULT_MESHES_DIR_PATH ++ "/lamp_light.glb",
 });
 
 pub const GpuMeshes = std.EnumArray(ModelType, gpu.Mesh);
@@ -46,7 +50,7 @@ pub const SoundtrackType = enum {
     Background,
     Door,
     Success,
-    Error,
+    Knock,
     BoxPickup,
     BoxPutDown,
     Footstep0,
@@ -60,7 +64,7 @@ const SOUNDTRACK_PATHS = SoundtrackPathsType.init(.{
     .Background = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/background.ogg",
     .Door = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/door.ogg",
     .Success = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/success.ogg",
-    .Error = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/error.ogg",
+    .Knock = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/knock.ogg",
     .BoxPickup = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/impactSoft_medium_001.ogg",
     .BoxPutDown = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/impactSoft_heavy_001.ogg",
     .Footstep0 = DEFAULT_SOUNDTRACKS_DIR_PATH ++ "/footstep_concrete_000.ogg",
@@ -94,8 +98,12 @@ pub const GpuTextures = std.EnumArray(TextureType, gpu.Texture);
 pub const DEFAULT_SKYBOXES_DIR_PATH = "resources/skyboxes";
 pub const SkyboxType = enum {
     Default,
+    Midday,
+    Evening,
+    Night,
     Grey,
     Purple,
+    Red,
 };
 const SkyboxPathsType = std.EnumArray(SkyboxType, [6][:0]const u8);
 const SKYBOX_PATHS = SkyboxPathsType.init(.{
@@ -113,6 +121,30 @@ const SKYBOX_PATHS = SkyboxPathsType.init(.{
         DEFAULT_SKYBOXES_DIR_PATH ++ "/default/cubemap_4.png",
         DEFAULT_SKYBOXES_DIR_PATH ++ "/default/cubemap_5.png",
     },
+    .Midday = .{
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/midday/cubemap_0.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/midday/cubemap_1.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/midday/cubemap_2.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/midday/cubemap_3.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/midday/cubemap_4.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/midday/cubemap_5.png",
+    },
+    .Evening = .{
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/evening/cubemap_0.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/evening/cubemap_1.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/evening/cubemap_2.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/evening/cubemap_3.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/evening/cubemap_4.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/evening/cubemap_5.png",
+    },
+    .Night = .{
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/night/cubemap_0.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/night/cubemap_1.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/night/cubemap_2.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/night/cubemap_3.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/night/cubemap_4.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/night/cubemap_5.png",
+    },
     .Grey = .{
         DEFAULT_SKYBOXES_DIR_PATH ++ "/grey/cubemap_0.png",
         DEFAULT_SKYBOXES_DIR_PATH ++ "/grey/cubemap_1.png",
@@ -128,6 +160,14 @@ const SKYBOX_PATHS = SkyboxPathsType.init(.{
         DEFAULT_SKYBOXES_DIR_PATH ++ "/purple/cubemap_3.png",
         DEFAULT_SKYBOXES_DIR_PATH ++ "/purple/cubemap_4.png",
         DEFAULT_SKYBOXES_DIR_PATH ++ "/purple/cubemap_5.png",
+    },
+    .Red = .{
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/red/cubemap_0.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/red/cubemap_1.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/red/cubemap_2.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/red/cubemap_3.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/red/cubemap_4.png",
+        DEFAULT_SKYBOXES_DIR_PATH ++ "/red/cubemap_5.png",
     },
 });
 pub const GpuSkyboxes = std.EnumArray(SkyboxType, gpu.Skybox);

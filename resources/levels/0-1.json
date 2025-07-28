@@ -458,9 +458,31 @@
                 "b": 0e0
             }
         ],
+        "lights_param": [
+            {
+                "constant": 1e0,
+                "linear": 0e0,
+                "quadratic": 0e0
+            },
+            {
+                "constant": 1e0,
+                "linear": 0e0,
+                "quadratic": 0e0
+            },
+            {
+                "constant": 1e0,
+                "linear": 0e0,
+                "quadratic": 0e0
+            },
+            {
+                "constant": 1e0,
+                "linear": 0e0,
+                "quadratic": 0e0
+            }
+        ],
         "direct_light_direction": {
-            "x": 4.399999976158142e-1,
-            "y": -1e0,
+            "x": 1.75e0,
+            "y": -1.0399999618530273e0,
             "z": -2.5999999046325684e0
         },
         "direct_light_color": {
@@ -471,7 +493,7 @@
         "shadow_map_width": 2e1,
         "shadow_map_height": 2e1,
         "shadow_map_depth": 5e1,
-        "skybox": "Default",
+        "skybox": "Midday",
         "skybox_rotation_x": 0e0,
         "skybox_rotation_y": 0e0,
         "skybox_rotation_z": 0e0

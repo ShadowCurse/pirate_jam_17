@@ -234,6 +234,12 @@ pub var random_footstep: std.Random.Xoroshiro128 = .init(0);
 pub var player_move_time: f32 = 0.0;
 pub var player_last_footstep_position: math.Vec2 = .{};
 
+// UI
+pub var looking_at_pickable_object: bool = false;
+
+//Sound box
+pub var sound_box_played_sound: bool = false;
+
 const Mode = enum {
     Game,
     Edit,
@@ -348,15 +354,25 @@ pub fn update(dt: f32) void {
                 const camera_ray = player_camera.mouse_to_ray(.{});
 
                 if (current_level.holding_object == null)
-                    current_level.player_look_at_object(&camera_ray, Input.was_pressed(.LMB))
+                    looking_at_pickable_object =
+                        current_level.player_look_at_object(&camera_ray, Input.was_pressed(.LMB))
                 else if (Input.was_pressed(.LMB))
                     current_level.player_put_down_object();
+
+                if (current_level.sound_box_in_sight(&camera_ray)) |sb| {
+                    if (!sound_box_played_sound) {
+                        Audio.play(.Knock, sb);
+                        sound_box_played_sound = true;
+                    }
+                } else {
+                    sound_box_played_sound = false;
+                }
 
                 current_level.player_move_object(&player_camera, dt);
                 current_level.player_collide(&player_camera);
                 current_level.player_in_the_door(&player_camera);
 
-                Ui.animate_cursor(current_level.looking_at_pickable_object, dt);
+                Ui.animate_cursor(looking_at_pickable_object, dt);
                 if (current_level.finished)
                     move_to_next_level();
             }

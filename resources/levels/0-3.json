@@ -442,6 +442,28 @@
                 "b": 0e0
             }
         ],
+        "lights_param": [
+            {
+                "constant": 1e0,
+                "linear": 0e0,
+                "quadratic": 0e0
+            },
+            {
+                "constant": 1e0,
+                "linear": 0e0,
+                "quadratic": 0e0
+            },
+            {
+                "constant": 1e0,
+                "linear": 0e0,
+                "quadratic": 0e0
+            },
+            {
+                "constant": 1e0,
+                "linear": 0e0,
+                "quadratic": 0e0
+            }
+        ],
         "direct_light_direction": {
             "x": 4.399999976158142e-1,
             "y": -1e0,

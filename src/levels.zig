@@ -28,6 +28,11 @@ pub const Tag = enum {
     @"0-3",
     @"0-4",
     @"0-5",
+    @"0-6",
+    @"0-7",
+    @"0-8",
+    @"0-9",
+    @"1-0",
 
     pub fn next(self: Tag) Tag {
         var t: u8 = @intFromEnum(self);
@@ -83,15 +88,13 @@ pub const Level = struct {
     holding_object: ?u32 = null,
     put_down_object: ?u32 = null,
 
+    // Level state
     started: bool = false,
     starting: bool = false,
     solved: bool = false,
     correct: bool = false,
     finishing: bool = false,
     finished: bool = false,
-
-    // Cursor
-    looking_at_pickable_object: bool = false,
 
     objects: std.ArrayListUnmanaged(Object) = .{},
     environment: Renderer.Environment = .{},
@@ -105,6 +108,7 @@ pub const Level = struct {
         rotation_y: f32 = 0.0,
         rotation_z: f32 = 0.0,
         scale: f32 = 1.0,
+        scale_z: f32 = 1.0,
 
         pub const MaterialTag = enum {
             Original,
@@ -130,7 +134,7 @@ pub const Level = struct {
                 .to_mat4();
             return math.Mat4.IDENDITY
                 .translate(self.position)
-                .scale(math.vec3(self.scale, self.scale, self.scale))
+                .scale(math.vec3(self.scale, self.scale, self.scale * self.scale_z))
                 .mul(rotation);
         }
     };
@@ -310,10 +314,26 @@ pub const Level = struct {
         }
     }
 
-    pub fn player_look_at_object(self: *Self, ray: *const math.Ray, pickup: bool) void {
-        self.looking_at_pickable_object = false;
-        if (self.holding_object != null) return;
+    pub fn sound_box_in_sight(self: *Self, ray: *const math.Ray) ?*math.Vec3 {
+        const forward = ray.direction.xy().normalize().extend(0.0);
+        for (self.objects.items) |*object| {
+            if (object.model != .Box) continue;
+            if (!object.modifier.plays_music) continue;
+            var to_object = object.position.sub(ray.origin);
+            if (to_object.len() < 2.5)
+                return null;
+            to_object = to_object.normalize();
+            log.info(@src(), "{}", .{to_object.dot(forward)});
+            if (to_object.dot(forward) < @cos(std.math.pi / 2.0))
+                return &object.position;
+        }
+        return null;
+    }
 
+    pub fn player_look_at_object(self: *Self, ray: *const math.Ray, pickup: bool) bool {
+        if (self.holding_object != null) return false;
+
+        var looking_at_pickable_object: bool = false;
         var closest_t: f32 = std.math.floatMax(f32);
         for (self.objects.items, 0..) |*object, i| {
             if (object.model != .Box) continue;
@@ -324,7 +344,7 @@ pub const Level = struct {
 
             const t = object.transform();
             if (m.ray_intersection(&t, ray)) |r| {
-                self.looking_at_pickable_object = true;
+                looking_at_pickable_object = true;
                 if (r.t < closest_t) {
                     closest_t = r.t;
                     if (pickup) {
@@ -335,7 +355,8 @@ pub const Level = struct {
             }
         }
         if (self.holding_object != null)
-            self.looking_at_pickable_object = false;
+            looking_at_pickable_object = false;
+        return looking_at_pickable_object;
     }
 
     pub fn player_put_down_object(self: *Self) void {
