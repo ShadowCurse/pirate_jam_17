@@ -21,10 +21,10 @@ pub var sdl_events: []const sdl.SDL_Event = &.{};
 pub var mouse_position: math.Vec2 = .{};
 
 pub fn init() void {
-    if (options.no_sound)
-        sdl.assert(@src(), sdl.SDL_Init(sdl.SDL_INIT_VIDEO))
-    else
-        sdl.assert(@src(), sdl.SDL_Init(sdl.SDL_INIT_VIDEO | sdl.SDL_INIT_AUDIO));
+    var sdl_flags = sdl.SDL_INIT_VIDEO | sdl.SDL_INIT_GAMEPAD;
+    if (!options.no_sound)
+        sdl_flags |= sdl.SDL_INIT_AUDIO;
+    sdl.assert(@src(), sdl.SDL_Init(sdl_flags));
 
     // for 24bit depth
     sdl.assert(@src(), sdl.SDL_GL_SetAttribute(sdl.SDL_GL_DEPTH_SIZE, 24));

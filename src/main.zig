@@ -183,6 +183,7 @@ fn free_camera_move(camera: *Camera, dt: f32) void {
 
 fn player_camera_move(camera: *Camera, dt: f32) void {
     camera.yaw -= Input.mouse_motion.x * Input.mouse_sense * dt;
+    camera.yaw -= Input.gamepad_axis.get(.RIGHT_X) * Input.mouse_sense * 3.0 * dt;
     if (math.PI < camera.yaw) {
         camera.yaw -= math.PI * 2.0;
     }
@@ -191,6 +192,7 @@ fn player_camera_move(camera: *Camera, dt: f32) void {
     }
 
     camera.pitch -= Input.mouse_motion.y * Input.mouse_sense * dt;
+    camera.pitch -= Input.gamepad_axis.get(.RIGHT_Y) * Input.mouse_sense * 3.0 * dt;
     if (math.PI / 2.0 < camera.pitch) {
         camera.pitch = math.PI / 2.0;
     }
@@ -204,13 +206,16 @@ fn player_camera_move(camera: *Camera, dt: f32) void {
 
     const fa =
         -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.S)))) +
-        1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.W))));
+        1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.W)))) +
+        -Input.gamepad_axis.get(.LEFT_Y);
     const ra =
         -1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.A)))) +
-        1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.D))));
+        1.0 * @as(f32, @floatFromInt(@intFromBool(Input.is_pressed(.D)))) +
+        Input.gamepad_axis.get(.LEFT_X);
     camera.acceleration = forward.mul_f32(fa).add(right.mul_f32(ra));
-    if (camera.acceleration.len_squared() != 0.0)
-        camera.acceleration = camera.acceleration.normalize().mul_f32(camera.speed);
+    if (1.0 < camera.acceleration.len_squared())
+        camera.acceleration = camera.acceleration.normalize();
+    camera.acceleration = camera.acceleration.mul_f32(camera.speed);
 
     camera.acceleration = camera.acceleration.sub(camera.velocity.mul_f32(camera.friction));
     camera.position = camera.acceleration.mul_f32(0.5 * dt * dt)
@@ -254,7 +259,7 @@ pub fn init() void {
     player_camera = .{
         .position = .{ .y = -1.0, .z = 1.0 },
         .friction = 12.0,
-        .speed = 50.0,
+        .speed = 40.0,
     };
 
     if (options.shipping)
@@ -341,7 +346,8 @@ pub fn update(dt: f32) void {
 
             Animations.play(dt);
 
-            if (Input.was_pressed(.SPACE)) {
+            const pause_action = Input.was_pressed(.SPACE) or Input.was_pressed(.GAMEPAD_START);
+            if (pause_action) {
                 pause = !pause;
                 Platform.hide_mouse(!pause);
                 if (pause)
@@ -358,10 +364,11 @@ pub fn update(dt: f32) void {
 
                 const camera_ray = player_camera.mouse_to_ray(.{});
 
+                const pick_action = Input.was_pressed(.LMB) or Input.was_pressed(.GAMEPAD_A);
                 if (current_level.holding_object == null)
                     looking_at_pickable_object =
-                        current_level.player_look_at_object(&camera_ray, Input.was_pressed(.LMB))
-                else if (Input.was_pressed(.LMB))
+                        current_level.player_look_at_object(&camera_ray, pick_action)
+                else if (pick_action)
                     current_level.player_put_down_object();
 
                 if (current_level.sound_box_in_sight(&camera_ray)) |sb| {
