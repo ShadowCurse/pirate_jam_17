@@ -12,6 +12,7 @@ pub var mouse_motion: math.Vec2 = .{};
 pub var mouse_sense: f32 = 1.0;
 
 pub var gamepad_axis: GamepadAxisStates = .initFill(0.0);
+var gamepad: ?*sdl.SDL_Gamepad = null;
 
 pub const KeyState = packed struct(u8) {
     was_pressed: bool = false,
@@ -144,6 +145,11 @@ pub fn update() void {
                     };
                 }
             },
+            sdl.SDL_EVENT_GAMEPAD_ADDED => {
+                if (gamepad) |g|
+                    sdl.SDL_CloseGamepad(g);
+                gamepad = sdl.SDL_OpenGamepad(e.gdevice.which);
+            },
             sdl.SDL_EVENT_GAMEPAD_AXIS_MOTION => {
                 if (GamepadAxis.to_axis(e.gaxis.axis)) |a| {
                     const DEADZONE = 0.2;
@@ -155,7 +161,6 @@ pub fn update() void {
                         gamepad_axis.getPtr(a).* = vv;
                 }
             },
-
             sdl.SDL_EVENT_GAMEPAD_BUTTON_DOWN => {
                 if (Key.to_gamepad_key(e.gbutton.button)) |k| {
                     keys.getPtr(k).* = .{
