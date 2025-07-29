@@ -61,7 +61,7 @@ pub const Environment = struct {
     shadow_map_width: f32 = 20.0,
     shadow_map_height: f32 = 20.0,
     shadow_map_depth: f32 = 50.0,
-    skybox: Assets.SkyboxType = .Default,
+    skybox: ?Assets.SkyboxType = null,
     skybox_rotation_x: f32 = 0.0,
     skybox_rotation_y: f32 = 0.0,
     skybox_rotation_z: f32 = 0.0,
@@ -270,22 +270,25 @@ pub fn render(
         use_shadow_map,
     );
     for (Self.mesh_infos.slice()) |*mi| {
+        if (mi.material.invisible) continue;
         Self.mesh_shader.set_mesh_params(&mi.model, &mi.material);
         mi.mesh.draw();
     }
 
-    // Skybox needs this rotation, otherwise it is sideways.
-    const skybox_rotation = math.Quat.from_axis_angle(.X, std.math.pi / 2.0)
-        .mul(math.Quat.from_axis_angle(.X, environment.skybox_rotation_x))
-        .mul(math.Quat.from_axis_angle(.Z, environment.skybox_rotation_y))
-        .mul(math.Quat.from_axis_angle(.Y, environment.skybox_rotation_z));
-    const skybox_view = view.mul(skybox_rotation.to_mat4());
-    const skybox = Assets.gpu_skyboxes.getPtr(environment.skybox);
-    Self.skybox_shader.draw(
-        skybox.texture,
-        &skybox_view,
-        &projection,
-    );
+    if (environment.skybox) |skybox| {
+        // Skybox needs this rotation, otherwise it is sideways.
+        const skybox_rotation = math.Quat.from_axis_angle(.X, std.math.pi / 2.0)
+            .mul(math.Quat.from_axis_angle(.X, environment.skybox_rotation_x))
+            .mul(math.Quat.from_axis_angle(.Z, environment.skybox_rotation_y))
+            .mul(math.Quat.from_axis_angle(.Y, environment.skybox_rotation_z));
+        const skybox_view = view.mul(skybox_rotation.to_mat4());
+        const s = Assets.gpu_skyboxes.getPtr(skybox);
+        Self.skybox_shader.draw(
+            s.texture,
+            &skybox_view,
+            &projection,
+        );
+    }
 
     prepare_post_processing_context();
     Self.post_processing_shader.draw(Ui.blur_strength, Self.framebuffer.texture);

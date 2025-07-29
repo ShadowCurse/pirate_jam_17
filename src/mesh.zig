@@ -14,6 +14,7 @@ pub const Material = struct {
     uv_scale: f32 = 1.0,
     no_shadow: bool = false,
     no_shadow_point_light: bool = false,
+    invisible: bool = false,
     albedo_texture: ?Assets.TextureType = null,
     metallic_texture: ?Assets.TextureType = null,
     roughness_texture: ?Assets.TextureType = null,
