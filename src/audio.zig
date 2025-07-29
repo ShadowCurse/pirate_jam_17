@@ -20,6 +20,7 @@ pub var volumes: SoundtrackVolumes = .init(.{
     .Background = .same(0.2),
     .Door = .{},
     .Knock = .{},
+    .Ending = .same(0.0),
     .BoxPickup = .same(0.8),
     .BoxPutDown = .same(0.8),
     .Footstep0 = .same(0.3),
