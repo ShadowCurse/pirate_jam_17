@@ -31,7 +31,6 @@ pub const Tag = enum {
     @"0-6",
     @"0-7",
     @"0-8",
-    @"0-9",
     @"1-0",
 
     pub fn next(self: Tag) Tag {
@@ -126,6 +125,7 @@ pub const Level = struct {
             correct_box: bool = false,
             plays_music: bool = false,
             not_interractive: bool = false,
+            player_body: bool = false,
         };
 
         fn transform(self: *const Object) math.Mat4 {
@@ -194,12 +194,13 @@ pub const Level = struct {
         }
     }
 
-    pub fn player_offset_in_exit_door(self: *const Self, camera: *const Camera) math.Vec3 {
+    pub fn player_offset_in_exit_door(self: *const Self, camera: *const Camera) ?math.Vec3 {
         for (self.objects.items) |*object| {
             if (!object.modifier.exit_door) continue;
             return camera.position.sub(object.position);
+        } else {
+            return null;
         }
-        log.panic(@src(), "No exit door found", .{});
     }
 
     pub fn on_entrance_door_open(self: *Self, _: ?*anyopaque) void {
@@ -396,6 +397,38 @@ pub const Level = struct {
             else if (diff < -std.math.pi)
                 object.rotation_z += std.math.pi * 2.0;
             object.rotation_z = math.exp_decay(object.rotation_z, camera.yaw, 14.0, dt);
+        }
+    }
+
+    pub fn player_move_body_box(self: *Self, camera: *const Camera) void {
+        for (self.objects.items) |*object| {
+            if (!object.modifier.player_body) continue;
+            object.position = camera.position;
+            object.position.z = 0.5;
+
+            var r1 = Assets.aabbs.get(object.model);
+            r1.size = r1.size.mul_f32(object.scale);
+            r1.rotation = object.rotation_z;
+            const r1_position = object.position.xy();
+
+            for (self.objects.items) |*o| {
+                if (o.model != .Platform) continue;
+
+                var r2 = Assets.aabbs.get(o.model);
+                r2.size = r2.size.mul_f32(o.scale);
+                const r2_position = o.position.xy();
+
+                if (!self.solved and physics.rectangle_rectangle_intersection(
+                    r1,
+                    r1_position,
+                    r2,
+                    r2_position,
+                ) == .Full) {
+                    self.correct = object.modifier.correct_box;
+                    self.solved = true;
+                    self.finished = true;
+                }
+            }
         }
     }
 

@@ -57,8 +57,6 @@ pub fn main() void {
     Levels.init();
     Ui.init();
 
-    Audio.play(.Background, null);
-
     init();
 
     var t = std.time.nanoTimestamp();
@@ -226,13 +224,22 @@ fn player_camera_move(camera: *Camera, dt: f32) void {
 
 pub var frame_arena: std.heap.ArenaAllocator = undefined;
 
-pub var current_level_tag: Levels.Tag = .@"0-1";
+pub var current_level_tag: Levels.Tag = if (options.shipping) .@"0-1" else .@"1-0";
 pub var player_level_start_offset: ?math.Vec3 = null;
 pub var mode: Mode = if (options.shipping) .Game else .Edit;
 pub var pause: bool = false;
 
 pub var free_camera: Camera = .{};
 pub var player_camera: Camera = .{};
+
+// Ending
+const ENDING_MOVE_TIME = 11.0;
+const ENDING_FADE_TIME = 14.0;
+var ending: bool = false;
+var ending_t: f32 = 0.0;
+var ending_0_cubic_bezier_point: math.Vec3 = .{};
+var ending_1_cubic_bezier_point: math.Vec3 = .{};
+var ending_2_cubic_bezier_point: math.Vec3 = .{ .z = 35.0 };
 
 // Footsteps
 pub var random_footstep: std.Random.Xoroshiro128 = .init(0);
@@ -250,17 +257,19 @@ const Mode = enum {
     Edit,
 };
 
+const DEFAULT_PLAYER_CAMERA: Camera = .{
+    .position = .{ .y = -1.0, .z = 1.0 },
+    .friction = 12.0,
+    .speed = 40.0,
+};
+
 pub fn init() void {
     frame_arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
 
     free_camera = .{
         .position = .{ .y = -5.0, .z = 5.0 },
     };
-    player_camera = .{
-        .position = .{ .y = -1.0, .z = 1.0 },
-        .friction = 12.0,
-        .speed = 40.0,
-    };
+    player_camera = DEFAULT_PLAYER_CAMERA;
 
     if (options.shipping)
         Platform.hide_mouse(true);
@@ -313,6 +322,7 @@ pub fn current_camera() *const Camera {
 pub fn move_to_next_level() void {
     var current_level = Levels.levels.getPtr(current_level_tag);
     player_level_start_offset = current_level.player_offset_in_exit_door(&player_camera);
+    log.info(@src(), "cl: {any} {any}", .{ current_level_tag, player_level_start_offset });
     current_level_tag = if (current_level.correct)
         current_level_tag.next()
     else
@@ -321,9 +331,51 @@ pub fn move_to_next_level() void {
     current_level.reset();
 }
 
+pub fn start_ending() void {
+    ending = true;
+    ending_0_cubic_bezier_point = player_camera.position;
+    ending_1_cubic_bezier_point = player_camera.forward_xy().neg().mul_f32(15.0);
+
+    Audio.set_volume(.Background, 0.0, 1.0, 0.0, 1.0);
+    Audio.play(.Ending, null);
+    Audio.set_volume(.Ending, 1.0, 1.0, 1.0, 1.0);
+}
+
+pub fn play_ending(dt: f32) void {
+    ending_t += dt;
+    if (ending_t < ENDING_MOVE_TIME) {
+        const t = ending_t / ENDING_MOVE_TIME;
+        const p_0_1 = ending_1_cubic_bezier_point.sub(ending_0_cubic_bezier_point);
+        const p_1_2 = ending_2_cubic_bezier_point.sub(ending_1_cubic_bezier_point);
+        const p0 = ending_0_cubic_bezier_point.add(p_0_1.mul_f32(t));
+        const p1 = ending_1_cubic_bezier_point.add(p_1_2.mul_f32(t));
+        const p01 = p1.sub(p0);
+        const p = p0.add(p01.mul_f32(t));
+        player_camera.position = player_camera.position.exp_decay(p, 5.0, dt);
+        player_camera.yaw = math.exp_decay(player_camera.yaw, 0.0, 0.5, dt);
+        player_camera.pitch = math.exp_decay(player_camera.pitch, -std.math.pi / 2.0, 0.5, dt);
+    } else if (ending_t < ENDING_FADE_TIME) {
+        const p = (ending_t - ENDING_MOVE_TIME) / (ENDING_FADE_TIME - ENDING_MOVE_TIME);
+        const t = p * p * (3.0 - 2.0 * p);
+        Ui.blur_strength = math.lerp(0.0, 10.0, t);
+    } else {
+        ending_t = 0.0;
+        ending = false;
+        player_camera = DEFAULT_PLAYER_CAMERA;
+        move_to_next_level();
+        Audio.set_volume(.Ending, 0.0, 1.0, 0.0, 1.0);
+
+        const volume = Audio.volumes.getPtr(.Background);
+        Audio.set_volume(.Background, volume.left, 1.0, volume.right, 1.0);
+    }
+}
+
 pub fn update(dt: f32) void {
     _ = frame_arena.reset(.retain_capacity);
     Renderer.reset();
+
+    if (!Audio.is_playing(.Background))
+        Audio.play(.Background, null);
 
     if (!options.shipping) {
         if (Input.was_pressed(.@"1")) {
@@ -340,55 +392,63 @@ pub fn update(dt: f32) void {
 
     const camera_in_use = switch (mode) {
         .Game => blk: {
-            if (!current_level.started) {
-                current_level.start_level(&player_camera, player_level_start_offset);
-            }
-
             Animations.play(dt);
-
-            const pause_action = Input.was_pressed(.SPACE) or Input.was_pressed(.GAMEPAD_START);
-            if (pause_action) {
-                pause = !pause;
-                Platform.hide_mouse(!pause);
-                if (pause)
-                    Ui.state_pause()
-                else
-                    Ui.state_game();
-            }
-
-            if (pause) {
-                Ui.interract(dt);
-            } else if (current_level.started) {
-                player_camera_move(&player_camera, dt);
-                play_footstep(dt);
-
-                const camera_ray = player_camera.mouse_to_ray(.{});
-
-                const pick_action = Input.was_pressed(.LMB) or Input.was_pressed(.GAMEPAD_A);
-                if (current_level.holding_object == null)
-                    looking_at_pickable_object =
-                        current_level.player_look_at_object(&camera_ray, pick_action)
-                else if (pick_action)
-                    current_level.player_put_down_object();
-
-                if (current_level.sound_box_in_sight(&camera_ray)) |sb| {
-                    if (!sound_box_played_sound) {
-                        Audio.play(.Knock, sb);
-                        sound_box_played_sound = true;
-                    }
-                } else {
-                    sound_box_played_sound = false;
+            if (ending) {
+                play_ending(dt);
+            } else {
+                if (!current_level.started) {
+                    current_level.start_level(&player_camera, player_level_start_offset);
                 }
 
-                current_level.player_move_object(&player_camera, dt);
-                current_level.player_collide(&player_camera);
-                current_level.player_in_the_door(&player_camera);
+                const pause_action = Input.was_pressed(.SPACE) or Input.was_pressed(.GAMEPAD_START);
+                if (pause_action) {
+                    pause = !pause;
+                    Platform.hide_mouse(!pause);
+                    if (pause)
+                        Ui.state_pause()
+                    else
+                        Ui.state_game();
+                }
 
-                Ui.animate_cursor(looking_at_pickable_object, dt);
-                if (current_level.finished)
-                    move_to_next_level();
+                if (pause) {
+                    Ui.interract(dt);
+                } else if (current_level.started) {
+                    player_camera_move(&player_camera, dt);
+                    play_footstep(dt);
+
+                    const camera_ray = player_camera.mouse_to_ray(.{});
+
+                    const pick_action = Input.was_pressed(.LMB) or Input.was_pressed(.GAMEPAD_A);
+                    if (current_level.holding_object == null)
+                        looking_at_pickable_object =
+                            current_level.player_look_at_object(&camera_ray, pick_action)
+                    else if (pick_action)
+                        current_level.player_put_down_object();
+
+                    if (current_level.sound_box_in_sight(&camera_ray)) |sb| {
+                        if (!sound_box_played_sound) {
+                            Audio.play(.Knock, sb);
+                            sound_box_played_sound = true;
+                        }
+                    } else {
+                        sound_box_played_sound = false;
+                    }
+
+                    current_level.player_move_object(&player_camera, dt);
+                    current_level.player_collide(&player_camera);
+                    current_level.player_move_body_box(&player_camera);
+                    current_level.player_in_the_door(&player_camera);
+
+                    Ui.animate_cursor(looking_at_pickable_object, dt);
+                    if (current_level.finished) {
+                        if (current_level_tag == .@"1-0")
+                            start_ending()
+                        else
+                            move_to_next_level();
+                    }
+                }
+                Ui.animate_blur(dt);
             }
-            Ui.animate_blur(dt);
 
             break :blk &player_camera;
         },
