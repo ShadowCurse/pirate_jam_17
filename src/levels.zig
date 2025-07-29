@@ -125,6 +125,7 @@ pub const Level = struct {
             exit_door: bool = false,
             correct_box: bool = false,
             plays_music: bool = false,
+            not_interractive: bool = false,
         };
 
         fn transform(self: *const Object) math.Mat4 {
@@ -336,6 +337,7 @@ pub const Level = struct {
         var closest_t: f32 = std.math.floatMax(f32);
         for (self.objects.items, 0..) |*object, i| {
             if (object.model != .Box) continue;
+            if (object.modifier.not_interractive) continue;
             const m = Assets.meshes.getPtrConst(object.model);
 
             if (Self.PICKUP_DISTANCE < object.position.sub(ray.origin).len())
@@ -414,6 +416,8 @@ pub const Level = struct {
         for (self.objects.items) |*object| {
             switch (object.model) {
                 .Wall, .Box => {
+                    if (object.modifier.not_interractive) continue;
+
                     var rectangle = Assets.aabbs.get(object.model);
                     rectangle.rotation = object.rotation_z;
                     rectangle.size = rectangle.size.mul_f32(object.scale);
@@ -565,7 +569,7 @@ pub const Level = struct {
             const r1_position = object.position.xy();
 
             for (self.objects.items, 0..) |*o, i| {
-                if (o.model != .Box or i == ho) continue;
+                if (o.model != .Box or o.modifier.not_interractive or i == ho) continue;
 
                 var r2 = Assets.aabbs.get(o.model);
                 r2.size = r2.size.mul_f32(o.scale);
