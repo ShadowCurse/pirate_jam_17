@@ -21,6 +21,7 @@
                     "emissive_strength": 1.4901161193847656e-8,
                     "uv_scale": 1e1,
                     "no_shadow": false,
+                    "no_shadow_point_light": false,
                     "albedo_texture": null,
                     "metallic_texture": "ConcreteMetallic",
                     "roughness_texture": "ConcreteRoughness",
@@ -59,6 +60,7 @@
                     "emissive_strength": 0e0,
                     "uv_scale": 1e0,
                     "no_shadow": false,
+                    "no_shadow_point_light": false,
                     "albedo_texture": null,
                     "metallic_texture": null,
                     "roughness_texture": null,
@@ -97,6 +99,7 @@
                     "emissive_strength": 0e0,
                     "uv_scale": 5e0,
                     "no_shadow": false,
+                    "no_shadow_point_light": false,
                     "albedo_texture": "ConcreteAlbedo",
                     "metallic_texture": "ConcreteMetallic",
                     "roughness_texture": "ConcreteRoughness",
@@ -112,7 +115,7 @@
             "rotation_y": 0e0,
             "rotation_z": 0e0,
             "scale": 1e0,
-            "scale_z": 2.999999523162842e-1
+            "scale_z": 1.0000000149011612e-1
         },
         {
             "model": "Wall",
@@ -135,6 +138,7 @@
                     "emissive_strength": 0e0,
                     "uv_scale": 5e0,
                     "no_shadow": false,
+                    "no_shadow_point_light": false,
                     "albedo_texture": "ConcreteAlbedo",
                     "metallic_texture": "ConcreteMetallic",
                     "roughness_texture": "ConcreteRoughness",
@@ -150,7 +154,7 @@
             "rotation_y": 0e0,
             "rotation_z": 1.5700000524520874e0,
             "scale": 1e0,
-            "scale_z": 1e0
+            "scale_z": 1.0000000149011612e-1
         },
         {
             "model": "Box",
@@ -173,6 +177,7 @@
                     "emissive_strength": 0e0,
                     "uv_scale": 1e0,
                     "no_shadow": false,
+                    "no_shadow_point_light": false,
                     "albedo_texture": null,
                     "metallic_texture": null,
                     "roughness_texture": null,
@@ -211,6 +216,7 @@
                     "emissive_strength": 0e0,
                     "uv_scale": 1e0,
                     "no_shadow": false,
+                    "no_shadow_point_light": false,
                     "albedo_texture": null,
                     "metallic_texture": null,
                     "roughness_texture": null,
@@ -315,6 +321,7 @@
                     "emissive_strength": 0e0,
                     "uv_scale": 5e0,
                     "no_shadow": false,
+                    "no_shadow_point_light": false,
                     "albedo_texture": "ConcreteAlbedo",
                     "metallic_texture": "ConcreteMetallic",
                     "roughness_texture": "ConcreteRoughness",
@@ -330,7 +337,7 @@
             "rotation_y": 0e0,
             "rotation_z": 0e0,
             "scale": 1e0,
-            "scale_z": 1e0
+            "scale_z": 1.0000000149011612e-1
         },
         {
             "model": "Wall",
@@ -353,6 +360,7 @@
                     "emissive_strength": 0e0,
                     "uv_scale": 5e0,
                     "no_shadow": false,
+                    "no_shadow_point_light": false,
                     "albedo_texture": "ConcreteAlbedo",
                     "metallic_texture": "ConcreteMetallic",
                     "roughness_texture": "ConcreteRoughness",
@@ -368,45 +376,7 @@
             "rotation_y": 0e0,
             "rotation_z": 1.5700000524520874e0,
             "scale": 1e0,
-            "scale_z": 1e0
-        },
-        {
-            "model": "Wall",
-            "modifier": {
-                "entrance_door": false,
-                "exit_door": false,
-                "correct_box": false,
-                "plays_music": false
-            },
-            "material": {
-                "Custom": {
-                    "albedo": {
-                        "r": 9.019608050584793e-2,
-                        "g": 9.019608050584793e-2,
-                        "b": 9.019608050584793e-2,
-                        "a": 1e0
-                    },
-                    "metallic": 5e-1,
-                    "roughness": 1e0,
-                    "emissive_strength": 0e0,
-                    "uv_scale": 5e0,
-                    "no_shadow": false,
-                    "albedo_texture": "ConcreteAlbedo",
-                    "metallic_texture": "ConcreteMetallic",
-                    "roughness_texture": "ConcreteRoughness",
-                    "normal_texture": "ConcreteNormal"
-                }
-            },
-            "position": {
-                "x": 0e0,
-                "y": 5e0,
-                "z": 0e0
-            },
-            "rotation_x": 0e0,
-            "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0,
-            "scale": 1e0,
-            "scale_z": 1e0
+            "scale_z": 1.0000000149011612e-1
         },
         {
             "model": "DoorDoor",
@@ -495,6 +465,7 @@
                     "emissive_strength": 0e0,
                     "uv_scale": 1e0,
                     "no_shadow": false,
+                    "no_shadow_point_light": false,
                     "albedo_texture": null,
                     "metallic_texture": null,
                     "roughness_texture": null,
