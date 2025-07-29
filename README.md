@@ -3,7 +3,7 @@
 ## Assets
 ### Audio
 - https://pixabay.com/sound-effects/sliding-noise-v2-83483/
-- https://pixabay.com/music/ambient-soft-ambient-textures-with-subtle-bird-chirps-377058/
+- https://pixabay.com/music/meditationspiritual-meditation-relax-yoga-music-381876/
 - https://pixabay.com/sound-effects/interstellar-sound-space-orchestral-17236/
 - https://kenney.nl/assets/impact-sounds
 ### Icons
