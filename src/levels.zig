@@ -322,7 +322,7 @@ pub const Level = struct {
             if (object.model != .Box) continue;
             if (!object.modifier.plays_music) continue;
             var to_object = object.position.sub(ray.origin);
-            if (to_object.len() < 2.5)
+            if (to_object.len() < 1.2)
                 return null;
             to_object = to_object.normalize();
             if (to_object.dot(forward) < @cos(std.math.pi / 2.0))
@@ -448,7 +448,7 @@ pub const Level = struct {
 
         for (self.objects.items) |*object| {
             switch (object.model) {
-                .Wall, .Box => {
+                .Wall, .Box, .LampBody => {
                     if (object.modifier.not_interractive) continue;
 
                     var rectangle = Assets.aabbs.get(object.model);
