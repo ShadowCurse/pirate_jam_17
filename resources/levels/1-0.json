@@ -6,22 +6,26 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Custom": {
                     "albedo": {
-                        "r": 5.392158031463623e-2,
-                        "g": 5.392158031463623e-2,
-                        "b": 5.392158031463623e-2,
+                        "r": 0e0,
+                        "g": 0e0,
+                        "b": 0e0,
                         "a": 1e0
                     },
                     "metallic": 0e0,
                     "roughness": 8.999999761581421e-1,
                     "emissive_strength": 0e0,
-                    "uv_scale": 1e1,
+                    "uv_scale": 5e2,
                     "no_shadow": false,
-                    "albedo_texture": "ConcreteAlbedo",
+                    "no_shadow_point_light": false,
+                    "invisible": false,
+                    "albedo_texture": null,
                     "metallic_texture": "ConcreteMetallic",
                     "roughness_texture": "ConcreteRoughness",
                     "normal_texture": "ConcreteNormal"
@@ -35,29 +39,34 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 0e0,
-            "scale": 1e0
+            "scale": 1e2,
+            "scale_z": 1e0
         },
         {
             "model": "Box",
             "modifier": {
                 "entrance_door": false,
                 "exit_door": false,
-                "correct_box": true,
-                "plays_music": false
+                "correct_box": false,
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Custom": {
                     "albedo": {
-                        "r": 5.764706134796143e-1,
-                        "g": 1.8085351213812828e-2,
-                        "b": 1.8085351213812828e-2,
+                        "r": 1e0,
+                        "g": 1e0,
+                        "b": 1e0,
                         "a": 1e0
                     },
-                    "metallic": 0e0,
-                    "roughness": 5e-1,
+                    "metallic": 1e0,
+                    "roughness": 1.7000019550323486e-1,
                     "emissive_strength": 0e0,
                     "uv_scale": 1e0,
                     "no_shadow": false,
+                    "no_shadow_point_light": false,
+                    "invisible": false,
                     "albedo_texture": null,
                     "metallic_texture": null,
                     "roughness_texture": null,
@@ -65,88 +74,15 @@
                 }
             },
             "position": {
-                "x": -1.600000023841858e0,
+                "x": -1.5e0,
                 "y": 0e0,
-                "z": 0e0
+                "z": 1.5487372875213623e-3
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 0e0,
-            "scale": 1e0
-        },
-        {
-            "model": "Wall",
-            "modifier": {
-                "entrance_door": false,
-                "exit_door": false,
-                "correct_box": false,
-                "plays_music": false
-            },
-            "material": {
-                "Custom": {
-                    "albedo": {
-                        "r": 9.019608050584793e-2,
-                        "g": 9.019608050584793e-2,
-                        "b": 9.019608050584793e-2,
-                        "a": 1e0
-                    },
-                    "metallic": 5e-1,
-                    "roughness": 1e0,
-                    "emissive_strength": 0e0,
-                    "uv_scale": 5e0,
-                    "no_shadow": false,
-                    "albedo_texture": "ConcreteAlbedo",
-                    "metallic_texture": "ConcreteMetallic",
-                    "roughness_texture": "ConcreteRoughness",
-                    "normal_texture": "ConcreteNormal"
-                }
-            },
-            "position": {
-                "x": -5e0,
-                "y": 0e0,
-                "z": 0e0
-            },
-            "rotation_x": 0e0,
-            "rotation_y": 0e0,
-            "rotation_z": 0e0,
-            "scale": 1e0
-        },
-        {
-            "model": "Wall",
-            "modifier": {
-                "entrance_door": false,
-                "exit_door": false,
-                "correct_box": false,
-                "plays_music": false
-            },
-            "material": {
-                "Custom": {
-                    "albedo": {
-                        "r": 8.823531866073608e-2,
-                        "g": 8.823531866073608e-2,
-                        "b": 8.823531866073608e-2,
-                        "a": 1e0
-                    },
-                    "metallic": 5e-1,
-                    "roughness": 1e0,
-                    "emissive_strength": 0e0,
-                    "uv_scale": 5e0,
-                    "no_shadow": false,
-                    "albedo_texture": "ConcreteAlbedo",
-                    "metallic_texture": "ConcreteMetallic",
-                    "roughness_texture": "ConcreteRoughness",
-                    "normal_texture": "ConcreteNormal"
-                }
-            },
-            "position": {
-                "x": 0e0,
-                "y": 5e0,
-                "z": 0e0
-            },
-            "rotation_x": 0e0,
-            "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0,
-            "scale": 1e0
+            "scale": 1.1299998760223389e0,
+            "scale_z": 1e0
         },
         {
             "model": "Box",
@@ -154,20 +90,41 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
-                "Original": {}
+                "Custom": {
+                    "albedo": {
+                        "r": 5.132646486163139e-2,
+                        "g": 0e0,
+                        "b": 4.3627452850341797e-1,
+                        "a": 1e0
+                    },
+                    "metallic": 6.999998092651367e-1,
+                    "roughness": 0e0,
+                    "emissive_strength": 0e0,
+                    "uv_scale": 1e0,
+                    "no_shadow": true,
+                    "no_shadow_point_light": false,
+                    "invisible": false,
+                    "albedo_texture": null,
+                    "metallic_texture": null,
+                    "roughness_texture": null,
+                    "normal_texture": null
+                }
             },
             "position": {
-                "x": 1.600000023841858e0,
+                "x": 1.5e0,
                 "y": 0e0,
                 "z": 0e0
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 0e0,
-            "scale": 1e0
+            "scale": 8.80000114440918e-1,
+            "scale_z": 1.2199997901916504e0
         },
         {
             "model": "Platform",
@@ -175,157 +132,23 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Original": {}
             },
             "position": {
                 "x": 0e0,
-                "y": 1.850000023841858e0,
+                "y": 1.5e0,
                 "z": 0e0
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 0e0,
-            "scale": 1e0
-        },
-        {
-            "model": "DoorInnerLight",
-            "modifier": {
-                "entrance_door": false,
-                "exit_door": false,
-                "correct_box": false,
-                "plays_music": false
-            },
-            "material": {
-                "Original": {}
-            },
-            "position": {
-                "x": 0e0,
-                "y": 4e0,
-                "z": 0e0
-            },
-            "rotation_x": 0e0,
-            "rotation_y": 0e0,
-            "rotation_z": 0e0,
-            "scale": 1e0
-        },
-        {
-            "model": "DoorFrame",
-            "modifier": {
-                "entrance_door": false,
-                "exit_door": false,
-                "correct_box": false,
-                "plays_music": false
-            },
-            "material": {
-                "Original": {}
-            },
-            "position": {
-                "x": 0e0,
-                "y": 4e0,
-                "z": 0e0
-            },
-            "rotation_x": 0e0,
-            "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0,
-            "scale": 1e0
-        },
-        {
-            "model": "DoorDoor",
-            "modifier": {
-                "entrance_door": false,
-                "exit_door": true,
-                "correct_box": false,
-                "plays_music": false
-            },
-            "material": {
-                "Original": {}
-            },
-            "position": {
-                "x": 0e0,
-                "y": 4e0,
-                "z": 0e0
-            },
-            "rotation_x": 0e0,
-            "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0,
-            "scale": 1e0
-        },
-        {
-            "model": "Wall",
-            "modifier": {
-                "entrance_door": false,
-                "exit_door": false,
-                "correct_box": false,
-                "plays_music": false
-            },
-            "material": {
-                "Custom": {
-                    "albedo": {
-                        "r": 9.019608050584793e-2,
-                        "g": 9.019608050584793e-2,
-                        "b": 9.019608050584793e-2,
-                        "a": 1e0
-                    },
-                    "metallic": 5e-1,
-                    "roughness": 1e0,
-                    "emissive_strength": 0e0,
-                    "uv_scale": 5e0,
-                    "no_shadow": false,
-                    "albedo_texture": "ConcreteAlbedo",
-                    "metallic_texture": "ConcreteMetallic",
-                    "roughness_texture": "ConcreteRoughness",
-                    "normal_texture": "ConcreteNormal"
-                }
-            },
-            "position": {
-                "x": 5e0,
-                "y": 0e0,
-                "z": 0e0
-            },
-            "rotation_x": 0e0,
-            "rotation_y": 0e0,
-            "rotation_z": 0e0,
-            "scale": 1e0
-        },
-        {
-            "model": "Wall",
-            "modifier": {
-                "entrance_door": false,
-                "exit_door": false,
-                "correct_box": false,
-                "plays_music": false
-            },
-            "material": {
-                "Custom": {
-                    "albedo": {
-                        "r": 9.019608050584793e-2,
-                        "g": 9.019608050584793e-2,
-                        "b": 9.019608050584793e-2,
-                        "a": 1e0
-                    },
-                    "metallic": 5e-1,
-                    "roughness": 1e0,
-                    "emissive_strength": 0e0,
-                    "uv_scale": 5e0,
-                    "no_shadow": false,
-                    "albedo_texture": "ConcreteAlbedo",
-                    "metallic_texture": "ConcreteMetallic",
-                    "roughness_texture": "ConcreteRoughness",
-                    "normal_texture": "ConcreteNormal"
-                }
-            },
-            "position": {
-                "x": 0e0,
-                "y": -5e0,
-                "z": 0e0
-            },
-            "rotation_x": 0e0,
-            "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0,
-            "scale": 1e0
+            "scale": 1e0,
+            "scale_z": 1e0
         },
         {
             "model": "DoorDoor",
@@ -333,7 +156,9 @@
                 "entrance_door": true,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Original": {}
@@ -346,7 +171,8 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 1.5700000524520874e0,
-            "scale": 1e0
+            "scale": 1e0,
+            "scale_z": 1e0
         },
         {
             "model": "DoorFrame",
@@ -354,7 +180,9 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Original": {}
@@ -367,7 +195,8 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 1.5700000524520874e0,
-            "scale": 1e0
+            "scale": 1e0,
+            "scale_z": 1e0
         },
         {
             "model": "DoorInnerLight",
@@ -375,7 +204,9 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Original": {}
@@ -388,7 +219,8 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 0e0,
-            "scale": 1e0
+            "scale": 1e0,
+            "scale_z": 1e0
         },
         {
             "model": "Box",
@@ -396,10 +228,474 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
+            },
+            "material": {
+                "Custom": {
+                    "albedo": {
+                        "r": 0e0,
+                        "g": 1.9607841968536377e-1,
+                        "b": 8.333333134651184e-1,
+                        "a": 1e0
+                    },
+                    "metallic": 1.7000019550323486e-1,
+                    "roughness": 7.699997425079346e-1,
+                    "emissive_strength": 3.1999996304512024e-1,
+                    "uv_scale": 1e0,
+                    "no_shadow": true,
+                    "no_shadow_point_light": false,
+                    "invisible": false,
+                    "albedo_texture": null,
+                    "metallic_texture": null,
+                    "roughness_texture": null,
+                    "normal_texture": null
+                }
+            },
+            "position": {
+                "x": -1.5e0,
+                "y": 3e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": 1e0,
+            "scale_z": 1e0
+        },
+        {
+            "model": "LampBody",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "plays_music": false,
+                "not_interractive": true,
+                "player_body": false
+            },
+            "material": {
+                "Custom": {
+                    "albedo": {
+                        "r": 1e0,
+                        "g": 1e0,
+                        "b": 1e0,
+                        "a": 1e0
+                    },
+                    "metallic": 1e0,
+                    "roughness": 0e0,
+                    "emissive_strength": 5e0,
+                    "uv_scale": 1e0,
+                    "no_shadow": false,
+                    "no_shadow_point_light": false,
+                    "invisible": false,
+                    "albedo_texture": null,
+                    "metallic_texture": null,
+                    "roughness_texture": null,
+                    "normal_texture": null
+                }
+            },
+            "position": {
+                "x": 0e0,
+                "y": 2e0,
+                "z": 5e0
+            },
+            "rotation_x": 1.569998860359192e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": 1e0,
+            "scale_z": 1e0
+        },
+        {
+            "model": "Box",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Original": {}
+            },
+            "position": {
+                "x": 0e0,
+                "y": 3e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": 1e0,
+            "scale_z": 1e0
+        },
+        {
+            "model": "Box",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
+            },
+            "material": {
+                "Custom": {
+                    "albedo": {
+                        "r": 1e0,
+                        "g": 1e0,
+                        "b": 1e0,
+                        "a": 1e0
+                    },
+                    "metallic": 5e-1,
+                    "roughness": 5e-1,
+                    "emissive_strength": 0e0,
+                    "uv_scale": 1e0,
+                    "no_shadow": false,
+                    "no_shadow_point_light": false,
+                    "invisible": false,
+                    "albedo_texture": "ConcreteAlbedo",
+                    "metallic_texture": "ConcreteMetallic",
+                    "roughness_texture": "ConcreteRoughness",
+                    "normal_texture": "ConcreteNormal"
+                }
+            },
+            "position": {
+                "x": 1.5e0,
+                "y": 1.5e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": 1e0,
+            "scale_z": 1e0
+        },
+        {
+            "model": "Box",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
+            },
+            "material": {
+                "Custom": {
+                    "albedo": {
+                        "r": 0e0,
+                        "g": 5.049020051956177e-1,
+                        "b": 2.079007774591446e-1,
+                        "a": 1e0
+                    },
+                    "metallic": 9.000018239021301e-2,
+                    "roughness": 3.0000193044543266e-2,
+                    "emissive_strength": 0e0,
+                    "uv_scale": 1e0,
+                    "no_shadow": false,
+                    "no_shadow_point_light": false,
+                    "invisible": false,
+                    "albedo_texture": null,
+                    "metallic_texture": null,
+                    "roughness_texture": null,
+                    "normal_texture": null
+                }
+            },
+            "position": {
+                "x": -1.5e0,
+                "y": 1.5e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": 8.900001049041748e-1,
+            "scale_z": 1e0
+        },
+        {
+            "model": "Box",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
+            },
+            "material": {
+                "Custom": {
+                    "albedo": {
+                        "r": 2.696078419685364e-1,
+                        "g": 1.559496372938156e-1,
+                        "b": 1.559496372938156e-1,
+                        "a": 1e0
+                    },
+                    "metallic": 7.499997615814209e-1,
+                    "roughness": 2.1000021696090698e-1,
+                    "emissive_strength": 0e0,
+                    "uv_scale": 1e0,
+                    "no_shadow": false,
+                    "no_shadow_point_light": false,
+                    "invisible": false,
+                    "albedo_texture": null,
+                    "metallic_texture": null,
+                    "roughness_texture": null,
+                    "normal_texture": null
+                }
+            },
+            "position": {
+                "x": -1.5e0,
+                "y": -1.5e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": 9.000000953674316e-1,
+            "scale_z": 1e0
+        },
+        {
+            "model": "Box",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
+            },
+            "material": {
+                "Custom": {
+                    "albedo": {
+                        "r": 2.4870240688323975e-1,
+                        "g": 6.513077020645142e-1,
+                        "b": 6.764705777168274e-1,
+                        "a": 1e0
+                    },
+                    "metallic": 4.000000059604645e-1,
+                    "roughness": 8.699997663497925e-1,
+                    "emissive_strength": 0e0,
+                    "uv_scale": 1e0,
+                    "no_shadow": false,
+                    "no_shadow_point_light": false,
+                    "invisible": false,
+                    "albedo_texture": null,
+                    "metallic_texture": null,
+                    "roughness_texture": null,
+                    "normal_texture": null
+                }
+            },
+            "position": {
+                "x": 1.5e0,
+                "y": -1.5e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": 1.1999998092651367e0,
+            "scale_z": 8.500001430511475e-1
+        },
+        {
+            "model": "Box",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
+            },
+            "material": {
+                "Custom": {
+                    "albedo": {
+                        "r": 1.0957317054271698e-1,
+                        "g": 9.313725680112839e-2,
+                        "b": 2.7941179275512695e-1,
+                        "a": 1e0
+                    },
+                    "metallic": 5e-1,
+                    "roughness": 1.9000020623207092e-1,
+                    "emissive_strength": 0e0,
+                    "uv_scale": 1e0,
+                    "no_shadow": false,
+                    "no_shadow_point_light": false,
+                    "invisible": false,
+                    "albedo_texture": null,
+                    "metallic_texture": null,
+                    "roughness_texture": null,
+                    "normal_texture": null
+                }
+            },
+            "position": {
+                "x": 1.5e0,
+                "y": 3e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": 1e0,
+            "scale_z": 9.100000858306885e-1
+        },
+        {
+            "model": "Box",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
+            },
+            "material": {
+                "Custom": {
+                    "albedo": {
+                        "r": 0e0,
+                        "g": 0e0,
+                        "b": 0e0,
+                        "a": 1e0
+                    },
+                    "metallic": 5e-1,
+                    "roughness": 5e-1,
+                    "emissive_strength": 0e0,
+                    "uv_scale": 1e0,
+                    "no_shadow": false,
+                    "no_shadow_point_light": false,
+                    "invisible": false,
+                    "albedo_texture": null,
+                    "metallic_texture": null,
+                    "roughness_texture": null,
+                    "normal_texture": null
+                }
+            },
+            "position": {
+                "x": -3e0,
+                "y": 1.5e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": 1e0,
+            "scale_z": 6.100003719329834e-1
+        },
+        {
+            "model": "Box",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
+            },
+            "material": {
+                "Custom": {
+                    "albedo": {
+                        "r": 9.795270562171936e-1,
+                        "g": 3.0392158031463623e-1,
+                        "b": 1e0,
+                        "a": 1e0
+                    },
+                    "metallic": 1.599999964237213e-1,
+                    "roughness": 1e0,
+                    "emissive_strength": 0e0,
+                    "uv_scale": 1e0,
+                    "no_shadow": false,
+                    "no_shadow_point_light": false,
+                    "invisible": false,
+                    "albedo_texture": null,
+                    "metallic_texture": null,
+                    "roughness_texture": null,
+                    "normal_texture": null
+                }
+            },
+            "position": {
+                "x": 3e0,
+                "y": 1.5e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": 1e0,
+            "scale_z": 1.299999713897705e0
+        },
+        {
+            "model": "Box",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
+            },
+            "material": {
+                "Custom": {
+                    "albedo": {
+                        "r": 8.088235259056091e-1,
+                        "g": 0e0,
+                        "b": 0e0,
+                        "a": 1e0
+                    },
+                    "metallic": 8.999999761581421e-1,
+                    "roughness": 1.0000000149011612e-1,
+                    "emissive_strength": 0e0,
+                    "uv_scale": 1e0,
+                    "no_shadow": false,
+                    "no_shadow_point_light": false,
+                    "invisible": false,
+                    "albedo_texture": null,
+                    "metallic_texture": "ConcreteMetallic",
+                    "roughness_texture": "ConcreteRoughness",
+                    "normal_texture": "ConcreteNormal"
+                }
+            },
+            "position": {
+                "x": 0e0,
+                "y": 4.5e0,
+                "z": 0e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": 1e0,
+            "scale_z": 2e0
+        },
+        {
+            "model": "Box",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
+            },
+            "material": {
+                "Custom": {
+                    "albedo": {
+                        "r": 2.595154941082001e-1,
+                        "g": 8.823529481887817e-1,
+                        "b": 0e0,
+                        "a": 1e0
+                    },
+                    "metallic": 2.3000022768974304e-1,
+                    "roughness": 7.499997615814209e-1,
+                    "emissive_strength": 4.3999984860420227e-1,
+                    "uv_scale": 1e0,
+                    "no_shadow": false,
+                    "no_shadow_point_light": false,
+                    "invisible": false,
+                    "albedo_texture": null,
+                    "metallic_texture": null,
+                    "roughness_texture": null,
+                    "normal_texture": null
+                }
             },
             "position": {
                 "x": 0e0,
@@ -409,7 +705,140 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 0e0,
-            "scale": 1e0
+            "scale": 1e0,
+            "scale_z": 1.1299998760223389e0
+        },
+        {
+            "model": "Box",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "plays_music": false,
+                "not_interractive": true,
+                "player_body": false
+            },
+            "material": {
+                "Custom": {
+                    "albedo": {
+                        "r": 1e0,
+                        "g": 8.823525905609131e-2,
+                        "b": 0e0,
+                        "a": 1e0
+                    },
+                    "metallic": 1e0,
+                    "roughness": 0e0,
+                    "emissive_strength": 2e0,
+                    "uv_scale": 1e0,
+                    "no_shadow": false,
+                    "no_shadow_point_light": false,
+                    "invisible": false,
+                    "albedo_texture": null,
+                    "metallic_texture": null,
+                    "roughness_texture": null,
+                    "normal_texture": null
+                }
+            },
+            "position": {
+                "x": 0e0,
+                "y": 1.5e0,
+                "z": 3.9600000381469727e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": 2e1,
+            "scale_z": 1e0
+        },
+        {
+            "model": "Box",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "plays_music": false,
+                "not_interractive": true,
+                "player_body": false
+            },
+            "material": {
+                "Original": {}
+            },
+            "position": {
+                "x": 4.7999998927116394e-1,
+                "y": 1.5199999809265137e0,
+                "z": 4.75e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": 1.0399999618530273e0,
+            "scale_z": 1e0
+        },
+        {
+            "model": "Box",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": false,
+                "plays_music": false,
+                "not_interractive": true,
+                "player_body": false
+            },
+            "material": {
+                "Original": {}
+            },
+            "position": {
+                "x": -4.7999998927116394e-1,
+                "y": 1.5199999809265137e0,
+                "z": 4.75e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": 1.0399999618530273e0,
+            "scale_z": 1e0
+        },
+        {
+            "model": "Box",
+            "modifier": {
+                "entrance_door": false,
+                "exit_door": false,
+                "correct_box": true,
+                "plays_music": false,
+                "not_interractive": true,
+                "player_body": true
+            },
+            "material": {
+                "Custom": {
+                    "albedo": {
+                        "r": 1e0,
+                        "g": 1e0,
+                        "b": 1e0,
+                        "a": 1e0
+                    },
+                    "metallic": 5e-1,
+                    "roughness": 5e-1,
+                    "emissive_strength": 0e0,
+                    "uv_scale": 1e0,
+                    "no_shadow": false,
+                    "no_shadow_point_light": false,
+                    "invisible": true,
+                    "albedo_texture": null,
+                    "metallic_texture": null,
+                    "roughness_texture": null,
+                    "normal_texture": null
+                }
+            },
+            "position": {
+                "x": -6.499313712120056e-1,
+                "y": -4.023563861846924e0,
+                "z": 1e0
+            },
+            "rotation_x": 0e0,
+            "rotation_y": 0e0,
+            "rotation_z": 0e0,
+            "scale": 1e0,
+            "scale_z": 1e0
         }
     ],
     "environment": {
@@ -417,8 +846,8 @@
         "lights_position": [
             {
                 "x": 0e0,
-                "y": 4e0,
-                "z": 1e0
+                "y": 1.5e0,
+                "z": 4.820000171661377e0
             },
             {
                 "x": 0e0,
@@ -439,8 +868,8 @@
         "lights_color": [
             {
                 "r": 1e0,
-                "g": 1e0,
-                "b": 1e0
+                "g": 3.2352936267852783e-1,
+                "b": 0e0
             },
             {
                 "r": 1e0,
@@ -458,20 +887,42 @@
                 "b": 0e0
             }
         ],
+        "lights_param": [
+            {
+                "constant": 0e0,
+                "linear": 0e0,
+                "quadratic": 1.0000001639127731e-3
+            },
+            {
+                "constant": 1e0,
+                "linear": 0e0,
+                "quadratic": 0e0
+            },
+            {
+                "constant": 0e0,
+                "linear": 0e0,
+                "quadratic": 1.0000000474974513e-3
+            },
+            {
+                "constant": 1e0,
+                "linear": 0e0,
+                "quadratic": 0e0
+            }
+        ],
         "direct_light_direction": {
-            "x": 4.399999976158142e-1,
-            "y": -1e0,
-            "z": -2.5999999046325684e0
+            "x": 0e0,
+            "y": 0e0,
+            "z": -1e0
         },
         "direct_light_color": {
-            "r": 1e0,
-            "g": 1e0,
-            "b": 1e0
+            "r": 0e0,
+            "g": 0e0,
+            "b": 0e0
         },
         "shadow_map_width": 2e1,
         "shadow_map_height": 2e1,
         "shadow_map_depth": 5e1,
-        "skybox": "Default",
+        "skybox": null,
         "skybox_rotation_x": 0e0,
         "skybox_rotation_y": 0e0,
         "skybox_rotation_z": 0e0
