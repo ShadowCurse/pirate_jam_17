@@ -24,7 +24,6 @@ pub const ModelType = enum {
     DoorFrame,
     DoorInnerLight,
     LampBody,
-    LampLight,
 };
 const ModelPathsType = std.EnumArray(ModelType, [:0]const u8);
 const MODEL_PATHS = ModelPathsType.init(.{
@@ -37,7 +36,6 @@ const MODEL_PATHS = ModelPathsType.init(.{
     .DoorFrame = DEFAULT_MESHES_DIR_PATH ++ "/door_frame.glb",
     .DoorInnerLight = DEFAULT_MESHES_DIR_PATH ++ "/door_inner_light.glb",
     .LampBody = DEFAULT_MESHES_DIR_PATH ++ "/lamp_body.glb",
-    .LampLight = DEFAULT_MESHES_DIR_PATH ++ "/lamp_light.glb",
 });
 
 pub const GpuMeshes = std.EnumArray(ModelType, gpu.Mesh);
