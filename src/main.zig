@@ -517,7 +517,6 @@ pub fn update(dt: f32) void {
                 }
 
                 current_level.imgui_ui(frame_arena.allocator(), current_level_tag);
-                Renderer.imgui_ui();
                 Ui.imgui_ui();
                 Audio.imgui_ui();
                 Input.imgui_ui();

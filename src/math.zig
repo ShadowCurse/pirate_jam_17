@@ -50,6 +50,14 @@ pub const Color4 = extern struct {
             .a = start.a + (end.a - start.a) * t,
         };
     }
+
+    pub inline fn to_color3(self: Color4) Color3 {
+        return .{
+            .r = self.r,
+            .g = self.g,
+            .b = self.b,
+        };
+    }
 };
 
 pub const Ray = struct {

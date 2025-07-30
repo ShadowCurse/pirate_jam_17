@@ -142,7 +142,6 @@ pub const MeshShader = struct {
 
     view: i32,
     projection: i32,
-    model: i32,
     shadow_map_view: i32,
     shadow_map_projection: i32,
 
@@ -152,28 +151,22 @@ pub const MeshShader = struct {
     light_params: i32,
     direct_light_direction: i32,
     direct_light_color: i32,
-    albedo: i32,
-    metallic: i32,
-    roughness: i32,
     ao: i32,
-    emissive_strength: i32,
-    uv_scale: i32,
 
     albedo_texture: i32,
     normal_roughness_texture: i32,
     direct_light_shadow: i32,
     point_light_shadows: [Renderer.MAX_LIGHTS]i32,
 
-    options: i32,
-
     current_options: Options = .{},
 
-    const Options = packed struct(i32) {
+    pub const Options = packed struct(i32) {
         num_lights: u2 = 0,
         use_albedo: bool = false,
         use_normal_roughness: bool = false,
-        use_shadow_map: bool = false,
-        _: u27 = 0,
+        no_direct_light_shadow: bool = false,
+        no_point_light_shadow: bool = false,
+        _: u26 = 0,
     };
 
     const Self = @This();
@@ -188,7 +181,6 @@ pub const MeshShader = struct {
             .shader = shader,
             .view = shader.get_uniform_location("view"),
             .projection = shader.get_uniform_location("projection"),
-            .model = shader.get_uniform_location("model"),
             .shadow_map_view = shader.get_uniform_location("shadow_map_view"),
             .shadow_map_projection = shader.get_uniform_location("shadow_map_projection"),
             .camera_position = shader.get_uniform_location("camera_position"),
@@ -197,12 +189,7 @@ pub const MeshShader = struct {
             .light_params = shader.get_uniform_location("light_params"),
             .direct_light_direction = shader.get_uniform_location("direct_light_direction"),
             .direct_light_color = shader.get_uniform_location("direct_light_color"),
-            .albedo = shader.get_uniform_location("flat_albedo"),
-            .metallic = shader.get_uniform_location("flat_metallic"),
-            .roughness = shader.get_uniform_location("flat_roughness"),
             .ao = shader.get_uniform_location("ao"),
-            .emissive_strength = shader.get_uniform_location("emissive_strength"),
-            .uv_scale = shader.get_uniform_location("uv_scale"),
             .albedo_texture = shader.get_uniform_location("albedo_texture"),
             .normal_roughness_texture = shader.get_uniform_location("normal_roughness_texture"),
             .direct_light_shadow = shader.get_uniform_location("direct_light_shadow"),
@@ -212,7 +199,6 @@ pub const MeshShader = struct {
                 shader.get_uniform_location("point_light_2_shadow"),
                 shader.get_uniform_location("point_light_3_shadow"),
             },
-            .options = shader.get_uniform_location("options"),
         };
     }
 
@@ -228,13 +214,7 @@ pub const MeshShader = struct {
         environment: *const Renderer.Environment,
         direct_light_shadow: u32,
         point_light_shadows: []u32,
-        use_shadow_map: bool,
     ) void {
-        self.current_options = .{
-            .num_lights = @truncate(environment.num_lights),
-            .use_shadow_map = use_shadow_map,
-        };
-
         gl.glUniformMatrix4fv(self.view, 1, gl.GL_FALSE, @ptrCast(camera_view));
         gl.glUniformMatrix4fv(self.projection, 1, gl.GL_FALSE, @ptrCast(camera_projection));
 
@@ -289,52 +269,29 @@ pub const MeshShader = struct {
             environment.direct_light_color.b,
         );
 
-        if (use_shadow_map) {
-            gl.glActiveTexture(gl.GL_TEXTURE0);
-            gl.glBindTexture(gl.GL_TEXTURE_2D, direct_light_shadow);
-            gl.glUniform1i(self.direct_light_shadow, 0);
+        gl.glActiveTexture(gl.GL_TEXTURE0);
+        gl.glBindTexture(gl.GL_TEXTURE_2D, direct_light_shadow);
+        gl.glUniform1i(self.direct_light_shadow, 0);
 
-            for (point_light_shadows, 0..) |texture, i| {
-                gl.glActiveTexture(@as(u32, @intCast(gl.GL_TEXTURE1 + @as(i32, @intCast(i)))));
-                gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, texture);
-            }
-            for (self.point_light_shadows, 0..) |b, i|
-                gl.glUniform1i(b, @intCast(i + 1));
+        for (point_light_shadows, 0..) |texture, i| {
+            gl.glActiveTexture(@as(u32, @intCast(gl.GL_TEXTURE1 + @as(i32, @intCast(i)))));
+            gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, texture);
         }
-    }
+        for (self.point_light_shadows, 0..) |b, i|
+            gl.glUniform1i(b, @intCast(i + 1));
 
-    pub fn set_mesh_params(
-        self: *Self,
-        model: *const math.Mat4,
-        material: *const Mesh.Material,
-    ) void {
-        gl.glUniformMatrix4fv(self.model, 1, gl.GL_FALSE, @ptrCast(model));
-        gl.glUniform3f(self.albedo, material.albedo.r, material.albedo.g, material.albedo.b);
-        gl.glUniform1f(self.metallic, material.metallic);
-        gl.glUniform1f(self.roughness, material.roughness);
-        gl.glUniform1f(self.emissive_strength, material.emissive_strength);
-        gl.glUniform1f(self.uv_scale, material.uv_scale);
-
-        if (material.albedo_texture) |at| {
-            self.current_options.use_albedo = true;
-            const t = Assets.gpu_textures.getPtrConst(at);
+        {
+            const t = Assets.gpu_textures.getPtrConst(.ConcreteAlbedo);
             gl.glActiveTexture(gl.GL_TEXTURE5);
             gl.glBindTexture(gl.GL_TEXTURE_2D, t.texture);
             gl.glUniform1i(self.albedo_texture, 5);
-        } else {
-            self.current_options.use_albedo = false;
         }
-        if (material.normal_roughness_texture) |at| {
-            self.current_options.use_normal_roughness = true;
-            const t = Assets.gpu_textures.getPtrConst(at);
+        {
+            const t = Assets.gpu_textures.getPtrConst(.ConcreteNormalRoughness);
             gl.glActiveTexture(gl.GL_TEXTURE6);
             gl.glBindTexture(gl.GL_TEXTURE_2D, t.texture);
             gl.glUniform1i(self.normal_roughness_texture, 6);
-        } else {
-            self.current_options.use_normal_roughness = false;
         }
-
-        gl.glUniform1i(self.options, @bitCast(self.current_options));
     }
 };
 

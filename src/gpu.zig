@@ -1,6 +1,8 @@
+const std = @import("std");
 const builtin = @import("builtin");
 const log = @import("log.zig");
 const gl = @import("bindings/gl.zig");
+const math = @import("math.zig");
 
 const Platform = @import("platform.zig");
 const Renderer = @import("renderer.zig");
@@ -69,8 +71,22 @@ pub const Framebuffer = struct {
 pub const Mesh = struct {
     vertex_buffer: u32,
     index_buffer: u32,
+    instance_buffer: u32,
     n_indices: i32,
     vertex_array: u32,
+
+    instance_infos: std.BoundedArray(InstanceInfo, MAX_INSTANCES) = .{},
+
+    pub const MAX_INSTANCES = 32;
+    pub const InstanceInfo = extern struct {
+        model: math.Mat4,
+        albedo: math.Color3,
+        metallic: f32,
+        roughness: f32,
+        emissive_strength: f32,
+        uv_scale: f32,
+        options: i32,
+    };
 
     const Self = @This();
 
@@ -96,15 +112,51 @@ pub const Mesh = struct {
         );
         const n_indices: i32 = @intCast(indices.len);
 
+        var instance_buffer: u32 = undefined;
+        gl.glGenBuffers(1, &instance_buffer);
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, instance_buffer);
+        gl.glBufferData(
+            gl.GL_ARRAY_BUFFER,
+            @intCast(@sizeOf(InstanceInfo) * 32),
+            null,
+            gl.GL_DYNAMIC_DRAW,
+        );
+
         var vertex_array: u32 = undefined;
         gl.glGenVertexArrays(1, &vertex_array);
         gl.glBindVertexArray(vertex_array);
+
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vertex_buffer);
         VERTEX_TYPE.set_attributes();
+
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, instance_buffer);
+        // model
+        gl.glVertexAttribPointer(6, 4, gl.GL_FLOAT, gl.GL_FALSE, @sizeOf(InstanceInfo), @ptrFromInt(0 * @sizeOf(f32)));
+        gl.glVertexAttribPointer(7, 4, gl.GL_FLOAT, gl.GL_FALSE, @sizeOf(InstanceInfo), @ptrFromInt(4 * @sizeOf(f32)));
+        gl.glVertexAttribPointer(8, 4, gl.GL_FLOAT, gl.GL_FALSE, @sizeOf(InstanceInfo), @ptrFromInt(8 * @sizeOf(f32)));
+        gl.glVertexAttribPointer(9, 4, gl.GL_FLOAT, gl.GL_FALSE, @sizeOf(InstanceInfo), @ptrFromInt(12 * @sizeOf(f32)));
+        // albedo + metallic
+        gl.glVertexAttribPointer(10, 4, gl.GL_FLOAT, gl.GL_FALSE, @sizeOf(InstanceInfo), @ptrFromInt(16 * @sizeOf(f32)));
+        // else
+        gl.glVertexAttribPointer(11, 4, gl.GL_FLOAT, gl.GL_FALSE, @sizeOf(InstanceInfo), @ptrFromInt(20 * @sizeOf(f32)));
+        gl.glEnableVertexAttribArray(6);
+        gl.glEnableVertexAttribArray(7);
+        gl.glEnableVertexAttribArray(8);
+        gl.glEnableVertexAttribArray(9);
+        gl.glEnableVertexAttribArray(10);
+        gl.glEnableVertexAttribArray(11);
+
+        gl.glVertexAttribDivisor(6, 1);
+        gl.glVertexAttribDivisor(7, 1);
+        gl.glVertexAttribDivisor(8, 1);
+        gl.glVertexAttribDivisor(9, 1);
+        gl.glVertexAttribDivisor(10, 1);
+        gl.glVertexAttribDivisor(11, 1);
 
         return .{
             .vertex_buffer = vertex_buffer,
             .index_buffer = index_buffer,
+            .instance_buffer = instance_buffer,
             .n_indices = n_indices,
             .vertex_array = vertex_array,
         };
@@ -115,10 +167,38 @@ pub const Mesh = struct {
         return Self.init(M.Vertex, mesh.vertices, mesh.indices);
     }
 
-    pub fn draw(self: *const Self) void {
+    pub fn add_instance_info(self: *Self, info: InstanceInfo) void {
+        self.instance_infos.append(info) catch |e| {
+            log.err(@src(), "Cannot add more instance infos: {any}", .{e});
+        };
+    }
+
+    pub fn draw_instanced(self: *const Self) void {
+        const infos = self.instance_infos.slice();
+        if (infos.len == 0) return;
+
+        // there is a glNamedBufferSubData, but web does not support it.
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.instance_buffer);
+        gl.glBufferSubData(
+            gl.GL_ARRAY_BUFFER,
+            0,
+            @intCast(@sizeOf(InstanceInfo) * infos.len),
+            infos.ptr,
+        );
+
         gl.glBindVertexArray(self.vertex_array);
         gl.glBindBuffer(gl.GL_ELEMENT_ARRAY_BUFFER, self.index_buffer);
-        gl.glDrawElements(gl.GL_TRIANGLES, self.n_indices, gl.GL_UNSIGNED_INT, null);
+        gl.glDrawElementsInstanced(
+            gl.GL_TRIANGLES,
+            self.n_indices,
+            gl.GL_UNSIGNED_INT,
+            null,
+            @intCast(infos.len),
+        );
+    }
+
+    pub fn clear_instance_infos(self: *Self) void {
+        self.instance_infos.clear();
     }
 };
 

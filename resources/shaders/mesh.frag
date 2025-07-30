@@ -9,6 +9,8 @@ in vec2 vert_uv;
 in vec4 vert_color;
 in vec4 vert_light_space_position;
 in mat3 tbn_matrix;
+flat in vec4 vert_albedo_metallic;
+flat in vec4 vert_roughness_emissive_uv_scale_options;
 
 out vec4 frag_color;
 
@@ -19,27 +21,21 @@ uniform vec3 light_colors[NUM_LIGHTS];
 uniform vec3 light_params[NUM_LIGHTS];
 uniform vec3 direct_light_direction;
 uniform vec3 direct_light_color;
-uniform vec3 flat_albedo;
-uniform float flat_metallic;
-uniform float flat_roughness;
 uniform float ao;
-uniform float emissive_strength;
 
-// uniform int use_shadow_map;
 uniform sampler2D direct_light_shadow;
 uniform samplerCube point_light_0_shadow;
 uniform samplerCube point_light_1_shadow;
 uniform samplerCube point_light_2_shadow;
 uniform samplerCube point_light_3_shadow;
+uniform sampler2D albedo_texture;
+uniform sampler2D normal_roughness_texture;
 
 #define NUM_LIGHTS_MASK                  ((1 << 2) - 1)
 #define USE_ALBEDO_TEXTURE               (1 << 2)
 #define USE_NORMAL_ROUGHNESS_TEXTURE     (1 << 3)
-#define USE_SHADOW_MAP                   (1 << 4)
-uniform int options;
-
-uniform sampler2D albedo_texture;
-uniform sampler2D normal_roughness_texture;
+#define NO_DIRECT_LIGHT_SHADOW           (1 << 4)
+#define NO_POINT_LIGHT_SHADOW            (1 << 5)
 
 const float PI = 3.14159265359;
 
@@ -133,6 +129,12 @@ float point_shadow(samplerCube shadow_cube, vec3 normal, vec3 from_light) {
 }
 
 void main() {
+    vec3 flat_albedo = vert_albedo_metallic.rgb;
+    float flat_metallic = vert_albedo_metallic.a;
+    float flat_roughness = vert_roughness_emissive_uv_scale_options.x;
+    float emissive_strength = vert_roughness_emissive_uv_scale_options.g;
+    int options = floatBitsToInt(vert_roughness_emissive_uv_scale_options.a);
+
     vec3 albedo = flat_albedo;
     if ((options & USE_ALBEDO_TEXTURE) != 0) {
       albedo += texture(albedo_texture, vert_uv).rgb;
@@ -187,7 +189,7 @@ void main() {
         vec3 specular     = numerator / denominator;
 
         float point_shadow_value = 1.0;
-        if ((options & USE_SHADOW_MAP) != 0) {
+        if ((options & NO_POINT_LIGHT_SHADOW) == 0) {
             vec3 from_light = vert_position - light_positions[i];
             switch  (i) {
               case 0: 
@@ -239,7 +241,7 @@ void main() {
         vec3 specular     = numerator / denominator;  
             
         float shadow_value = 1.0;
-        if ((options & USE_SHADOW_MAP) != 0)
+        if ((options & NO_DIRECT_LIGHT_SHADOW) == 0)
           shadow_value = (1.0 - direct_shadow(vert_light_space_position, normal, to_light));
         // add to outgoing radiance
         radiance_out += (kD * albedo / PI + specular) * radiance * ndl * shadow_value;

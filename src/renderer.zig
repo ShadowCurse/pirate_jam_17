@@ -13,7 +13,6 @@ const Ui = @import("ui.zig");
 const Camera = @import("root").Camera;
 const Mesh = @import("mesh.zig");
 
-var use_shadow_map: bool = true;
 var framebuffer: gpu.Framebuffer = undefined;
 
 var mesh_shader: shaders.MeshShader = undefined;
@@ -34,7 +33,7 @@ var post_processing_shader: shaders.PostProcessingShader = undefined;
 var skybox_shader: shaders.SkyboxShader = undefined;
 
 const RenderMeshInfo = struct {
-    mesh: *const gpu.Mesh,
+    mesh: *gpu.Mesh,
     model: math.Mat4,
     material: Mesh.Material,
 };
@@ -158,7 +157,7 @@ pub fn clear_current_buffers() void {
 }
 
 pub fn draw_mesh(
-    mesh: *const gpu.Mesh,
+    mesh: *gpu.Mesh,
     model: math.Mat4,
     material: Mesh.Material,
 ) void {
@@ -218,13 +217,32 @@ pub fn render(
     camera: *const Camera,
     environment: *const Environment,
 ) void {
+    var options: shaders.MeshShader.Options = .{
+        .num_lights = @truncate(environment.num_lights),
+    };
+    for (Self.mesh_infos.slice()) |*mi| {
+        if (mi.material.invisible) continue;
+
+        options.use_albedo = mi.material.albedo_texture != null;
+        options.use_normal_roughness = mi.material.normal_roughness_texture != null;
+        options.no_direct_light_shadow = mi.material.no_direct_light_shadow;
+        options.no_point_light_shadow = mi.material.no_point_light_shadow;
+        mi.mesh.add_instance_info(.{
+            .model = mi.model,
+            .albedo = mi.material.albedo.to_color3(),
+            .metallic = mi.material.metallic,
+            .roughness = mi.material.roughness,
+            .emissive_strength = mi.material.emissive_strength,
+            .uv_scale = mi.material.uv_scale,
+            .options = @bitCast(options),
+        });
+    }
+
     prepare_shadow_map_context();
     Self.shadow_map_shader.use();
     Self.shadow_map_shader.set_params(environment);
-    for (Self.mesh_infos.slice()) |*mi| {
-        if (mi.material.no_shadow) continue;
-        Self.shadow_map_shader.set_mesh_params(&mi.model);
-        mi.mesh.draw();
+    for (&Assets.gpu_meshes.values) |*mesh| {
+        mesh.draw_instanced();
     }
 
     prepare_point_shadow_map_context();
@@ -249,10 +267,8 @@ pub fn render(
             gl.glClearDepth(1.0);
             gl.glClear(gl.GL_DEPTH_BUFFER_BIT);
             Self.point_shadow_map_shader.set_face_view(view);
-            for (Self.mesh_infos.slice()) |*mi| {
-                if (mi.material.no_shadow or mi.material.no_shadow_point_light) continue;
-                Self.point_shadow_map_shader.set_mesh_params(&mi.model);
-                mi.mesh.draw();
+            for (&Assets.gpu_meshes.values) |*mesh| {
+                mesh.draw_instanced();
             }
         }
     }
@@ -268,12 +284,10 @@ pub fn render(
         environment,
         Self.shadow_map.depth_texture,
         Self.point_shadow_maps.depth_cubes[0..environment.num_lights],
-        use_shadow_map,
     );
-    for (Self.mesh_infos.slice()) |*mi| {
-        if (mi.material.invisible) continue;
-        Self.mesh_shader.set_mesh_params(&mi.model, &mi.material);
-        mi.mesh.draw();
+    for (&Assets.gpu_meshes.values) |*mesh| {
+        mesh.draw_instanced();
+        mesh.clear_instance_infos();
     }
 
     if (environment.skybox) |skybox| {
@@ -314,16 +328,5 @@ pub fn render(
                 );
             },
         }
-    }
-}
-
-pub fn imgui_ui() void {
-    var open: bool = true;
-    if (cimgui.igCollapsingHeader_BoolPtr(
-        "Renderer",
-        &open,
-        0,
-    )) {
-        cimgui.format("Use shadow map", &use_shadow_map);
     }
 }
