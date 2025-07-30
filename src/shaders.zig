@@ -166,7 +166,8 @@ pub const MeshShader = struct {
         use_normal_roughness: bool = false,
         no_direct_light_shadow: bool = false,
         no_point_light_shadow: bool = false,
-        _: u26 = 0,
+        invisible: bool = false,
+        _: u25 = 0,
     };
 
     const Self = @This();

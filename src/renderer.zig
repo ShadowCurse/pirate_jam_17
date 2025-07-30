@@ -221,12 +221,11 @@ pub fn render(
         .num_lights = @truncate(environment.num_lights),
     };
     for (Self.mesh_infos.slice()) |*mi| {
-        if (mi.material.invisible) continue;
-
         options.use_albedo = mi.material.albedo_texture != null;
         options.use_normal_roughness = mi.material.normal_roughness_texture != null;
         options.no_direct_light_shadow = mi.material.no_direct_light_shadow;
         options.no_point_light_shadow = mi.material.no_point_light_shadow;
+        options.invisible = mi.material.invisible;
         mi.mesh.add_instance_info(.{
             .model = mi.model,
             .albedo = mi.material.albedo.to_color3(),

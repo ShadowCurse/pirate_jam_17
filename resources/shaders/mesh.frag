@@ -36,6 +36,7 @@ uniform sampler2D normal_roughness_texture;
 #define USE_NORMAL_ROUGHNESS_TEXTURE     (1 << 3)
 #define NO_DIRECT_LIGHT_SHADOW           (1 << 4)
 #define NO_POINT_LIGHT_SHADOW            (1 << 5)
+#define INVISIBLE                        (1 << 6)
 
 const float PI = 3.14159265359;
 
@@ -134,6 +135,9 @@ void main() {
     float flat_roughness = vert_roughness_emissive_uv_scale_options.x;
     float emissive_strength = vert_roughness_emissive_uv_scale_options.g;
     int options = floatBitsToInt(vert_roughness_emissive_uv_scale_options.a);
+
+    if ((options & INVISIBLE) != 0)
+      discard;
 
     vec3 albedo = flat_albedo;
     if ((options & USE_ALBEDO_TEXTURE) != 0) {
