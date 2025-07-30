@@ -23,7 +23,7 @@ const Audio = @import("audio.zig");
 const Ui = @import("ui.zig");
 
 pub const log_options = log.Options{
-    .level = .Info,
+    .level = if (builtin.target.os.tag == .emscripten) .Err else .Info,
     .colors = builtin.target.os.tag != .emscripten,
 };
 
@@ -46,6 +46,7 @@ export fn _emscripten_memcpy_js(dest: [*]u8, src: [*]u8, len: usize) void {
 
 pub const PLAYER_RADIUS = 0.12;
 
+var current_t: i128 = undefined;
 pub fn main() void {
     Platform.init();
 
@@ -59,21 +60,31 @@ pub fn main() void {
 
     init();
 
-    var t = std.time.nanoTimestamp();
-    while (!Platform.stop) {
-        const new_t = std.time.nanoTimestamp();
-        const dt = @as(f32, @floatFromInt(new_t - t)) / std.time.ns_per_s;
-        t = new_t;
-
-        Platform.get_events();
-        Platform.get_mouse_pos();
-        Platform.process_events();
-        Input.update();
-
-        update(dt);
-
-        Platform.present();
+    current_t = std.time.nanoTimestamp();
+    if (builtin.os.tag == .emscripten) {
+        std.os.emscripten.emscripten_set_main_loop(loop, 0, 1);
+    } else {
+        while (!Platform.stop) {
+            loop();
+        }
     }
+}
+
+fn loop() callconv(.c) void {
+    const new_t = std.time.nanoTimestamp();
+    const dt = @as(f32, @floatFromInt(new_t - current_t)) / std.time.ns_per_s;
+    current_t = new_t;
+
+    log.err(@src(), "dt: {d} FPS: {d}", .{ dt, 1.0 / dt });
+
+    Platform.get_events();
+    Platform.get_mouse_pos();
+    Platform.process_events();
+    Input.update();
+
+    update(dt);
+
+    Platform.present();
 }
 
 pub const Camera = struct {
@@ -473,42 +484,44 @@ pub fn update(dt: f32) void {
     Ui.draw();
     Renderer.render(camera_in_use, &current_level.environment);
 
-    if (mode == .Edit) {
-        cimgui.prepare_frame();
-        defer cimgui.render_frame();
+    if (!options.shipping) {
+        if (mode == .Edit) {
+            cimgui.prepare_frame();
+            defer cimgui.render_frame();
 
-        // _ = cimgui.igShowDemoWindow(&a);
+            // _ = cimgui.igShowDemoWindow(&a);
 
-        {
-            var open: bool = true;
-            _ = cimgui.igBegin("Options", &open, 0);
-            defer cimgui.igEnd();
+            {
+                var open: bool = true;
+                _ = cimgui.igBegin("Options", &open, 0);
+                defer cimgui.igEnd();
 
-            if (cimgui.igCollapsingHeader_BoolPtr(
-                "General",
-                &open,
-                0,
-            )) {
-                _ = cimgui.igSeparatorText("Cameras");
-                cimgui.format("Player camera", &player_camera);
-                cimgui.format("Free camera", &free_camera);
-                _ = cimgui.igSeparatorText("Levels selection");
-                cimgui.format("Current level", &current_level_tag);
+                if (cimgui.igCollapsingHeader_BoolPtr(
+                    "General",
+                    &open,
+                    0,
+                )) {
+                    _ = cimgui.igSeparatorText("Cameras");
+                    cimgui.format("Player camera", &player_camera);
+                    cimgui.format("Free camera", &free_camera);
+                    _ = cimgui.igSeparatorText("Levels selection");
+                    cimgui.format("Current level", &current_level_tag);
 
-                if (cimgui.igButton("Restart level", .{})) {
-                    Levels.levels.getPtr(current_level_tag).started = false;
+                    if (cimgui.igButton("Restart level", .{})) {
+                        Levels.levels.getPtr(current_level_tag).started = false;
+                    }
+
+                    if (cimgui.igButton("Reload levels", .{})) {
+                        Levels.init();
+                    }
                 }
 
-                if (cimgui.igButton("Reload levels", .{})) {
-                    Levels.init();
-                }
+                current_level.imgui_ui(frame_arena.allocator(), current_level_tag);
+                Renderer.imgui_ui();
+                Ui.imgui_ui();
+                Audio.imgui_ui();
+                Input.imgui_ui();
             }
-
-            current_level.imgui_ui(frame_arena.allocator(), current_level_tag);
-            Renderer.imgui_ui();
-            Ui.imgui_ui();
-            Audio.imgui_ui();
-            Input.imgui_ui();
         }
     }
 }
