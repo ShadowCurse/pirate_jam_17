@@ -506,7 +506,7 @@
         }
     ],
     "environment": {
-        "ao": 2.9999999329447746e-2,
+        "ao": 6.999999284744263e-2,
         "num_lights": 3,
         "lights_position": [
             {

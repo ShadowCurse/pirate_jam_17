@@ -13,9 +13,9 @@
             "material": {
                 "Custom": {
                     "albedo": {
-                        "r": 6.007301155477762e-3,
-                        "g": 1.2555274367332458e-1,
-                        "b": 2.450980544090271e-1,
+                        "r": 1.1101499199867249e-1,
+                        "g": 3.128606379032135e-1,
+                        "b": 5.147058963775635e-1,
                         "a": 1e0
                     },
                     "metallic": 0e0,
@@ -53,9 +53,9 @@
             "material": {
                 "Custom": {
                     "albedo": {
-                        "r": 7.843137718737125e-3,
-                        "g": 1.25490203499794e-1,
-                        "b": 2.4705882370471954e-1,
+                        "r": 0e0,
+                        "g": 4.0784314274787903e-1,
+                        "b": 9.921568632125854e-1,
                         "a": 1e0
                     },
                     "metallic": 5e-1,
@@ -65,7 +65,7 @@
                     "no_direct_light_shadow": false,
                     "no_point_light_shadow": false,
                     "invisible": false,
-                    "albedo_texture": null,
+                    "albedo_texture": "ConcreteAlbedo",
                     "normal_roughness_texture": "ConcreteNormalRoughness"
                 }
             },
@@ -93,9 +93,9 @@
             "material": {
                 "Custom": {
                     "albedo": {
-                        "r": 7.843137718737125e-3,
-                        "g": 1.25490203499794e-1,
-                        "b": 2.4705882370471954e-1,
+                        "r": 0e0,
+                        "g": 4.077279269695282e-1,
+                        "b": 9.901960492134094e-1,
                         "a": 1e0
                     },
                     "metallic": 5e-1,
@@ -105,7 +105,7 @@
                     "no_direct_light_shadow": false,
                     "no_point_light_shadow": false,
                     "invisible": false,
-                    "albedo_texture": null,
+                    "albedo_texture": "ConcreteAlbedo",
                     "normal_roughness_texture": "ConcreteNormalRoughness"
                 }
             },
@@ -133,9 +133,9 @@
             "material": {
                 "Custom": {
                     "albedo": {
-                        "r": 7.843137718737125e-3,
-                        "g": 1.25490203499794e-1,
-                        "b": 2.4705882370471954e-1,
+                        "r": 0e0,
+                        "g": 4.0784314274787903e-1,
+                        "b": 9.921568632125854e-1,
                         "a": 1e0
                     },
                     "metallic": 5e-1,
@@ -145,7 +145,7 @@
                     "no_direct_light_shadow": false,
                     "no_point_light_shadow": false,
                     "invisible": false,
-                    "albedo_texture": null,
+                    "albedo_texture": "ConcreteAlbedo",
                     "normal_roughness_texture": "ConcreteNormalRoughness"
                 }
             },
@@ -173,9 +173,9 @@
             "material": {
                 "Custom": {
                     "albedo": {
-                        "r": 7.843137718737125e-3,
-                        "g": 1.25490203499794e-1,
-                        "b": 2.4705882370471954e-1,
+                        "r": 0e0,
+                        "g": 4.0784314274787903e-1,
+                        "b": 9.921568632125854e-1,
                         "a": 1e0
                     },
                     "metallic": 5e-1,
@@ -185,7 +185,7 @@
                     "no_direct_light_shadow": false,
                     "no_point_light_shadow": false,
                     "invisible": false,
-                    "albedo_texture": null,
+                    "albedo_texture": "ConcreteAlbedo",
                     "normal_roughness_texture": "ConcreteNormalRoughness"
                 }
             },
@@ -490,7 +490,7 @@
         }
     ],
     "environment": {
-        "ao": 1.1999999731779099e-1,
+        "ao": 7.000000774860382e-2,
         "num_lights": 2,
         "lights_position": [
             {
@@ -559,21 +559,21 @@
             }
         ],
         "direct_light_direction": {
-            "x": -9.000000357627869e-2,
-            "y": 1.1999999731779099e-1,
-            "z": -1e0
+            "x": 2.199999988079071e-1,
+            "y": -5.099999904632568e-1,
+            "z": -7.699999809265137e-1
         },
         "direct_light_color": {
-            "r": 1e0,
-            "g": 1e0,
-            "b": 1e0
+            "r": 6.372548937797546e-1,
+            "g": 6.372548937797546e-1,
+            "b": 6.372548937797546e-1
         },
         "shadow_map_width": 2e1,
         "shadow_map_height": 2e1,
         "shadow_map_depth": 5e1,
-        "skybox": "Midday",
-        "skybox_rotation_x": -5.9999980032444e-2,
+        "skybox": "Default",
+        "skybox_rotation_x": -1.0999996960163116e-1,
         "skybox_rotation_y": -7.999997586011887e-2,
-        "skybox_rotation_z": 2.5e0
+        "skybox_rotation_z": 4.999999701976776e-2
     }
 }

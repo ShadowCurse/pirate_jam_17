@@ -490,7 +490,7 @@
         }
     ],
     "environment": {
-        "ao": 1.4999999105930328e-1,
+        "ao": 6.999999284744263e-2,
         "num_lights": 2,
         "lights_position": [
             {
@@ -571,9 +571,9 @@
         "shadow_map_width": 2e1,
         "shadow_map_height": 2e1,
         "shadow_map_depth": 5e1,
-        "skybox": "Default",
+        "skybox": "Midday",
         "skybox_rotation_x": 0e0,
-        "skybox_rotation_y": 0e0,
-        "skybox_rotation_z": 3.4999993443489075e-1
+        "skybox_rotation_y": 6.999999284744263e-2,
+        "skybox_rotation_z": -1.600000113248825e-1
     }
 }

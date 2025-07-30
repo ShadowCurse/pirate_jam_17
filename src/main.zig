@@ -75,8 +75,6 @@ fn loop() callconv(.c) void {
     const dt = @as(f32, @floatFromInt(new_t - current_t)) / std.time.ns_per_s;
     current_t = new_t;
 
-    log.err(@src(), "dt: {d} FPS: {d}", .{ dt, 1.0 / dt });
-
     Platform.get_events();
     Platform.get_mouse_pos();
     Platform.process_events();
@@ -244,7 +242,7 @@ pub var free_camera: Camera = .{};
 pub var player_camera: Camera = .{};
 
 // Ending
-const ENDING_MOVE_TIME = 11.0;
+const ENDING_MOVE_TIME = 8.0;
 const ENDING_FADE_TIME = 14.0;
 var ending: bool = false;
 var ending_t: f32 = 0.0;
@@ -367,7 +365,7 @@ pub fn play_ending(dt: f32) void {
         player_camera.pitch = math.exp_decay(player_camera.pitch, -std.math.pi / 2.0, 0.5, dt);
     } else if (ending_t < ENDING_FADE_TIME) {
         const p = (ending_t - ENDING_MOVE_TIME) / (ENDING_FADE_TIME - ENDING_MOVE_TIME);
-        const t = p * p * (3.0 - 2.0 * p);
+        const t = p * p;
         Ui.blur_strength = math.lerp(0.0, 10.0, t);
     } else {
         ending_t = 0.0;
