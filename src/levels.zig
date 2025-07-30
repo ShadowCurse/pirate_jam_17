@@ -666,25 +666,37 @@ pub const Level = struct {
         environment: *const Renderer.Environment,
     };
 
-    pub fn save(self: *const Self, path: []const u8) !void {
+    pub fn save(self: *const Self, scratch_alloc: Allocator, path: []const u8) !void {
         var file = try std.fs.cwd().createFile(path, .{});
         defer file.close();
 
-        const options = std.json.StringifyOptions{
-            .whitespace = .indent_4,
+        const objects_copy = try scratch_alloc.dupe(Object, self.objects.items);
+        const Cmp = struct {
+            fn cmp(_: void, lhs: Object, rhs: Object) bool {
+                return @intFromEnum(lhs.model) < @intFromEnum(rhs.model);
+            }
         };
+        std.mem.sortUnstable(
+            Object,
+            objects_copy,
+            {},
+            Cmp.cmp,
+        );
+
         const save_state = SaveState{
-            .objects = self.objects.items,
+            .objects = objects_copy,
             .environment = &self.environment,
         };
-        try std.json.stringify(save_state, options, file.writer());
+        try std.json.stringify(
+            save_state,
+            .{
+                .whitespace = .indent_4,
+            },
+            file.writer(),
+        );
     }
 
-    pub fn load(
-        self: *Self,
-        scratch_alloc: Allocator,
-        path: []const u8,
-    ) !void {
+    pub fn load(self: *Self, scratch_alloc: Allocator, path: []const u8) !void {
         _ = self.arena.reset(.retain_capacity);
 
         const file_mem = try Platform.FileMem.init(path);
@@ -734,7 +746,7 @@ pub const Level = struct {
                 .{ DEFAULT_LEVEL_DIR_PATH, @tagName(tag) },
             ) catch unreachable;
             if (cimgui.igButton("Save level", .{})) {
-                self.save(path) catch |e|
+                self.save(scratch_alloc, path) catch |e|
                     log.err(@src(), "Cannot save level to {s} due to {}", .{ path, e });
             }
             if (cimgui.igButton("Load level", .{})) {
