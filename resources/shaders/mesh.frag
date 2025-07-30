@@ -37,6 +37,7 @@ uniform samplerCube point_light_3_shadow;
 #define USE_ROUNGHNESS_TEXTURE 1 << 2
 #define USE_NORMAL_TEXTURE     1 << 3
 uniform int use_textures;
+uniform int num_point_lights;
 uniform sampler2D albedo_texture;
 uniform sampler2D metallic_texture;
 uniform sampler2D roughness_texture;
@@ -165,7 +166,7 @@ void main() {
     base_reflectivity = mix(base_reflectivity, albedo, metallic);
 
     vec3 radiance_out = vec3(0.0);
-    for(int i = 0; i < NUM_LIGHTS; ++i) {
+    for(int i = 0; i < num_point_lights; ++i) {
         // calculate per-light radiance
         vec3 to_light     = normalize(light_positions[i] - vert_position);
         vec3 half_vector  = normalize(to_camera + to_light);

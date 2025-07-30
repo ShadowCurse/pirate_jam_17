@@ -50,12 +50,13 @@ const RenderUiInfo = struct {
     transparency: f32,
 };
 
-pub const NUM_LIGHTS = 4;
+pub const MAX_LIGHTS = 4;
 pub const Environment = struct {
     ao: f32 = 0.03,
-    lights_position: [NUM_LIGHTS]math.Vec3 = .{math.Vec3{}} ** NUM_LIGHTS,
-    lights_color: [NUM_LIGHTS]math.Color3 = .{math.Color3{}} ** NUM_LIGHTS,
-    lights_param: [NUM_LIGHTS]LightParam = .{LightParam{}} ** NUM_LIGHTS,
+    num_lights: u8 = MAX_LIGHTS,
+    lights_position: [MAX_LIGHTS]math.Vec3 = .{math.Vec3{}} ** MAX_LIGHTS,
+    lights_color: [MAX_LIGHTS]math.Color3 = .{math.Color3{}} ** MAX_LIGHTS,
+    lights_param: [MAX_LIGHTS]LightParam = .{LightParam{}} ** MAX_LIGHTS,
     direct_light_direction: math.Vec3 = .{},
     direct_light_color: math.Color3 = .{},
     shadow_map_width: f32 = 20.0,
@@ -230,7 +231,7 @@ pub fn render(
     Self.point_shadow_map_shader.use();
     const point_light_projection = environment.point_shadow_map_projection();
     Self.point_shadow_map_shader.set_projection(&point_light_projection);
-    for (0..NUM_LIGHTS) |light_index| {
+    for (0..environment.num_lights) |light_index| {
         Self.point_shadow_map_shader.set_light_position(
             &environment.lights_position[light_index],
         );
@@ -265,8 +266,8 @@ pub fn render(
         &camera.position,
         &projection,
         environment,
-        &Self.shadow_map,
-        &Self.point_shadow_maps,
+        Self.shadow_map.depth_texture,
+        Self.point_shadow_maps.depth_cubes[0..environment.num_lights],
         use_shadow_map,
     );
     for (Self.mesh_infos.slice()) |*mi| {

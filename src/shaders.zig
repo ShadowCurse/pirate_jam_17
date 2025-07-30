@@ -166,10 +166,8 @@ pub const MeshShader = struct {
 
     use_shadow_map: i32,
     direct_light_shadow: i32,
-    point_light_0_shadow: i32,
-    point_light_1_shadow: i32,
-    point_light_2_shadow: i32,
-    point_light_3_shadow: i32,
+    point_light_shadows: [Renderer.MAX_LIGHTS]i32,
+    num_point_lights: i32,
 
     const USE_ALBEDO_TEXTURE = 1 << 0;
     const USE_METALLIC_TEXTURE = 1 << 1;
@@ -209,10 +207,13 @@ pub const MeshShader = struct {
             .normal_texture = shader.get_uniform_location("normal_texture"),
             .use_shadow_map = shader.get_uniform_location("use_shadow_map"),
             .direct_light_shadow = shader.get_uniform_location("direct_light_shadow"),
-            .point_light_0_shadow = shader.get_uniform_location("point_light_0_shadow"),
-            .point_light_1_shadow = shader.get_uniform_location("point_light_1_shadow"),
-            .point_light_2_shadow = shader.get_uniform_location("point_light_2_shadow"),
-            .point_light_3_shadow = shader.get_uniform_location("point_light_3_shadow"),
+            .point_light_shadows = .{
+                shader.get_uniform_location("point_light_0_shadow"),
+                shader.get_uniform_location("point_light_1_shadow"),
+                shader.get_uniform_location("point_light_2_shadow"),
+                shader.get_uniform_location("point_light_3_shadow"),
+            },
+            .num_point_lights = shader.get_uniform_location("num_point_lights"),
         };
     }
 
@@ -226,8 +227,8 @@ pub const MeshShader = struct {
         camera_position: *const math.Vec3,
         camera_projection: *const math.Mat4,
         environment: *const Renderer.Environment,
-        direct_light_shadow: *const gpu.ShadowMap,
-        point_light_shadows: *const gpu.PointShadowMaps,
+        direct_light_shadow: u32,
+        point_light_shadows: []u32,
         use_shadow_map: bool,
     ) void {
         gl.glUniformMatrix4fv(self.view, 1, gl.GL_FALSE, @ptrCast(camera_view));
@@ -283,19 +284,20 @@ pub const MeshShader = struct {
             environment.direct_light_color.g,
             environment.direct_light_color.b,
         );
+        gl.glUniform1i(self.num_point_lights, environment.num_lights);
 
         if (use_shadow_map) {
             gl.glActiveTexture(gl.GL_TEXTURE0);
-            gl.glBindTexture(gl.GL_TEXTURE_2D, direct_light_shadow.depth_texture);
-            for (point_light_shadows.depth_cubes, 0..) |dc, i| {
-                gl.glActiveTexture(@as(u32, @intCast(gl.GL_TEXTURE1 + @as(i32, @intCast(i)))));
-                gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, dc);
-            }
+            gl.glBindTexture(gl.GL_TEXTURE_2D, direct_light_shadow);
             gl.glUniform1i(self.direct_light_shadow, 0);
-            gl.glUniform1i(self.point_light_0_shadow, 1);
-            gl.glUniform1i(self.point_light_1_shadow, 2);
-            gl.glUniform1i(self.point_light_2_shadow, 3);
-            gl.glUniform1i(self.point_light_3_shadow, 4);
+
+            for (point_light_shadows, 0..) |texture, i| {
+                gl.glActiveTexture(@as(u32, @intCast(gl.GL_TEXTURE1 + @as(i32, @intCast(i)))));
+                gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, texture);
+            }
+            for (self.point_light_shadows, 0..) |b, i|
+                gl.glUniform1i(b, @intCast(i + 1));
+
             gl.glUniform1i(self.use_shadow_map, 1);
         } else gl.glUniform1i(self.use_shadow_map, 0);
     }

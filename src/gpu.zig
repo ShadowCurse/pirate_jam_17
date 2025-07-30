@@ -215,7 +215,7 @@ pub const ShadowMap = struct {
 
 pub const PointShadowMaps = struct {
     framebuffer: u32,
-    depth_cubes: [Renderer.NUM_LIGHTS]u32,
+    depth_cubes: [Renderer.MAX_LIGHTS]u32,
 
     pub const SHADOW_WIDTH = Platform.WINDOW_WIDTH;
     pub const SHADOW_HEIGHT = Platform.WINDOW_WIDTH; //WINDOW_HEIGHT;
@@ -225,7 +225,7 @@ pub const PointShadowMaps = struct {
         var framebuffer: u32 = undefined;
         gl.glGenFramebuffers(1, &framebuffer);
 
-        var depth_cubes: [Renderer.NUM_LIGHTS]u32 = undefined;
+        var depth_cubes: [Renderer.MAX_LIGHTS]u32 = undefined;
         for (&depth_cubes) |*dc| {
             gl.glGenTextures(1, dc);
             gl.glBindTexture(gl.GL_TEXTURE_CUBE_MAP, dc.*);
