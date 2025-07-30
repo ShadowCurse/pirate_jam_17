@@ -6,7 +6,9 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Custom": {
@@ -22,6 +24,7 @@
                     "uv_scale": 1e1,
                     "no_shadow": false,
                     "no_shadow_point_light": false,
+                    "invisible": false,
                     "albedo_texture": "ConcreteAlbedo",
                     "metallic_texture": "ConcreteMetallic",
                     "roughness_texture": "ConcreteRoughness",
@@ -45,7 +48,9 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": true,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Custom": {
@@ -61,6 +66,7 @@
                     "uv_scale": 1e0,
                     "no_shadow": false,
                     "no_shadow_point_light": false,
+                    "invisible": false,
                     "albedo_texture": null,
                     "metallic_texture": null,
                     "roughness_texture": null,
@@ -84,7 +90,9 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Custom": {
@@ -100,6 +108,7 @@
                     "uv_scale": 5e0,
                     "no_shadow": false,
                     "no_shadow_point_light": false,
+                    "invisible": false,
                     "albedo_texture": "ConcreteAlbedo",
                     "metallic_texture": "ConcreteMetallic",
                     "roughness_texture": "ConcreteRoughness",
@@ -123,7 +132,9 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Custom": {
@@ -139,6 +150,7 @@
                     "uv_scale": 5e0,
                     "no_shadow": false,
                     "no_shadow_point_light": false,
+                    "invisible": false,
                     "albedo_texture": "ConcreteAlbedo",
                     "metallic_texture": "ConcreteMetallic",
                     "roughness_texture": "ConcreteRoughness",
@@ -162,7 +174,9 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": true,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Custom": {
@@ -178,6 +192,7 @@
                     "uv_scale": 1e0,
                     "no_shadow": false,
                     "no_shadow_point_light": true,
+                    "invisible": false,
                     "albedo_texture": null,
                     "metallic_texture": null,
                     "roughness_texture": null,
@@ -185,13 +200,13 @@
                 }
             },
             "position": {
-                "x": 1.600000023841858e0,
+                "x": 1.5e0,
                 "y": 0e0,
-                "z": 0e0
+                "z": 1.5148520469665527e-3
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 0e0,
+            "rotation_z": 7.413193583488464e-2,
             "scale": 1e0,
             "scale_z": 1e0
         },
@@ -201,7 +216,9 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Original": {}
@@ -223,7 +240,9 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Original": {}
@@ -245,7 +264,9 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Original": {}
@@ -267,7 +288,9 @@
                 "entrance_door": false,
                 "exit_door": true,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Original": {}
@@ -279,7 +302,7 @@
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
-            "rotation_z": 1.5700000524520874e0,
+            "rotation_z": 1.5706514120101929e0,
             "scale": 1e0,
             "scale_z": 1e0
         },
@@ -289,7 +312,9 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Custom": {
@@ -305,6 +330,7 @@
                     "uv_scale": 5e0,
                     "no_shadow": false,
                     "no_shadow_point_light": false,
+                    "invisible": false,
                     "albedo_texture": "ConcreteAlbedo",
                     "metallic_texture": "ConcreteMetallic",
                     "roughness_texture": "ConcreteRoughness",
@@ -328,7 +354,9 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Custom": {
@@ -344,6 +372,7 @@
                     "uv_scale": 5e0,
                     "no_shadow": false,
                     "no_shadow_point_light": false,
+                    "invisible": false,
                     "albedo_texture": "ConcreteAlbedo",
                     "metallic_texture": "ConcreteMetallic",
                     "roughness_texture": "ConcreteRoughness",
@@ -367,7 +396,9 @@
                 "entrance_door": true,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Original": {}
@@ -389,7 +420,9 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Original": {}
@@ -411,7 +444,9 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Original": {}
@@ -433,7 +468,9 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Custom": {
@@ -449,6 +486,7 @@
                     "uv_scale": 1e0,
                     "no_shadow": false,
                     "no_shadow_point_light": false,
+                    "invisible": false,
                     "albedo_texture": null,
                     "metallic_texture": null,
                     "roughness_texture": null,
@@ -472,7 +510,9 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Custom": {
@@ -488,6 +528,7 @@
                     "uv_scale": 1e0,
                     "no_shadow": false,
                     "no_shadow_point_light": false,
+                    "invisible": false,
                     "albedo_texture": null,
                     "metallic_texture": null,
                     "roughness_texture": null,
@@ -497,7 +538,7 @@
             "position": {
                 "x": 0e0,
                 "y": -4e0,
-                "z": 1.2699999809265137e0
+                "z": 1.559999942779541e0
             },
             "rotation_x": 0e0,
             "rotation_y": 0e0,
@@ -511,7 +552,9 @@
                 "entrance_door": false,
                 "exit_door": false,
                 "correct_box": false,
-                "plays_music": false
+                "plays_music": false,
+                "not_interractive": false,
+                "player_body": false
             },
             "material": {
                 "Custom": {
@@ -527,6 +570,7 @@
                     "uv_scale": 1e0,
                     "no_shadow": true,
                     "no_shadow_point_light": false,
+                    "invisible": false,
                     "albedo_texture": null,
                     "metallic_texture": null,
                     "roughness_texture": null,
@@ -546,7 +590,8 @@
         }
     ],
     "environment": {
-        "ao": 9.999997168779373e-2,
+        "ao": 7.999997586011887e-2,
+        "num_lights": 3,
         "lights_position": [
             {
                 "x": 0e0,
@@ -595,12 +640,12 @@
             {
                 "constant": 1e0,
                 "linear": 0e0,
-                "quadratic": 0e0
+                "quadratic": 5e-1
             },
             {
                 "constant": 1e0,
                 "linear": 0e0,
-                "quadratic": 0e0
+                "quadratic": 4.999997913837433e-1
             },
             {
                 "constant": 0e0,
@@ -627,7 +672,7 @@
         "shadow_map_height": 2e1,
         "shadow_map_depth": 5e1,
         "skybox": "Red",
-        "skybox_rotation_x": 6.399996876716614e-1,
+        "skybox_rotation_x": 4.6999984979629517e-1,
         "skybox_rotation_y": -1.9999999552965164e-2,
         "skybox_rotation_z": -4.299998879432678e-1
     }

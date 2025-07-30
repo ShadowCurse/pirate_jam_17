@@ -494,7 +494,8 @@
         }
     ],
     "environment": {
-        "ao": 9.999997168779373e-2,
+        "ao": 3.9999984204769135e-2,
+        "num_lights": 2,
         "lights_position": [
             {
                 "x": 0e0,
@@ -542,13 +543,13 @@
         "lights_param": [
             {
                 "constant": 1e0,
-                "linear": 0e0,
-                "quadratic": 0e0
+                "linear": 1e0,
+                "quadratic": 1e0
             },
             {
                 "constant": 1e0,
-                "linear": 0e0,
-                "quadratic": 0e0
+                "linear": 1e0,
+                "quadratic": 1e0
             },
             {
                 "constant": 1e0,
