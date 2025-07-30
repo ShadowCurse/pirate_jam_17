@@ -13,5 +13,6 @@ pkgs.mkShell {
     pkg-config
     shaderc
     emscripten
+    binaryen
   ];
 }

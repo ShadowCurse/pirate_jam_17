@@ -55,13 +55,15 @@ pub fn init() void {
 
     sdl.assert(@src(), sdl.SDL_ShowWindow(window));
 
-    _ = cimgui.igCreateContext(null);
-    _ = cimgui.ImGui_ImplSDL3_InitForOpenGL(@ptrCast(window), context);
-    const cimgli_opengl_version = "#version 300 es";
-    _ = cimgui.ImGui_ImplOpenGL3_Init(cimgli_opengl_version);
-    imgui_io = @ptrCast(cimgui.igGetIO_Nil());
-    // Otherwise imgui will force cursor to be visible
-    imgui_io.ConfigFlags |= cimgui.ImGuiConfigFlags_NoMouseCursorChange;
+    if (!options.shipping) {
+        _ = cimgui.igCreateContext(null);
+        _ = cimgui.ImGui_ImplSDL3_InitForOpenGL(@ptrCast(window), context);
+        const cimgli_opengl_version = "#version 300 es";
+        _ = cimgui.ImGui_ImplOpenGL3_Init(cimgli_opengl_version);
+        imgui_io = @ptrCast(cimgui.igGetIO_Nil());
+        // Otherwise imgui will force cursor to be visible
+        imgui_io.ConfigFlags |= cimgui.ImGuiConfigFlags_NoMouseCursorChange;
+    }
 
     gl.glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
@@ -88,7 +90,8 @@ pub fn get_mouse_pos() void {
 
 pub fn process_events() void {
     for (sdl_events) |*sdl_event| {
-        _ = cimgui.ImGui_ImplSDL3_ProcessEvent(@ptrCast(sdl_event));
+        if (!options.shipping)
+            _ = cimgui.ImGui_ImplSDL3_ProcessEvent(@ptrCast(sdl_event));
         switch (sdl_event.type) {
             sdl.SDL_EVENT_QUIT => {
                 stop = true;
@@ -99,6 +102,8 @@ pub fn process_events() void {
 }
 
 pub fn imgui_wants_to_handle_events() bool {
+    if (options.shipping) return false;
+
     return imgui_io.WantCaptureMouse or
         imgui_io.WantCaptureKeyboard or
         imgui_io.WantTextInput;

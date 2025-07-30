@@ -13,7 +13,7 @@ pub fn build(b: *std.Build) !void {
     options.addOption(bool, "no_sound", no_sound);
     options.addOption(bool, "shipping", shipping);
 
-    const c_lib = build_c_libc(b, target, &env_map);
+    const c_lib = build_c_libc(b, target, &env_map, shipping);
 
     const artifact = if (target.result.os.tag == .emscripten) blk: {
         const cache_include = std.fs.path.join(
@@ -58,9 +58,6 @@ pub fn build(b: *std.Build) !void {
     artifact.addIncludePath(b.path("thirdparty/cimgui"));
     artifact.addIncludePath(b.path("thirdparty/cgltf/"));
     artifact.addIncludePath(b.path("thirdparty/stb/"));
-    // artifact.addCSourceFile(.{ .file = b.path("thirdparty/cgltf/cgltf.c") });
-    // artifact.addCSourceFile(.{ .file = b.path("thirdparty/stb/stb.c") });
-    artifact.linkLibrary(c_lib);
     artifact.linkLibrary(c_lib);
     artifact.linkLibC();
     b.installArtifact(artifact);
@@ -82,32 +79,41 @@ fn build_c_libc(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
     env_map: *const std.process.EnvMap,
+    shipping: bool,
 ) *std.Build.Step.Compile {
     const c_lib = b.addStaticLibrary(.{
         .name = "cimgui",
         .target = target,
         .optimize = .ReleaseFast,
     });
+
     c_lib.addCSourceFiles(.{
         .files = &.{
-            "thirdparty/cimgui/cimgui.cpp",
-            "thirdparty/cimgui/imgui/imgui.cpp",
-            "thirdparty/cimgui/imgui/imgui_demo.cpp",
-            "thirdparty/cimgui/imgui/imgui_draw.cpp",
-            "thirdparty/cimgui/imgui/imgui_tables.cpp",
-            "thirdparty/cimgui/imgui/imgui_widgets.cpp",
-            "thirdparty/cimgui/imgui/backends/imgui_impl_sdl3.cpp",
-            "thirdparty/cimgui/imgui/backends/imgui_impl_opengl3.cpp",
             "thirdparty/cgltf/cgltf.c",
             "thirdparty/stb/stb.c",
         },
     });
     c_lib.addIncludePath(b.path("thirdparty/stb/"));
     c_lib.addIncludePath(b.path("thirdparty/cgltf/"));
-    c_lib.addIncludePath(b.path("thirdparty/cimgui"));
-    c_lib.addIncludePath(b.path("thirdparty/cimgui/imgui"));
-    c_lib.addIncludePath(b.path("thirdparty/cimgui/imgui/backends"));
-    c_lib.addIncludePath(.{ .cwd_relative = env_map.get("SDL3_INCLUDE_PATH").? });
+
+    if (!shipping) {
+        c_lib.addCSourceFiles(.{
+            .files = &.{
+                "thirdparty/cimgui/cimgui.cpp",
+                "thirdparty/cimgui/imgui/imgui.cpp",
+                "thirdparty/cimgui/imgui/imgui_demo.cpp",
+                "thirdparty/cimgui/imgui/imgui_draw.cpp",
+                "thirdparty/cimgui/imgui/imgui_tables.cpp",
+                "thirdparty/cimgui/imgui/imgui_widgets.cpp",
+                "thirdparty/cimgui/imgui/backends/imgui_impl_sdl3.cpp",
+                "thirdparty/cimgui/imgui/backends/imgui_impl_opengl3.cpp",
+            },
+        });
+        c_lib.addIncludePath(b.path("thirdparty/cimgui"));
+        c_lib.addIncludePath(b.path("thirdparty/cimgui/imgui"));
+        c_lib.addIncludePath(b.path("thirdparty/cimgui/imgui/backends"));
+        c_lib.addIncludePath(.{ .cwd_relative = env_map.get("SDL3_INCLUDE_PATH").? });
+    }
     c_lib.linkLibCpp();
     return c_lib;
 }
