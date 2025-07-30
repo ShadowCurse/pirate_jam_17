@@ -77,7 +77,7 @@
             "rotation_x": 0e0,
             "rotation_y": 0e0,
             "rotation_z": 0e0,
-            "scale": 1e0,
+            "scale": 8.900001049041748e-1,
             "scale_z": 1e0
         },
         {
@@ -118,7 +118,7 @@
             "rotation_y": 0e0,
             "rotation_z": 0e0,
             "scale": 1e0,
-            "scale_z": 1.0000000149011612e-1
+            "scale_z": 9.89999994635582e-2
         },
         {
             "model": "Wall",
@@ -198,7 +198,7 @@
             "rotation_y": 0e0,
             "rotation_z": 0e0,
             "scale": 1e0,
-            "scale_z": 1.0000000149011612e-1
+            "scale_z": 9.89999994635582e-2
         },
         {
             "model": "Wall",

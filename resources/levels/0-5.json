@@ -78,7 +78,7 @@
             "rotation_y": 0e0,
             "rotation_z": 0e0,
             "scale": 1e0,
-            "scale_z": 2.5e-1
+            "scale_z": 2.4899999797344208e-1
         },
         {
             "model": "Wall",
@@ -158,7 +158,7 @@
             "rotation_y": 0e0,
             "rotation_z": 0e0,
             "scale": 1e0,
-            "scale_z": 2.5e-1
+            "scale_z": 2.4899999797344208e-1
         },
         {
             "model": "Wall",
