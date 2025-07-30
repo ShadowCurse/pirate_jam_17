@@ -16,9 +16,7 @@ pub const Material = struct {
     no_shadow_point_light: bool = false,
     invisible: bool = false,
     albedo_texture: ?Assets.TextureType = null,
-    metallic_texture: ?Assets.TextureType = null,
-    roughness_texture: ?Assets.TextureType = null,
-    normal_texture: ?Assets.TextureType = null,
+    normal_roughness_texture: ?Assets.TextureType = null,
 };
 
 const Self = @This();

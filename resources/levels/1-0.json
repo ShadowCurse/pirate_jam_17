@@ -26,9 +26,7 @@
                     "no_shadow_point_light": false,
                     "invisible": false,
                     "albedo_texture": null,
-                    "metallic_texture": "ConcreteMetallic",
-                    "roughness_texture": "ConcreteRoughness",
-                    "normal_texture": "ConcreteNormal"
+                    "normal_roughness_texture": "ConcreteNormalRoughness"
                 }
             },
             "position": {
@@ -67,10 +65,7 @@
                     "no_shadow": false,
                     "no_shadow_point_light": false,
                     "invisible": false,
-                    "albedo_texture": null,
-                    "metallic_texture": null,
-                    "roughness_texture": null,
-                    "normal_texture": null
+                    "albedo_texture": null
                 }
             },
             "position": {
@@ -109,10 +104,7 @@
                     "no_shadow": true,
                     "no_shadow_point_light": false,
                     "invisible": false,
-                    "albedo_texture": null,
-                    "metallic_texture": null,
-                    "roughness_texture": null,
-                    "normal_texture": null
+                    "albedo_texture": null
                 }
             },
             "position": {
@@ -247,10 +239,7 @@
                     "no_shadow": true,
                     "no_shadow_point_light": false,
                     "invisible": false,
-                    "albedo_texture": null,
-                    "metallic_texture": null,
-                    "roughness_texture": null,
-                    "normal_texture": null
+                    "albedo_texture": null
                 }
             },
             "position": {
@@ -289,10 +278,7 @@
                     "no_shadow": false,
                     "no_shadow_point_light": false,
                     "invisible": false,
-                    "albedo_texture": null,
-                    "metallic_texture": null,
-                    "roughness_texture": null,
-                    "normal_texture": null
+                    "albedo_texture": null
                 }
             },
             "position": {
@@ -356,9 +342,7 @@
                     "no_shadow_point_light": false,
                     "invisible": false,
                     "albedo_texture": "ConcreteAlbedo",
-                    "metallic_texture": "ConcreteMetallic",
-                    "roughness_texture": "ConcreteRoughness",
-                    "normal_texture": "ConcreteNormal"
+                    "normal_roughness_texture": "ConcreteNormalRoughness"
                 }
             },
             "position": {
@@ -397,10 +381,7 @@
                     "no_shadow": false,
                     "no_shadow_point_light": false,
                     "invisible": false,
-                    "albedo_texture": null,
-                    "metallic_texture": null,
-                    "roughness_texture": null,
-                    "normal_texture": null
+                    "albedo_texture": null
                 }
             },
             "position": {
@@ -439,10 +420,7 @@
                     "no_shadow": false,
                     "no_shadow_point_light": false,
                     "invisible": false,
-                    "albedo_texture": null,
-                    "metallic_texture": null,
-                    "roughness_texture": null,
-                    "normal_texture": null
+                    "albedo_texture": null
                 }
             },
             "position": {
@@ -481,10 +459,7 @@
                     "no_shadow": false,
                     "no_shadow_point_light": false,
                     "invisible": false,
-                    "albedo_texture": null,
-                    "metallic_texture": null,
-                    "roughness_texture": null,
-                    "normal_texture": null
+                    "albedo_texture": null
                 }
             },
             "position": {
@@ -523,10 +498,7 @@
                     "no_shadow": false,
                     "no_shadow_point_light": false,
                     "invisible": false,
-                    "albedo_texture": null,
-                    "metallic_texture": null,
-                    "roughness_texture": null,
-                    "normal_texture": null
+                    "albedo_texture": null
                 }
             },
             "position": {
@@ -565,10 +537,7 @@
                     "no_shadow": false,
                     "no_shadow_point_light": false,
                     "invisible": false,
-                    "albedo_texture": null,
-                    "metallic_texture": null,
-                    "roughness_texture": null,
-                    "normal_texture": null
+                    "albedo_texture": null
                 }
             },
             "position": {
@@ -607,10 +576,7 @@
                     "no_shadow": false,
                     "no_shadow_point_light": false,
                     "invisible": false,
-                    "albedo_texture": null,
-                    "metallic_texture": null,
-                    "roughness_texture": null,
-                    "normal_texture": null
+                    "albedo_texture": null
                 }
             },
             "position": {
@@ -650,9 +616,7 @@
                     "no_shadow_point_light": false,
                     "invisible": false,
                     "albedo_texture": null,
-                    "metallic_texture": "ConcreteMetallic",
-                    "roughness_texture": "ConcreteRoughness",
-                    "normal_texture": "ConcreteNormal"
+                    "normal_roughness_texture": "ConcreteNormalRoughness"
                 }
             },
             "position": {
@@ -691,10 +655,7 @@
                     "no_shadow": false,
                     "no_shadow_point_light": false,
                     "invisible": false,
-                    "albedo_texture": null,
-                    "metallic_texture": null,
-                    "roughness_texture": null,
-                    "normal_texture": null
+                    "albedo_texture": null
                 }
             },
             "position": {
@@ -733,10 +694,7 @@
                     "no_shadow": false,
                     "no_shadow_point_light": false,
                     "invisible": false,
-                    "albedo_texture": null,
-                    "metallic_texture": null,
-                    "roughness_texture": null,
-                    "normal_texture": null
+                    "albedo_texture": null
                 }
             },
             "position": {
@@ -823,10 +781,7 @@
                     "no_shadow": false,
                     "no_shadow_point_light": false,
                     "invisible": true,
-                    "albedo_texture": null,
-                    "metallic_texture": null,
-                    "roughness_texture": null,
-                    "normal_texture": null
+                    "albedo_texture": null
                 }
             },
             "position": {

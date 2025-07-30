@@ -78,18 +78,14 @@ pub const TextureType = enum {
     SpeakerIcon,
     MouseIcon,
     ConcreteAlbedo,
-    ConcreteMetallic,
-    ConcreteRoughness,
-    ConcreteNormal,
+    ConcreteNormalRoughness,
 };
 const TexturePathsType = std.EnumArray(TextureType, [:0]const u8);
 const TEXTURE_PATHS = TexturePathsType.init(.{
     .SpeakerIcon = DEFAULT_TEXTURES_DIR_PATH ++ "/speaker.png",
     .MouseIcon = DEFAULT_TEXTURES_DIR_PATH ++ "/mouse.png",
     .ConcreteAlbedo = DEFAULT_TEXTURES_DIR_PATH ++ "/concrete_albedo.png",
-    .ConcreteMetallic = DEFAULT_TEXTURES_DIR_PATH ++ "/concrete_metallic.png",
-    .ConcreteRoughness = DEFAULT_TEXTURES_DIR_PATH ++ "/concrete_roughness.png",
-    .ConcreteNormal = DEFAULT_TEXTURES_DIR_PATH ++ "/concrete_normal.png",
+    .ConcreteNormalRoughness = DEFAULT_TEXTURES_DIR_PATH ++ "/concrete_normal_roughness.png",
 });
 pub const GpuTextures = std.EnumArray(TextureType, gpu.Texture);
 

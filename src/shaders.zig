@@ -158,21 +158,24 @@ pub const MeshShader = struct {
     ao: i32,
     emissive_strength: i32,
     uv_scale: i32,
-    use_textures: i32,
-    albedo_texture: i32,
-    metallic_texture: i32,
-    roughness_texture: i32,
-    normal_texture: i32,
 
-    use_shadow_map: i32,
+    albedo_texture: i32,
+    normal_roughness_texture: i32,
     direct_light_shadow: i32,
     point_light_shadows: [Renderer.MAX_LIGHTS]i32,
-    num_point_lights: i32,
 
-    const USE_ALBEDO_TEXTURE = 1 << 0;
-    const USE_METALLIC_TEXTURE = 1 << 1;
-    const USE_ROUNGHNESS_TEXTURE = 1 << 2;
-    const USE_NORMAL_TEXTURE = 1 << 3;
+    options: i32,
+
+    current_options: Options = .{},
+
+    const Options = packed struct(i32) {
+        num_lights: u2 = 0,
+        use_albedo: bool = false,
+        use_normal_roughness: bool = false,
+        use_shadow_map: bool = false,
+        _: u27 = 0,
+    };
+
     const Self = @This();
 
     pub fn init() Self {
@@ -200,12 +203,8 @@ pub const MeshShader = struct {
             .ao = shader.get_uniform_location("ao"),
             .emissive_strength = shader.get_uniform_location("emissive_strength"),
             .uv_scale = shader.get_uniform_location("uv_scale"),
-            .use_textures = shader.get_uniform_location("use_textures"),
             .albedo_texture = shader.get_uniform_location("albedo_texture"),
-            .metallic_texture = shader.get_uniform_location("metallic_texture"),
-            .roughness_texture = shader.get_uniform_location("roughness_texture"),
-            .normal_texture = shader.get_uniform_location("normal_texture"),
-            .use_shadow_map = shader.get_uniform_location("use_shadow_map"),
+            .normal_roughness_texture = shader.get_uniform_location("normal_roughness_texture"),
             .direct_light_shadow = shader.get_uniform_location("direct_light_shadow"),
             .point_light_shadows = .{
                 shader.get_uniform_location("point_light_0_shadow"),
@@ -213,7 +212,7 @@ pub const MeshShader = struct {
                 shader.get_uniform_location("point_light_2_shadow"),
                 shader.get_uniform_location("point_light_3_shadow"),
             },
-            .num_point_lights = shader.get_uniform_location("num_point_lights"),
+            .options = shader.get_uniform_location("options"),
         };
     }
 
@@ -222,7 +221,7 @@ pub const MeshShader = struct {
     }
 
     pub fn set_scene_params(
-        self: *const Self,
+        self: *Self,
         camera_view: *const math.Mat4,
         camera_position: *const math.Vec3,
         camera_projection: *const math.Mat4,
@@ -231,6 +230,11 @@ pub const MeshShader = struct {
         point_light_shadows: []u32,
         use_shadow_map: bool,
     ) void {
+        self.current_options = .{
+            .num_lights = @truncate(environment.num_lights),
+            .use_shadow_map = use_shadow_map,
+        };
+
         gl.glUniformMatrix4fv(self.view, 1, gl.GL_FALSE, @ptrCast(camera_view));
         gl.glUniformMatrix4fv(self.projection, 1, gl.GL_FALSE, @ptrCast(camera_projection));
 
@@ -284,7 +288,6 @@ pub const MeshShader = struct {
             environment.direct_light_color.g,
             environment.direct_light_color.b,
         );
-        gl.glUniform1i(self.num_point_lights, environment.num_lights);
 
         if (use_shadow_map) {
             gl.glActiveTexture(gl.GL_TEXTURE0);
@@ -297,13 +300,11 @@ pub const MeshShader = struct {
             }
             for (self.point_light_shadows, 0..) |b, i|
                 gl.glUniform1i(b, @intCast(i + 1));
-
-            gl.glUniform1i(self.use_shadow_map, 1);
-        } else gl.glUniform1i(self.use_shadow_map, 0);
+        }
     }
 
     pub fn set_mesh_params(
-        self: *const Self,
+        self: *Self,
         model: *const math.Mat4,
         material: *const Mesh.Material,
     ) void {
@@ -314,37 +315,26 @@ pub const MeshShader = struct {
         gl.glUniform1f(self.emissive_strength, material.emissive_strength);
         gl.glUniform1f(self.uv_scale, material.uv_scale);
 
-        var use_textures: i32 = 0;
         if (material.albedo_texture) |at| {
-            use_textures |= USE_ALBEDO_TEXTURE;
+            self.current_options.use_albedo = true;
             const t = Assets.gpu_textures.getPtrConst(at);
             gl.glActiveTexture(gl.GL_TEXTURE5);
             gl.glBindTexture(gl.GL_TEXTURE_2D, t.texture);
             gl.glUniform1i(self.albedo_texture, 5);
+        } else {
+            self.current_options.use_albedo = false;
         }
-        if (material.metallic_texture) |at| {
-            use_textures |= USE_METALLIC_TEXTURE;
+        if (material.normal_roughness_texture) |at| {
+            self.current_options.use_normal_roughness = true;
             const t = Assets.gpu_textures.getPtrConst(at);
             gl.glActiveTexture(gl.GL_TEXTURE6);
             gl.glBindTexture(gl.GL_TEXTURE_2D, t.texture);
-            gl.glUniform1i(self.metallic_texture, 6);
-        }
-        if (material.roughness_texture) |at| {
-            use_textures |= USE_ROUNGHNESS_TEXTURE;
-            const t = Assets.gpu_textures.getPtrConst(at);
-            gl.glActiveTexture(gl.GL_TEXTURE7);
-            gl.glBindTexture(gl.GL_TEXTURE_2D, t.texture);
-            gl.glUniform1i(self.roughness_texture, 7);
-        }
-        if (material.normal_texture) |at| {
-            use_textures |= USE_NORMAL_TEXTURE;
-            const t = Assets.gpu_textures.getPtrConst(at);
-            gl.glActiveTexture(gl.GL_TEXTURE8);
-            gl.glBindTexture(gl.GL_TEXTURE_2D, t.texture);
-            gl.glUniform1i(self.normal_texture, 8);
+            gl.glUniform1i(self.normal_roughness_texture, 6);
+        } else {
+            self.current_options.use_normal_roughness = false;
         }
 
-        gl.glUniform1i(self.use_textures, use_textures);
+        gl.glUniform1i(self.options, @bitCast(self.current_options));
     }
 };
 

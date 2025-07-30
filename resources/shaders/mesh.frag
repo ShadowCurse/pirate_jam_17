@@ -25,23 +25,21 @@ uniform float flat_roughness;
 uniform float ao;
 uniform float emissive_strength;
 
-uniform int use_shadow_map;
+// uniform int use_shadow_map;
 uniform sampler2D direct_light_shadow;
 uniform samplerCube point_light_0_shadow;
 uniform samplerCube point_light_1_shadow;
 uniform samplerCube point_light_2_shadow;
 uniform samplerCube point_light_3_shadow;
 
-#define USE_ALBEDO_TEXTURE     1 << 0
-#define USE_METALLIC_TEXTURE   1 << 1
-#define USE_ROUNGHNESS_TEXTURE 1 << 2
-#define USE_NORMAL_TEXTURE     1 << 3
-uniform int use_textures;
-uniform int num_point_lights;
+#define NUM_LIGHTS_MASK                  ((1 << 2) - 1)
+#define USE_ALBEDO_TEXTURE               (1 << 2)
+#define USE_NORMAL_ROUGHNESS_TEXTURE     (1 << 3)
+#define USE_SHADOW_MAP                   (1 << 4)
+uniform int options;
+
 uniform sampler2D albedo_texture;
-uniform sampler2D metallic_texture;
-uniform sampler2D roughness_texture;
-uniform sampler2D normal_texture;
+uniform sampler2D normal_roughness_texture;
 
 const float PI = 3.14159265359;
 
@@ -135,38 +133,32 @@ float point_shadow(samplerCube shadow_cube, vec3 normal, vec3 from_light) {
 }
 
 void main() {
-    vec3 normal = normalize(vert_normal);
-    if ((use_textures & USE_NORMAL_TEXTURE) != 0) {
-      normal = texture(normal_texture, vert_uv).xyz;
-      normal = normal * 2.0 - 1.0;
-      normal = normalize(tbn_matrix * normal);
-    }
-
-    vec3 to_camera = normalize(camera_position - vert_position);
-
     vec3 albedo = flat_albedo;
-    if ((use_textures & USE_ALBEDO_TEXTURE) != 0) {
-      albedo += texture(albedo_texture, vert_uv).xyz;
+    if ((options & USE_ALBEDO_TEXTURE) != 0) {
+      albedo += texture(albedo_texture, vert_uv).rgb;
       albedo /= 2.0;
     }
 
-    float metallic = flat_metallic;
-    if ((use_textures & USE_METALLIC_TEXTURE) != 0) {
-      metallic += texture(metallic_texture, vert_uv).x;
-      metallic /= 2.0;
-    }
-
+    vec3 normal = normalize(vert_normal);
     float roughness = flat_roughness;
-    if ((use_textures & USE_ROUNGHNESS_TEXTURE) != 0) {
-      roughness += texture(roughness_texture, vert_uv).x;
+    float metallic = flat_metallic;
+    if ((options & USE_NORMAL_ROUGHNESS_TEXTURE) != 0) {
+      vec4 v = texture(normal_roughness_texture, vert_uv);
+      normal = v.rgb * 2.0 - 1.0;
+      normal = normalize(tbn_matrix * normal);
+
+      roughness += v.a;
       roughness /= 2.0;
     }
+
+    vec3 to_camera = normalize(camera_position - vert_position);
 
     vec3 base_reflectivity = vec3(0.04); 
     base_reflectivity = mix(base_reflectivity, albedo, metallic);
 
     vec3 radiance_out = vec3(0.0);
-    for(int i = 0; i < num_point_lights; ++i) {
+    int num_lights = options & NUM_LIGHTS_MASK;
+    for(int i = 0; i < num_lights; ++i) {
         // calculate per-light radiance
         vec3 to_light     = normalize(light_positions[i] - vert_position);
         vec3 half_vector  = normalize(to_camera + to_light);
@@ -195,7 +187,7 @@ void main() {
         vec3 specular     = numerator / denominator;
 
         float point_shadow_value = 1.0;
-        if (use_shadow_map == 1) {
+        if ((options & USE_SHADOW_MAP) != 0) {
             vec3 from_light = vert_position - light_positions[i];
             switch  (i) {
               case 0: 
@@ -247,7 +239,7 @@ void main() {
         vec3 specular     = numerator / denominator;  
             
         float shadow_value = 1.0;
-        if (use_shadow_map == 1)
+        if ((options & USE_SHADOW_MAP) != 0)
           shadow_value = (1.0 - direct_shadow(vert_light_space_position, normal, to_light));
         // add to outgoing radiance
         radiance_out += (kD * albedo / PI + specular) * radiance * ndl * shadow_value;

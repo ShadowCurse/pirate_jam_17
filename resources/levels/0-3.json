@@ -26,9 +26,7 @@
                     "no_shadow_point_light": false,
                     "invisible": false,
                     "albedo_texture": null,
-                    "metallic_texture": "ConcreteMetallic",
-                    "roughness_texture": "ConcreteRoughness",
-                    "normal_texture": "ConcreteNormal"
+                    "normal_roughness_texture": "ConcreteNormalRoughness"
                 }
             },
             "position": {
@@ -92,9 +90,7 @@
                     "no_shadow_point_light": false,
                     "invisible": false,
                     "albedo_texture": "ConcreteAlbedo",
-                    "metallic_texture": "ConcreteMetallic",
-                    "roughness_texture": "ConcreteRoughness",
-                    "normal_texture": "ConcreteNormal"
+                    "normal_roughness_texture": "ConcreteNormalRoughness"
                 }
             },
             "position": {
@@ -134,9 +130,7 @@
                     "no_shadow_point_light": false,
                     "invisible": false,
                     "albedo_texture": "ConcreteAlbedo",
-                    "metallic_texture": "ConcreteMetallic",
-                    "roughness_texture": "ConcreteRoughness",
-                    "normal_texture": "ConcreteNormal"
+                    "normal_roughness_texture": "ConcreteNormalRoughness"
                 }
             },
             "position": {
@@ -296,9 +290,7 @@
                     "no_shadow_point_light": false,
                     "invisible": false,
                     "albedo_texture": "ConcreteAlbedo",
-                    "metallic_texture": "ConcreteMetallic",
-                    "roughness_texture": "ConcreteRoughness",
-                    "normal_texture": "ConcreteNormal"
+                    "normal_roughness_texture": "ConcreteNormalRoughness"
                 }
             },
             "position": {
@@ -338,9 +330,7 @@
                     "no_shadow_point_light": false,
                     "invisible": false,
                     "albedo_texture": "ConcreteAlbedo",
-                    "metallic_texture": "ConcreteMetallic",
-                    "roughness_texture": "ConcreteRoughness",
-                    "normal_texture": "ConcreteNormal"
+                    "normal_roughness_texture": "ConcreteNormalRoughness"
                 }
             },
             "position": {

@@ -235,7 +235,7 @@ fn player_camera_move(camera: *Camera, dt: f32) void {
 
 pub var frame_arena: std.heap.ArenaAllocator = undefined;
 
-pub var current_level_tag: Levels.Tag = if (options.shipping) .@"0-1" else .@"1-0";
+pub var current_level_tag: Levels.Tag = if (options.shipping) .@"0-1" else .@"0-1";
 pub var player_level_start_offset: ?math.Vec3 = null;
 pub var mode: Mode = if (options.shipping) .Game else .Edit;
 pub var pause: bool = false;
